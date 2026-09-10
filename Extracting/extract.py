@@ -1,5 +1,7 @@
 import fitz
 import json
+import os
+from pathlib import Path
 import re
 from dataclasses import asdict, dataclass
 
@@ -120,9 +122,43 @@ def process_pdf(path , subject):
             ))
     return all_chunks
 
+def process_all_books(books_dir = "../Books", output_dir = "Processed"):
+    books_path = Path(books_dir)
+    output_path = Path(output_dir)
+
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    # Find all .pdf files in the Books directory
+    pdf_files = list(books_path.glob("*.pdf"))
+
+    if not pdf_files:
+        print(f"No PDF files found in '{books_dir}'.")
+        return
+
+    print(f"Found {len(pdf_files)} PDF(s) to process...\n")
+
+    for pdf_file in pdf_files:
+        # Use filename (without extension) as subject/identifier
+        subject_name = pdf_file.stem
+        output_file = output_path / f"{subject_name}_chunks.jsonl"
+
+        print(f"Processing: {pdf_file.name}...")
+
+        try:
+            chunks = process_pdf(str(pdf_file), subject=subject_name)
+
+            with open(output_file, "w", encoding="utf-8") as f:
+                for c in chunks:
+                    f.write(json.dumps(asdict(c)) + "\n")
+
+            unique_sections = len(set(c.section_title for c in chunks))
+            print(
+                f"  Saved {len(chunks)} chunks across {unique_sections} sections to '{output_file}'\n"
+            )
+
+        except Exception as e:
+            print(f"  Failed to process {pdf_file.name}: {e}\n")
+
+
 if __name__ == "__main__":
-    chunks = process_pdf("/home/vihan-tandon/Desktop/Question_Paper_Generator/Books/Let us c - yashwantkanetkar.pdf", subject = "SDF-1")
-    with open("Processed", "w") as f:
-        for c in chunks:
-            f.write(json.dumps(asdict(c)) + "\n")
-    print(f"Extracted {len(chunks)} chunks from {len(set(c.section_title for c in chunks))} sections.")
+    process_all_books()
