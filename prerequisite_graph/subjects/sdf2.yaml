@@ -1,0 +1,51 @@
+subject: SDF2
+subject_name: "Software Development Fundamentals - II"
+semester: 2
+
+topics:
+  - id: SDF2_01
+    name: Introduction to OOP
+  - id: SDF2_02
+    name: "OOP Concepts using C++ (Classes, Objects, Constructors)"
+  - id: SDF2_03
+    name: Inheritance (C++)
+  - id: SDF2_04
+    name: Polymorphism (C++)
+  - id: SDF2_05
+    name: UML / Relationship Implementation
+  - id: SDF2_06
+    name: Exceptions, Templates, STL
+  - id: SDF2_07
+    name: Introduction to Databases & SQL
+
+prerequisites:
+  - topic: SDF2_02
+    requires: SDF2_01
+    strength: hard
+  - topic: SDF2_02
+    requires: SDF1_06
+    strength: hard
+  - topic: SDF2_02
+    requires: SDF1_05
+    strength: hard
+  - topic: SDF2_03
+    requires: SDF2_02
+    strength: hard
+  - topic: SDF2_04
+    requires: SDF2_03
+    strength: hard
+  - topic: SDF2_05
+    requires: SDF2_03
+    strength: hard
+  - topic: SDF2_05
+    requires: SDF2_04
+    strength: soft
+  - topic: SDF2_06
+    requires: SDF2_02
+    strength: hard
+  - topic: SDF2_06
+    requires: SDF1_05
+    strength: soft
+  - topic: SDF2_07
+    requires: SDF1_02
+    strength: soft

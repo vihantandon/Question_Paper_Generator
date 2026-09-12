@@ -1,0 +1,45 @@
+subject: SDF1
+subject_name: "Software Development Fundamentals - I"
+semester: 1
+
+topics:
+  - id: SDF1_01
+    name: Introduction to SDLC & Problem Solving
+  - id: SDF1_02
+    name: Data Types, Operators, Control Flow
+  - id: SDF1_03
+    name: Arrays
+  - id: SDF1_04
+    name: Pointers
+  - id: SDF1_05
+    name: Functions
+  - id: SDF1_06
+    name: Structures and Unions
+  - id: SDF1_07
+    name: File Handling
+
+prerequisites:
+  - topic: SDF1_03
+    requires: SDF1_02
+    strength: hard
+  - topic: SDF1_04
+    requires: SDF1_03
+    strength: hard
+  - topic: SDF1_04
+    requires: SDF1_02
+    strength: hard
+  - topic: SDF1_05
+    requires: SDF1_02
+    strength: hard
+  - topic: SDF1_06
+    requires: SDF1_03
+    strength: hard
+  - topic: SDF1_06
+    requires: SDF1_04
+    strength: hard
+  - topic: SDF1_07
+    requires: SDF1_06
+    strength: hard
+  - topic: SDF1_07
+    requires: SDF1_04
+    strength: soft

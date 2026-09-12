@@ -1,0 +1,59 @@
+services:
+  neo4j:
+    image: neo4j:5
+    ports:
+      - "7474:7474"   # browser UI
+      - "7687:7687"   # bolt protocol (Python driver connects here)
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-yourpassword}
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 60s
+
+  chroma:
+    image: chromadb/chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+
+  cache:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  # One-off job: loads subjects/*.yaml into Neo4j, then exits.
+  # Not part of the always-on stack -- run it explicitly (see below).
+  loader:
+    build: ./loader
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-yourpassword}
+    volumes:
+      - ./subjects:/app/subjects:ro   # mount data separately from the image, see note below
+    profiles: ["tools"]               # excluded from `docker compose up` by default
+
+  app:
+    build: .
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-yourpassword}
+      - CHROMA_HOST=chroma
+      - REDIS_HOST=cache
+
+volumes:
+  neo4j_data:
+  chroma_data:

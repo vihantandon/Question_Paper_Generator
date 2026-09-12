@@ -1,0 +1,79 @@
+subject: ALGO
+subject_name: "Algorithms and Problem Solving"
+semester: 4
+
+topics:
+  - id: ALGO_01
+    name: "Introduction: Asymptotic Analysis, Sorting/Searching Review"
+  - id: ALGO_02
+    name: "Search Trees & Priority Queue (Segment/Interval/RB Tree, Binomial/Fibonacci Heap)"
+  - id: ALGO_03
+    name: Divide and Conquer
+  - id: ALGO_04
+    name: Greedy Algorithms
+  - id: ALGO_05
+    name: Backtracking Algorithms
+  - id: ALGO_06
+    name: Dynamic Programming
+  - id: ALGO_07
+    name: String Algorithms
+  - id: ALGO_08
+    name: "Problem Spaces and Search (BFS/DFS/A*)"
+  - id: ALGO_09
+    name: "Tractable and Non-Tractable Problems (P, NP, NP-Complete)"
+
+prerequisites:
+  - topic: ALGO_01
+    requires: DS_02
+    strength: hard
+  - topic: ALGO_02
+    requires: DS_03
+    strength: hard
+  - topic: ALGO_02
+    requires: DS_04
+    strength: hard
+  - topic: ALGO_02
+    requires: DS_06
+    strength: hard
+  - topic: ALGO_03
+    requires: ALGO_01
+    strength: hard
+  - topic: ALGO_03
+    requires: DS_02
+    strength: hard
+  - topic: ALGO_04
+    requires: DS_05
+    strength: hard
+  - topic: ALGO_05
+    requires: ALGO_03
+    strength: hard
+  - topic: ALGO_05
+    requires: DS_05
+    strength: hard
+  - topic: ALGO_06
+    requires: ALGO_03
+    strength: hard
+  - topic: ALGO_06
+    requires: ALGO_04
+    strength: soft
+  - topic: ALGO_07
+    requires: DS_06
+    strength: hard
+  - topic: ALGO_07
+    requires: ALGO_06
+    strength: soft
+  - topic: ALGO_08
+    requires: DS_05
+    strength: hard
+  - topic: ALGO_08
+    requires: ALGO_05
+    strength: soft
+  - topic: ALGO_09
+    requires: ALGO_05
+    strength: soft
+  - topic: ALGO_09
+    requires: ALGO_06
+    strength: soft
+  - topic: ALGO_09
+    requires: ALGO_04
+    strength: soft

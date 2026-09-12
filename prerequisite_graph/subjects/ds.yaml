@@ -1,0 +1,52 @@
+subject: DS
+subject_name: "Data Structures"
+semester: 3
+
+topics:
+  - id: DS_01
+    name: "Linear Data Structures (Array, Linked List, Stack, Queue)"
+  - id: DS_02
+    name: Searching and Sorting
+  - id: DS_03
+    name: "Non-Linear DS: Multi List, Tree, Priority Queue (Heaps)"
+  - id: DS_04
+    name: "Non-Linear DS: BST, AVL, RB Tree, B/B+ Tree"
+  - id: DS_05
+    name: "Non-Linear DS: Graphs"
+  - id: DS_06
+    name: "Advanced DS: Segment/Interval Tree, Suffix Tree/Array, Tries"
+
+prerequisites:
+  - topic: DS_01
+    requires: SDF1_03
+    strength: hard
+  - topic: DS_01
+    requires: SDF1_04
+    strength: hard
+  - topic: DS_01
+    requires: SDF2_02
+    strength: soft
+  - topic: DS_02
+    requires: DS_01
+    strength: hard
+  - topic: DS_03
+    requires: DS_01
+    strength: hard
+  - topic: DS_03
+    requires: SDF1_04
+    strength: hard
+  - topic: DS_04
+    requires: DS_03
+    strength: hard
+  - topic: DS_05
+    requires: DS_01
+    strength: hard
+  - topic: DS_05
+    requires: DS_03
+    strength: soft
+  - topic: DS_06
+    requires: DS_04
+    strength: hard
+  - topic: DS_06
+    requires: DS_05
+    strength: soft
