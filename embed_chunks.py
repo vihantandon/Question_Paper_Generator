@@ -2,7 +2,7 @@
 Requires:
     pip install chromadb sentence-transformers tqdm
  
-Run this AFTER docker-compose up -d (the Chroma server must be running
+Run this AFTER docker compose up -d (the Chroma server must be running
 on localhost:8000).
 """
 import json
@@ -14,7 +14,7 @@ from tqdm import tqdm
 CHROMA_HOST = "localhost"
 CHROMA_PORT = 8000
 COLLECTION_NAME = "book_content"
-PROCESSED_DIR = Path("Extracting/processed")
+PROCESSED_DIR = Path("Extracting/Processed")
 
 EMBED_MODEL = "all-MiniLM-L6-v2"
 BATCH_SIZE = 64
