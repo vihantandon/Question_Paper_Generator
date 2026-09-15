@@ -2,21 +2,38 @@ subject: SDF1
 subject_name: "Software Development Fundamentals - I"
 semester: 1
 
+# NOTE: These COs are DRAFTS written to match the topic list — they are not
+# from your official syllabus. Replace the text with your university's actual
+# CO statements before using this for anything that goes to faculty or
+# accreditation. The topic->co mappings below should be reviewed too.
+course_outcomes:
+  CO1: "Apply problem-solving techniques and the software development lifecycle to formulate solutions"
+  CO2: "Implement programs using fundamental constructs: data types, operators, and control flow"
+  CO3: "Apply arrays, pointers, and functions to build modular programs"
+  CO4: "Design programs using user-defined data types and file handling"
+
 topics:
   - id: SDF1_01
     name: Introduction to SDLC & Problem Solving
+    co: [CO1]
   - id: SDF1_02
     name: Data Types, Operators, Control Flow
+    co: [CO2]
   - id: SDF1_03
     name: Arrays
+    co: [CO3]
   - id: SDF1_04
     name: Pointers
+    co: [CO3]
   - id: SDF1_05
     name: Functions
+    co: [CO3]
   - id: SDF1_06
     name: Structures and Unions
+    co: [CO4]
   - id: SDF1_07
     name: File Handling
+    co: [CO4]
 
 prerequisites:
   - topic: SDF1_03

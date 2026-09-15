@@ -1,12 +1,77 @@
-version: '3.8'
+# Usage:
+#   docker compose up -d                          # start neo4j + chroma + redis
+#   docker compose --profile tools run --rm loader  # load subject YAMLs into Neo4j
 
 services:
-  chromadb:
+  neo4j:
+    image: neo4j:5
+    container_name: neo4j_server
+    ports:
+      - "7474:7474"   # browser UI
+      - "7687:7687"   # bolt protocol (Python driver connects here)
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-yourpassword}
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 60s
+    restart: unless-stopped
+
+  chroma:
     image: chromadb/chroma:latest
     container_name: chromadb_server
     ports:
       - "8000:8000"
     volumes:
-      # Persists vector store data locally in a .chroma_data folder
       - ./chroma_data:/data
     restart: unless-stopped
+
+  cache:
+    image: redis:7
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # One-off job: loads subjects/*.yaml into Neo4j, then exits.
+  # Excluded from `docker compose up` by the "tools" profile.
+  loader:
+    build: ./prerequisite_graph/loader
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-yourpassword}
+    volumes:
+      - ./prerequisite_graph/subjects:/app/subjects:ro
+    profiles: ["tools"]
+
+  # Commented out until there's an actual app to containerize
+  # (there is no Dockerfile at the repo root yet, so this service
+  # would fail the build). Scripts currently run on the host.
+  #
+  # app:
+  #   build: .
+  #   depends_on:
+  #     neo4j:
+  #       condition: service_healthy
+  #   environment:
+  #     - NEO4J_URI=bolt://neo4j:7687
+  #     - NEO4J_USER=neo4j
+  #     - NEO4J_PASSWORD=${NEO4J_PASSWORD:-yourpassword}
+  #     - CHROMA_HOST=chroma
+  #     - REDIS_HOST=cache
+
+volumes:
+  neo4j_data:
+  redis_data:
+  # NOTE: chroma_data is a bind mount (./chroma_data), not a named volume,
+  # so your existing embedded vectors on disk are picked up as-is.

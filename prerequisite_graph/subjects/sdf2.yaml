@@ -2,21 +2,36 @@ subject: SDF2
 subject_name: "Software Development Fundamentals - II"
 semester: 2
 
+# NOTE: DRAFT COs — replace with your official syllabus text before use.
+course_outcomes:
+  CO1: "Explain object-oriented principles and distinguish them from procedural programming"
+  CO2: "Implement classes, objects, and constructors to model real-world entities"
+  CO3: "Apply inheritance and polymorphism to design extensible class hierarchies"
+  CO4: "Model system relationships using UML and implement them in code"
+  CO5: "Apply exception handling, templates, STL, and database fundamentals in applications"
+
 topics:
   - id: SDF2_01
     name: Introduction to OOP
+    co: [CO1]
   - id: SDF2_02
     name: "OOP Concepts using C++ (Classes, Objects, Constructors)"
+    co: [CO2]
   - id: SDF2_03
     name: Inheritance (C++)
+    co: [CO3]
   - id: SDF2_04
     name: Polymorphism (C++)
+    co: [CO3]
   - id: SDF2_05
     name: UML / Relationship Implementation
+    co: [CO4]
   - id: SDF2_06
     name: Exceptions, Templates, STL
+    co: [CO5]
   - id: SDF2_07
     name: Introduction to Databases & SQL
+    co: [CO5]
 
 prerequisites:
   - topic: SDF2_02

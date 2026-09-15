@@ -2,19 +2,32 @@ subject: DS
 subject_name: "Data Structures"
 semester: 3
 
+# NOTE: DRAFT COs — replace with your official syllabus text before use.
+course_outcomes:
+  CO1: "Implement linear data structures and analyze their time and space complexity"
+  CO2: "Apply searching and sorting algorithms and compare their performance"
+  CO3: "Implement non-linear data structures including trees, heaps, and graphs"
+  CO4: "Select and justify appropriate data structures for a given problem scenario"
+
 topics:
   - id: DS_01
     name: "Linear Data Structures (Array, Linked List, Stack, Queue)"
+    co: [CO1]
   - id: DS_02
     name: Searching and Sorting
+    co: [CO2]
   - id: DS_03
     name: "Non-Linear DS: Multi List, Tree, Priority Queue (Heaps)"
+    co: [CO3]
   - id: DS_04
     name: "Non-Linear DS: BST, AVL, RB Tree, B/B+ Tree"
+    co: [CO3, CO4]
   - id: DS_05
     name: "Non-Linear DS: Graphs"
+    co: [CO3]
   - id: DS_06
     name: "Advanced DS: Segment/Interval Tree, Suffix Tree/Array, Tries"
+    co: [CO4]
 
 prerequisites:
   - topic: DS_01
