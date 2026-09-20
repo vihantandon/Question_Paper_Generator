@@ -39,6 +39,8 @@ def main():
 
     print("Reading chunk files...")
     chunks = load_all_chunks(PROCESSED_DIR)
+    if any("topic_id" not in c for c in chunks):
+        print("WARNING: some chunks have no topic_id - run  python tag_topics.py  first.")
     print(f"Found {len(chunks)} chunks across "
           f"{len(set(c['subject'] for c in chunks))} subjects.")
 
@@ -61,6 +63,13 @@ def main():
                 "source_file": c["source_file"],
                 "type": "book",
 
+                "topic_id": c.get("topic_id", "NONE"),
+                "topic_subject": c.get("topic_subject", "NONE"),
+                "topic_semester": c.get("topic_semester", 0),
+                "is_prereq_content": c.get("is_prereq_content", False),
+                "chapter": c.get("chapter", -1),
+                "tag_method": c.get("tag_method", "untagged"),
+                "needs_review": c.get("needs_review", False),
             }for c in batch],
         )
     print(f"Done. Collection '{COLLECTION_NAME}' now has "

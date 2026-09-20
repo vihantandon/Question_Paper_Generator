@@ -1,0 +1,134 @@
+# topic_map.yaml
+# -----------------------------------------------------------------------
+# Tells tag_topics.py which graph topic(s) each BOOK CHAPTER teaches.
+# This is the bridge between the two databases:
+#     book chunk (ChromaDB)  --topic_id-->  Topic node (Neo4j)
+#
+# How to read an entry:
+#     5: [SDF1_05, SDF1_04]   # chapter 5 covers Functions AND Pointers
+#   - ONE topic listed   -> every chunk in the chapter gets that topic_id.
+#   - SEVERAL listed     -> chunks are scored with `topic_keywords` below and
+#                           each chunk gets whichever topic fits it best.
+#                           If the score is too close, the chunk gets the
+#                           FIRST topic and is flagged needs_review=true.
+#   - a chapter NOT listed -> topic_id = "NONE" (outside every syllabus).
+#
+# A topic may belong to a DIFFERENT subject than the book. E.g. the SDF-2
+# C++ book's Ch5 (Pointers) is really SDF1_04 content. That is on purpose:
+# it is how the system knows "this is prerequisite knowledge, not
+# current-syllabus content" (is_prereq_content=true).
+#
+# ALL of these mappings are my best reading of the chapter titles. Please
+# skim them once against your real syllabus - they are the one place a
+# human decision is needed.
+# -----------------------------------------------------------------------
+ 
+min_margin: 2        # keyword-score gap needed to trust a multi-topic split
+ 
+books:
+  SDF-1:                       # value of "subject" in the chunk files
+    yaml_subject: SDF1         # value of "subject:" in the subject YAML
+    chapter_regex: '^(\d+)\s'
+    chapters:
+      1: [SDF1_02]             # Getting Started (C basics, variables, I/O basics)
+      2: [SDF1_02]             # Decision control
+      3: [SDF1_02]             # Loops
+      4: [SDF1_02]             # Case control (switch)
+      5: [SDF1_05, SDF1_04]    # Functions & Pointers  (mixed chapter)
+      6: [SDF1_02]             # Data types revisited
+      8: [SDF1_03, SDF1_04]    # Arrays (includes pointer-and-array sections)
+      9: [SDF1_03]             # Strings (arrays of char)
+      10: [SDF1_06]            # Structures
+      12: [SDF1_07]            # File I/O
+      13: [SDF1_07]            # More issues in I/O
+  SDF-2:
+    yaml_subject: SDF2
+    chapter_regex: '^Ch(\d+)\s'
+    chapters:
+      # --- Part 1 is the C subset = semester-1 material (prerequisite) ---
+      2: [SDF1_02]             # Expressions
+      3: [SDF1_02]             # Statements
+      4: [SDF1_03]             # Arrays & strings
+      5: [SDF1_04]             # Pointers
+      6: [SDF1_05]             # Functions
+      7: [SDF1_06]             # Structures, unions, enums
+      9: [SDF1_07]             # File I/O
+      # --- Part 2 onwards is real SDF-2 content ---
+      11: [SDF2_01]            # Overview of C++ (intro to OOP)
+      12: [SDF2_02]            # Classes & Objects
+      13: [SDF2_02]            # Arrays, pointers, references, new/delete
+      14: [SDF2_02]            # Overloading, copy constructors
+      15: [SDF2_04]            # Operator overloading
+      16: [SDF2_03]            # Inheritance
+      17: [SDF2_04]            # Virtual functions & polymorphism
+      18: [SDF2_06]            # Templates
+      19: [SDF2_06]            # Exception handling
+      24: [SDF2_06]            # Intro to STL
+      33: [SDF2_06]            # STL containers
+      34: [SDF2_06]            # STL algorithms
+      35: [SDF2_06]            # STL iterators / function objects
+      38: [SDF2_06]            # Exception handling & misc classes
+  DS:
+    yaml_subject: DS
+    chapter_regex: '^(?:Chapter\s+)?(\d+)(?:\.\d+)*[:.\s]'
+    inherit_unnumbered: true   # sub-sections like "References" belong to the chapter above
+    frontback_regex: '^(Part\s|Dedication|Preface|About the|Contributors|Contents|Index|Handbook of)'
+    # Chapter 3 mixes two topics; its section NUMBERS tell us which is which.
+    section_rules:
+      - {regex: '^3\.6', topic: DS_04}            # 3.6 Binary Search Trees
+      - {regex: '^3\.[1-578](\.|\s)', topic: DS_03}  # trees, traversals, heaps, tournament trees
+    chapters:
+      1: [DS_01]               # Analysis of algorithms (CO1 mentions complexity analysis)
+      2: [DS_01]               # Basic structures: arrays, lists, stacks, queues
+      3: [DS_03, DS_04]        # Trees (binary trees, heaps  +  BST)
+      4: [DS_05]               # Graphs
+      5: [DS_03]               # Leftist trees      (priority queues)
+      6: [DS_03]               # Skew heaps
+      7: [ALGO_02]             # Binomial, Fibonacci, pairing heaps (semester-4 topic)
+      8: [DS_03]               # Double-ended priority queues
+      10: [DS_04]              # Balanced BSTs (AVL, RB)
+      11: [DS_04]              # Finger search trees
+      12: [DS_04]              # Splay trees
+      15: [DS_04]              # B trees
+      18: [DS_06]              # Interval, segment, range trees
+      28: [DS_06]              # Tries
+      29: [DS_06]              # Suffix trees / arrays
+      30: [ALGO_07]            # String searching (semester-4 topic)
+  APS:
+    yaml_subject: ALGO
+    chapter_regex: '^(\d+)\s'
+    chapters:
+      1: [ALGO_01]             # Role of algorithms
+      2: [ALGO_01]             # Getting started (insertion sort, analysis)
+      3: [ALGO_01]             # Growth of functions
+      4: [ALGO_03]             # Divide and conquer
+      6: [DS_03]               # Heapsort (the heap / priority-queue structure)
+      7: [DS_02]               # Quicksort   (sorting = a semester-3 topic)
+      8: [DS_02]               # Sorting in linear time
+      9: [ALGO_01]             # Medians & order statistics
+      10: [DS_01]              # Elementary data structures
+      12: [DS_04]              # Binary search trees
+      13: [ALGO_02]            # Red-black trees
+      14: [ALGO_02]            # Augmenting data structures
+      15: [ALGO_06]            # Dynamic programming
+      16: [ALGO_04]            # Greedy algorithms
+      17: [ALGO_01]            # Amortized analysis
+      18: [DS_04]              # B-trees
+      19: [ALGO_02]            # Fibonacci heaps
+      22: [ALGO_08]            # Elementary graph algorithms (BFS/DFS)
+      23: [ALGO_04]            # Minimum spanning trees (greedy)
+      24: [ALGO_04]            # Single-source shortest paths (Dijkstra = greedy)
+      25: [ALGO_06]            # All-pairs shortest paths (Floyd-Warshall = DP)
+      32: [ALGO_07]            # String matching
+      34: [ALGO_09]            # NP-completeness
+      35: [ALGO_09]            # Approximation algorithms
+ 
+# Used ONLY to split chapters that list several topics. Plain lowercase
+# substrings; each occurrence in a chunk scores 1 point for that topic.
+topic_keywords:
+  SDF1_03: [array, subscript, element, dimensional, index, string, char]
+  SDF1_04: [pointer, address, indirection, dereferenc, "call by reference", "value at", "pointer to"]
+  SDF1_05: [function, return, prototype, "call by value", recursi, argument, parameter, "calling function"]
+  DS_03:   [heap, "priority queue", "binary tree", traversal, inorder, preorder, postorder, tournament, "complete binary", "tree representation", threaded]
+  DS_04:   ["search tree", bst, avl, "red-black", "b-tree", rotation, balanced, "search trees", splay]
+ 
