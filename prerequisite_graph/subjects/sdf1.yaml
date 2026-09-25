@@ -7,10 +7,12 @@ semester: 1
 # CO statements before using this for anything that goes to faculty or
 # accreditation. The topic->co mappings below should be reviewed too.
 course_outcomes:
-  CO1: "Apply problem-solving techniques and the software development lifecycle to formulate solutions"
-  CO2: "Implement programs using fundamental constructs: data types, operators, and control flow"
-  CO3: "Apply arrays, pointers, and functions to build modular programs"
-  CO4: "Design programs using user-defined data types and file handling"
+  CO1: "Explain various phases of software development life cycle"  # C109.1
+  CO2: "Explain various data types, memory allocation schemes, precedence of arithmetical and logical operations, and need of array and structures"  # C109.2
+  CO3: "Design the flow chart and write the high level code for different problems"  # C109.3
+  CO4: "Apply and implement functions with or without pointers for different problems"  # C109.4
+  CO5: "Demonstrate and implement various operations like traverse, insertion, deletion, etc. on files"  # C109.5
+
 
 topics:
   - id: SDF1_01
@@ -18,22 +20,23 @@ topics:
     co: [CO1]
   - id: SDF1_02
     name: Data Types, Operators, Control Flow
-    co: [CO2]
+    co: [CO2, CO3]  
   - id: SDF1_03
     name: Arrays
-    co: [CO3]
+    co: [CO2, CO3]  
   - id: SDF1_04
     name: Pointers
-    co: [CO3]
+    co: [CO4]
   - id: SDF1_05
     name: Functions
-    co: [CO3]
+    co: [CO4]
   - id: SDF1_06
     name: Structures and Unions
-    co: [CO4]
+    co: [CO2]  
   - id: SDF1_07
     name: File Handling
-    co: [CO4]
+    co: [CO5]
+
 
 prerequisites:
   - topic: SDF1_03

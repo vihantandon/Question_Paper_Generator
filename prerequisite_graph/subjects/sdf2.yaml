@@ -4,11 +4,12 @@ semester: 2
 
 # NOTE: DRAFT COs — replace with your official syllabus text before use.
 course_outcomes:
-  CO1: "Explain object-oriented principles and distinguish them from procedural programming"
-  CO2: "Implement classes, objects, and constructors to model real-world entities"
-  CO3: "Apply inheritance and polymorphism to design extensible class hierarchies"
-  CO4: "Model system relationships using UML and implement them in code"
-  CO5: "Apply exception handling, templates, STL, and database fundamentals in applications"
+  CO1: "Explain various object-oriented concepts like class and objects, friend function, function and operator overloading, etc."  # official CO1
+  CO2: "Apply and implement the relationships of association, aggregation, composition, and inheritance"  # official CO2
+  CO3: "Apply SQL commands to create tables and perform various operations like insert, delete, select, etc."  # official CO3
+  CO4: "Analyze the output of the source code and able to debug the errors"  # official CO4 — see note above, unmapped
+  CO5: "Design the class diagram for real life problems and implement it using virtual functions, abstract classes, templates, and exception handling"  # official CO5
+
 
 topics:
   - id: SDF2_01
@@ -16,22 +17,23 @@ topics:
     co: [CO1]
   - id: SDF2_02
     name: "OOP Concepts using C++ (Classes, Objects, Constructors)"
-    co: [CO2]
+    co: [CO1]  # friend function / operator overloading normally taught alongside this unit
   - id: SDF2_03
     name: Inheritance (C++)
-    co: [CO3]
+    co: [CO2]
   - id: SDF2_04
     name: Polymorphism (C++)
-    co: [CO3]
+    co: [CO1, CO5]  # REVIEW: split — operator overloading (compile-time poly) fits CO1, virtual functions (runtime poly) fit CO5
   - id: SDF2_05
     name: UML / Relationship Implementation
-    co: [CO4]
+    co: [CO2, CO5]  # REVIEW: association/aggregation/composition fit CO2; class-diagram design itself fits CO5
   - id: SDF2_06
     name: Exceptions, Templates, STL
     co: [CO5]
   - id: SDF2_07
     name: Introduction to Databases & SQL
-    co: [CO5]
+    co: [CO3]
+
 
 prerequisites:
   - topic: SDF2_02
