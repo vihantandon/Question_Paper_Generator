@@ -86,6 +86,7 @@ books:
       6: [DS_03]               # Skew heaps
       7: [ALGO_02]             # Binomial, Fibonacci, pairing heaps (semester-4 topic)
       8: [DS_03]               # Double-ended priority queues
+      9: [DS_07]              # Hashing
       10: [DS_04]              # Balanced BSTs (AVL, RB)
       11: [DS_04]              # Finger search trees
       12: [DS_04]              # Splay trees

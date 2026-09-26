@@ -17,16 +17,16 @@ topics:
     co: [CO1]
   - id: SDF2_02
     name: "OOP Concepts using C++ (Classes, Objects, Constructors)"
-    co: [CO1]  # friend function / operator overloading normally taught alongside this unit
+    co: [CO1, CO4]  
   - id: SDF2_03
     name: Inheritance (C++)
-    co: [CO2]
+    co: [CO2, CO4]
   - id: SDF2_04
     name: Polymorphism (C++)
-    co: [CO1, CO5]  # REVIEW: split — operator overloading (compile-time poly) fits CO1, virtual functions (runtime poly) fit CO5
+    co: [CO1, CO4, CO5]  
   - id: SDF2_05
     name: UML / Relationship Implementation
-    co: [CO2, CO5]  # REVIEW: association/aggregation/composition fit CO2; class-diagram design itself fits CO5
+    co: [CO2, CO5]  
   - id: SDF2_06
     name: Exceptions, Templates, STL
     co: [CO5]

@@ -2,14 +2,12 @@ subject: ALGO
 subject_name: "Algorithms and Problem Solving"
 semester: 4
 
-# NOTE: DRAFT COs — replace with your official syllabus text before use.
+
 course_outcomes:
-  CO1: "Analyze algorithm efficiency using asymptotic notation"
-  CO2: "Apply advanced tree and heap structures to solve computational problems"
-  CO3: "Design algorithms using divide-and-conquer, greedy, and backtracking paradigms"
-  CO4: "Formulate and solve problems using dynamic programming"
-  CO5: "Apply string and graph search algorithms to practical problems"
-  CO6: "Classify problems as tractable or intractable and reason about NP-completeness"
+  CO1: "Analyze the complexity of different algorithms using asymptotic analysis."          
+  CO2: "Select an appropriate data structure and apply related operations for a given problem." 
+  CO3: "Apply algorithmic principles for solving a given problem."                          
+  CO4: "Identify, formulate and design an efficient solution to a given problem using appropriate data structure and algorithm design technique."
 
 topics:
   - id: ALGO_01
@@ -26,19 +24,19 @@ topics:
     co: [CO3]
   - id: ALGO_05
     name: Backtracking Algorithms
-    co: [CO3]
+    co: [CO4]
   - id: ALGO_06
     name: Dynamic Programming
     co: [CO4]
   - id: ALGO_07
     name: String Algorithms
-    co: [CO5]
+    co: [CO3]
   - id: ALGO_08
     name: "Problem Spaces and Search (BFS/DFS/A*)"
-    co: [CO5]
+    co: [CO3]
   - id: ALGO_09
     name: "Tractable and Non-Tractable Problems (P, NP, NP-Complete)"
-    co: [CO6]
+    co: [CO4]
 
 prerequisites:
   - topic: ALGO_01
