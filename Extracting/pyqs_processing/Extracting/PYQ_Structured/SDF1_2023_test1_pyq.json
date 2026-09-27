@@ -1,0 +1,146 @@
+[
+  {
+    "id": "SDF1_2023_test1_header",
+    "document": "POSSESION OF MOBILES IN EXAM IS UFM PRACTICE.\n\nJaypee Institute of Information Technology, Noida\nTest 1 Examination, ODD 2023\nB.Tech(CSE/IT/ECE)/Dual, I Semester\nCourse Title: Software Development Fundamentals-1 Time: 1 hour Maximum Marks: 20\nCourse Code: 15B11CI111\n\n| COs | Course Outcomes |\n| C109.1 | Explain the logic for solving problems considering various phases of software development life cycle and depicting them using algorithm and flowcharts. |\n| C109.2 | Explain basics of C programming concepts to make decision for solving problems. |\n| C109.3 | Demonstrate and contrast different methods for writing modular programs in C |\n| C109.4 | Use various C programming constructs to implement iteration, and recursion |\n| C109.5 | Apply and implement arrays, pointers, structures and file handling for solving real world problems |\n\nAttempt all questions",
+    "metadata": {
+      "source": "PYQs\\T1 SDF 1.pdf",
+      "subject": "SDF1",
+      "subject_name": "Software Development Fundamentals - I",
+      "year": 2023,
+      "exam": "test1",
+      "type": "header"
+    }
+  },
+  {
+    "id": "SDF1_2023_test1_q1",
+    "document": "Q1. Four people (Alex, Bob, Carol, and Dave) come across a bridge at night. The bridge can only hold two people at a time, and they only have one flashlight (crossing the bridge without flashlight is impossible). The four people walk at different speeds: Alex takes 1 minute to cross the bridge, Bob takes 2 minutes, Carol takes 5 minutes, and Dave takes 10 minutes. When two people cross the bridge together, they must go at the slower person's pace. They have only 17 minutes before a train passes under the bridge, and they need to get to the other side before that happens. Your task is to find the shortest time in which all four people can safely cross the bridge. Explain your steps.",
+    "metadata": {
+      "source": "PYQs\\T1 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 1,
+      "raw_co_code": "C109.1",
+      "course_outcome": "CO1",
+      "co_description": "Explain the logic for solving problems considering various phases of software development life cycle and depicting them using algorithm and flowcharts.",
+      "bloom_level": "Understanding",
+      "marks": 2,
+      "marks_breakdown": null,
+      "topic_id": "SDF1_01",
+      "topic_name": "Introduction to SDLC & Problem Solving",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "SDF1_2023_test1_q2",
+    "document": "Q2. You have been asked to design an automated face recognition system. However, the exact requirements are not yet clear. Can we use waterfall SDLC model for this particular system? Justify your answer.",
+    "metadata": {
+      "source": "PYQs\\T1 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 2,
+      "raw_co_code": "C109.1",
+      "course_outcome": "CO1",
+      "co_description": "Explain the logic for solving problems considering various phases of software development life cycle and depicting them using algorithm and flowcharts.",
+      "bloom_level": "Understanding",
+      "marks": 1,
+      "marks_breakdown": null,
+      "topic_id": "SDF1_01",
+      "topic_name": "Introduction to SDLC & Problem Solving",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "SDF1_2023_test1_q3",
+    "document": "Q3. Write a program to input a positive integer from user. Then exchange its ith and jth digits. The value of i and j should be given as input by the user. Please note all the digits in the number are supposed to be non-zero.\nExample: N= 3246159\ni= 2, j=5\nith digit is 5 and jth digit is 4\nExchanged number is: 3256149",
+    "metadata": {
+      "source": "PYQs\\T1 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 3,
+      "raw_co_code": "C109.4",
+      "course_outcome": "CO4",
+      "co_description": "Use various C programming constructs to implement iteration and recursion",
+      "bloom_level": "Applying",
+      "marks": 5,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO4' maps to 2 topics — pick one: SDF1_02 (Data Types, Operators, Control Flow), SDF1_05 (Functions)"
+    }
+  },
+  {
+    "id": "SDF1_2023_test1_q4",
+    "document": "Q4. Write a C program to automate the process of apparel label generation for Men's trousers. The program should take inputs of standard Hip and Length in inches. The program should identify the standard apparel Label Size based on the table using Switch-case control as given below.\n\n| Hip (in inches) | Length (in inches) | Label Size |\n| 30 | 38 | LARGE |\n| 32 | 39 | XL |\n| 34 | 40 | XXL |\n\nFinally, the output should display the appropriate label of Hip, Length, and Label Size.\nSample label format generated is given as below.\n\nHip : 32\nLength : 39\nLabel Size : XL\nFor any other input display the message \"Wrong Input\".",
+    "metadata": {
+      "source": "PYQs\\T1 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 4,
+      "raw_co_code": "C109.2",
+      "course_outcome": "CO2",
+      "co_description": "Explain basics of C programming concepts to make decision for solving problems.",
+      "bloom_level": "Understanding",
+      "marks": 3,
+      "marks_breakdown": null,
+      "topic_id": "SDF1_02",
+      "topic_name": "Data Types, Operators, Control Flow",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "SDF1_2023_test1_q5",
+    "document": "Q5. You are asked to draw a flowchart that determines a person's income tax based on their income and other criteria. The tax calculation is based on the following rules:\n\n| Income | Tax |\n| Less than 700000 | 0 |\n| Greater than 700000 and less than equal to 1000000 | 10% |\n| Greater than 1000000 and less than equal to 1500000 | 30000 + 20% of amount exceeding |\n| Greater than 1500000 | 130000 + 30% of amount exceeding |\n\nAdditionally, if the total tax of an individual exceeds 30,000 then an additional 5% education cess tax is applied on their tax.",
+    "metadata": {
+      "source": "PYQs\\T1 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 5,
+      "raw_co_code": "C109.1",
+      "course_outcome": "CO1",
+      "co_description": "Explain the logic for solving problems considering various phases of software development life cycle and depicting them using algorithm and flowcharts.",
+      "bloom_level": "Understanding",
+      "marks": 3,
+      "marks_breakdown": null,
+      "topic_id": "SDF1_01",
+      "topic_name": "Introduction to SDLC & Problem Solving",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "SDF1_2023_test1_q6",
+    "document": "Q6. Write a C program to print a butterfly pattern based on the height of the butterfly provided by the user. Your program must ensure that the height entered by the user must be an even positive integer.\nEnter height: 10\n\n[DIAGRAM: Sample console output showing a butterfly-shaped pattern printed with asterisk (*) characters for height=10 -- two symmetric wing shapes made of rows of asterisks that widen toward the middle rows and narrow again toward top and bottom, with a gap down the center.]",
+    "metadata": {
+      "source": "PYQs\\T1 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 6,
+      "raw_co_code": "C109.4",
+      "course_outcome": "CO4",
+      "co_description": "Use various C programming constructs to implement iteration and recursion",
+      "bloom_level": "Applying",
+      "marks": 6,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO4' maps to 2 topics — pick one: SDF1_02 (Data Types, Operators, Control Flow), SDF1_05 (Functions)"
+    }
+  }
+]

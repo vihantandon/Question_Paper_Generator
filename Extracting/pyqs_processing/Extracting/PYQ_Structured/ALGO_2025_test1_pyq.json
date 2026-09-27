@@ -1,0 +1,102 @@
+[
+  {
+    "id": "ALGO_2025_test1_header",
+    "document": "POSSESSION OF MOBILES IN EXAM IS UFM PRACTICE\nJaypee Institute of Information Technology, Noida\nTest-I Examination, 2025\nB.Tech, 4th Semester\nCourse Title: Algorithms and Problem-Solving Course Code: 15B11CI411\nMaximum Time: 1 Hr\nMaximum Marks: 20\nCO1 | Analyse the complexity of different algorithms using asymptotic analysis.\nCO2 | Select an appropriate data structure and apply related operations for a given problem.\nCO3 | Select an appropriate data structure and apply related operations for a given problem.\nCO4 | Identify, formulate and design an efficient solution to a given problem using appropriate data structure and algorithm design technique.\nNote: Attempt all the questions.",
+    "metadata": {
+      "source": "PYQs\\T1 APS.pdf",
+      "subject": "ALGO",
+      "subject_name": "Algorithms and Problem Solving",
+      "year": 2025,
+      "exam": "test1",
+      "type": "header"
+    }
+  },
+  {
+    "id": "ALGO_2025_test1_q1",
+    "document": "Q1. Consider the following function:\n[DIAGRAM: Two code blocks side-by-side. Left box: int f() { int i, x; x=A(n); for (i=x; i>=1; i=i/2) { Print (\"Nothing\"); } return 0; }. Right box: int A (int n) { int i, j, k=0; for (i=n/2; i<=n; i++) ( for (j=1; j<=n; j=j*5) ( k = k + n/2; return (k); ) } }]\n(i) Consider the return value of the function A is Θ(F(n)). Find out F(n).\n(ii) What will be the time complexity of the function f() in terms of n?",
+    "metadata": {
+      "source": "PYQs\\T1 APS.pdf",
+      "subject": "ALGO",
+      "year": 2025,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 1,
+      "raw_co_code": "CO1",
+      "course_outcome": "CO1",
+      "co_description": "Analyze the complexity of different algorithms using asymptotic analysis.",
+      "bloom_level": "Analyse level",
+      "marks": 4,
+      "marks_breakdown": null,
+      "topic_id": "ALGO_01",
+      "topic_name": "Introduction: Asymptotic Analysis, Sorting/Searching Review",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "ALGO_2025_test1_q2",
+    "document": "Q2. A string S is nice if, for every letter of the alphabet that S contains, it appears both in uppercase and lowercase. For example, \"abABB\" is nice because 'A' and 'a' appear, and 'B' and 'b' appear. However, \"abA\" is not nice because 'b' appears, but 'B' does not.\nGiven a string S, return the longest substring of S that is nice. If there are multiple, return the substring of the earliest occurrence. If there are none, return an empty string. For example: S= \"abAB\" then longest substring is S itself. If S= \"abABcabcABB\", then \"abABB\" is the longest substring.\n(i) Propose a divide and conquer based algorithm and write pseudo code for the above problem.\n(ii) Explain the step by step procedure (Based on your approach) for the following inputs: S1= “EabcABCcde”\n(iii) Derive the time complexity in Big O notation.",
+    "metadata": {
+      "source": "PYQs\\T1 APS.pdf",
+      "subject": "ALGO",
+      "year": 2025,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 2,
+      "raw_co_code": "CO2",
+      "course_outcome": "CO2",
+      "co_description": "Select an appropriate data structure and apply related operations for a given problem.",
+      "bloom_level": "Apply level",
+      "marks": 6,
+      "marks_breakdown": null,
+      "topic_id": "ALGO_02",
+      "topic_name": "Search Trees & Priority Queue (Segment/Interval/RB Tree, Binomial/Fibonacci Heap)",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "ALGO_2025_test1_q3",
+    "document": "Q3. For the following code fragment:\n[DIAGRAM: int function1(int a[], int n, int x) { int i; for (i = 0; i < n && a[i] == x; i++); if (i == n) return -1; else return i; }]\n(i) Consider the array given is a sorted and more than half of the elements are equal to x. Determine and explain the functionality. Compute the best case and worst-case time complexity of the function1.\n(ii) Is the same functionality can be implemented optimally? If yes, write the pseudo code and give the worst-case time complexity.",
+    "metadata": {
+      "source": "PYQs\\T1 APS.pdf",
+      "subject": "ALGO",
+      "year": 2025,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 3,
+      "raw_co_code": "CO1",
+      "course_outcome": "CO1",
+      "co_description": "Analyze the complexity of different algorithms using asymptotic analysis.",
+      "bloom_level": "Analyse level",
+      "marks": 5,
+      "marks_breakdown": null,
+      "topic_id": "ALGO_01",
+      "topic_name": "Introduction: Asymptotic Analysis, Sorting/Searching Review",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "ALGO_2025_test1_q4",
+    "document": "Q4. For the given adjacency matrix of a graph, consider the node as cities and edges weights as cost between two cities. Considering the backtracking solution of TSP problem (assuming A as the source city), answer the following:\n[DIAGRAM: adjacency matrix with nodes A, B, C, D, E. Row A: 0, 100, 125, 100, 75. Row B: 100, 0, 50, 75, 125. Row C: 125, 50, 0, 100, 125. Row D: 100, 75, 100, 0, 50. Row E: 75, 125, 125, 50, 0]\n\n(i) Design the state space tree for finding out all the possible solution.\n(ii) Based on the designed state space tree, give the minimum cost in which all the cities can be visited:",
+    "metadata": {
+      "source": "PYQs\\T1 APS.pdf",
+      "subject": "ALGO",
+      "year": 2025,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 4,
+      "raw_co_code": "CO2",
+      "course_outcome": "CO2",
+      "co_description": "Select an appropriate data structure and apply related operations for a given problem.",
+      "bloom_level": "Apply level",
+      "marks": 5,
+      "marks_breakdown": null,
+      "topic_id": "ALGO_02",
+      "topic_name": "Search Trees & Priority Queue (Segment/Interval/RB Tree, Binomial/Fibonacci Heap)",
+      "needs_review": false,
+      "review_reason": null
+    }
+  }
+]

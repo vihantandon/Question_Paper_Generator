@@ -1,0 +1,121 @@
+[
+  {
+    "id": "SDF2_2024_test2_header",
+    "document": "POSSESSION OF MOBILES IN EXAM IS UFM PRACTICE\n\nJaypee Institute of Information Technology, Noida\nT2 Examination, Even Semester 2024\nB. Tech, 2nd Semester\n\nCourse Title: Software Development Fundamental-II Maximum Time: 1 Hour\nCourse Code: 15B11CI211 Maximum Marks: 20\n\n| CO1 | Explain various object-oriented concepts like class and objects, constructors, abstraction, data hiding (access specifies) etc. |\n| CO2 | Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems. |\n| CO3 | Apply SQL commands to create tables and perform various operations like insert, delete, select on tables. |\n| CO4 | Analyze the source code for the possible outcomes, exceptions and to debug the errors. |\n| CO5 | Design and implement the class diagrams for varied real life problem using OPPs. |\n\nNote: Attempt all the questions.",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 2.pdf",
+      "subject": "SDF2",
+      "subject_name": "Software Development Fundamentals - II",
+      "year": 2024,
+      "exam": "test2",
+      "type": "header"
+    }
+  },
+  {
+    "id": "SDF2_2024_test2_q1",
+    "document": "Q1. Create a class student having data members as name (string) and rollno (int). Each student can be either a cricketer or footballer or both. Every cricketer has runs (int) and wickets (int) while every footballer has goals scored (int) and assists (int). A star performer is a student who plays both cricket and football have a star performer index calculated using the following formula: star performer index = [(runs-1000)/runs+(goal-10)/goal]. Develop a C++ program that can simulate the following rules adhering to the above inheritance structure (you can define additional necessary method).\na) Create a star performer object.\nb) Set the student details and the cricketer/footballer or both by calling the appropriate methods from the star performer class.\nc) Compute the star performer index value using the above mentioned formula.\nd) Display the details of the students if he/she is a star performer. A Student is considered as a star performer if and only if star performer index is grater then zero.",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 2.pdf",
+      "subject": "SDF2",
+      "year": 2024,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 1,
+      "raw_co_code": "CO2",
+      "course_outcome": "CO2",
+      "co_description": "Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems.",
+      "bloom_level": "Applying",
+      "marks": 5,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO2' maps to 3 topics — pick one: SDF2_03 (Inheritance (C++)), SDF2_04 (Polymorphism (C++)), SDF2_06 (Exceptions, Templates, STL)"
+    }
+  },
+  {
+    "id": "SDF2_2024_test2_q2",
+    "document": "Q2. Draw a UML class diagram for a restaurant, which has its name, location, owner name. Restaurant has traditional south Indian menu which is having dishes (items) details and prices, some are available all day and some are specifically available in breakfast and evening. Whenever customer with name, location and contact number, places any order, it contains the items from the menu and also their quantity and bill (total amount to pay). After the payment, the receipt is generated for the order having all food details and customer details. The restaurant has two types of staff members, chef staff for cooking and other operational staff for taking order and delivering it. A feedback is also taken from the customer after delivering his order. Show the complete diagram with appropriate relations with class details, types of relationship and its multiplicity.",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 2.pdf",
+      "subject": "SDF2",
+      "year": 2024,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 2,
+      "raw_co_code": "CO5",
+      "course_outcome": "CO5",
+      "co_description": "Design and implement the class diagram for various real-life problems using OOPs.",
+      "bloom_level": "Creating",
+      "marks": 5,
+      "marks_breakdown": null,
+      "topic_id": "SDF2_05",
+      "topic_name": "UML / Relationship Implementation",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "SDF2_2024_test2_q3",
+    "document": "Q3. An International ship can be classified as either a Cruise ship or Cargo carrier. Each ship has a name (String), fuel capacity (int), valuation (double), owning company (string) and insurance premium (double). A cruise ship has additional features like number of passenger (int), number of pools (int), food storage (double) while a cargo carrier has number of crews (int), number of risky zones (int) and inflammable material quantity (double). The insurance premium for each type of ship is computed using following formula.\n\nFor cruise ship: insurance premium = (valuation + fuel capacity + food storage) / (number of passenger* number of pools)\nFor cargo carrier: insurance premium = [(valuation + fuel capacity) * number of risky zones + inflammable material quantity] / (number of passenger *1000).\n\nDesign a C++ program that can simulate above scenario. Ensure that you use a computeInsurance() method to display the insurance premium and implement it in such a way so that it become mandatory to define it in all the cruise and cargo classes.",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 2.pdf",
+      "subject": "SDF2",
+      "year": 2024,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 3,
+      "raw_co_code": "CO2",
+      "course_outcome": "CO2",
+      "co_description": "Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems.",
+      "bloom_level": "Creating",
+      "marks": 4,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO2' maps to 3 topics — pick one: SDF2_03 (Inheritance (C++)), SDF2_04 (Polymorphism (C++)), SDF2_06 (Exceptions, Templates, STL)"
+    }
+  },
+  {
+    "id": "SDF2_2024_test2_q4",
+    "document": "Q4. Do not consider syntax errors.\n\n(a) Predict the output and modify the program so that it can print \"Dino cannot be zero.\" \"Memory was allocated successfully but dino was zero!!\". \n\n```cpp\n#include<iostream>\nusing namespace std;\nclass Fraction\n{ int num, dino;\npublic:\nFraction(){}\nvoid setFraction(int n, int d){\nif(d==0)\nthrow\" Dino cannot be zero.\";\nelse\nnum=n;\ndino=d;\n}};\nint main()\n{\nint size=1, a=5, b=0;\nFraction *arr;\ncin>>size;\narr = new Fraction[size];\ntry{\nif(arr==NULL)\nthrow\" Memory Error\";\nelse{\nfor (int i=0; i<size; i++)\n{\ntry{\narr[i].setFraction(a, b);\n}\ncatch(const char * s){\ncout<<s<<endl;\nthrow s;\n}}}\ncatch(const char *s) {\ncout<<s<<endl;\n}\nreturn 0;}\n```\n\n(b) Predict the output and give suitable interpretation. \n\n```cpp\n#include<iostream>\nusing namespace std;\nint main()\n{\nchar var= 'c';\ntry\n{\ntry {\ncout<<\"inside try block\\n\";\nif(var>0)\n{\nthrow var;\ncout <<\"After throw\\n\"\n}\n}\ncatch(int var) {\ncout<<\"Exception Caught\\n\";\nthrow(var);\n}\n}\ncatch( char var)\n{\ncout<<\"Exception Recaught\\n\";\n}\ncout<<\"After catch\\n\";\nreturn 0;\n}\n```\n\n(c) Predict the output and give suitable interpretation. \n\n```cpp\n#include<iostream>\n#include<string>\nusing namespace std;\nclass base\n{public:\nvoid display (int x) {\ncout<<\"Base Class\"<<endl;\n}\n};\nclass Derived: public base {\npublic: void display()\n{\ncout << Derived Class\"<<endl; }\n};\nint main ()\n{\nDerived D;\nD.display(5);\nreturn 0;\n}\n```",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 2.pdf",
+      "subject": "SDF2",
+      "year": 2024,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 4,
+      "raw_co_code": "CO4",
+      "course_outcome": "CO4",
+      "co_description": "Analyze the source code for the possible Outcomes, exceptions and to debug the errors.",
+      "bloom_level": "Analyzing",
+      "marks": 6,
+      "marks_breakdown": [
+        {
+          "raw_co_code": "CO4",
+          "co_short": "CO4",
+          "bloom_level": "Analyzing",
+          "marks": 3
+        },
+        {
+          "raw_co_code": "CO4",
+          "co_short": "CO4",
+          "bloom_level": "Analyzing",
+          "marks": 1.5
+        },
+        {
+          "raw_co_code": "CO4",
+          "co_short": "CO4",
+          "bloom_level": "Analyzing",
+          "marks": 1.5
+        }
+      ],
+      "topic_id": "SDF2_06",
+      "topic_name": "Exceptions, Templates, STL",
+      "needs_review": false,
+      "review_reason": null
+    }
+  }
+]

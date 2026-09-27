@@ -1,0 +1,102 @@
+[
+  {
+    "id": "ALGO_2025_test2_header",
+    "document": "POSSESSION OF MOBILES IN EXAM ISUFM PRACTICE\n\nJaypee Institute of Information Technology, Noida\nTEST2 Examination, 2025\nBTech/Dual (CSE), 4th Semester\n\nCourse Title: Algorithms and Project Solving Maximum Time: 1Hr\nCourse Code: 15B11CI411 Maximum Marks: 20\nNote: Attempt all the questions.\n\n| CO1 | Analyse the complexity of different algorithms using asymptotic analysis. |\n| CO2 | Select an appropriate data structure and apply related operations for a given problem. |\n| CO3 | Apply algorithmic principles to solve a given problem. |\n| CO4 | Identify, formulate, and design an efficient solution to a given problem using appropriate data structure and algorithm design techniques. |",
+    "metadata": {
+      "source": "PYQs\\T2 Aps.pdf",
+      "subject": "ALGO",
+      "subject_name": "Algorithms and Problem Solving",
+      "year": 2025,
+      "exam": "test2",
+      "type": "header"
+    }
+  },
+  {
+    "id": "ALGO_2025_test2_q1",
+    "document": "Q1. Considering the following network with the given capacities\na. Use Ford-Fulkerson with DFS to compute the maximum flow from S to T. Show the augmenting paths used.\nb. What is the worst-case time complexity of Ford-Fulkerson with DFS for this case?\nc. For this case scenario is DFS perform poorly compared to BFS in finding augmenting paths? Justify your answer.\n\n[DIAGRAM: Directed flow network with 4 nodes S, A, B, T and capacitated edges: S->A (10), S->B (5), A->B (15), A->T (10), B->T (5).]",
+    "metadata": {
+      "source": "PYQs\\T2 Aps.pdf",
+      "subject": "ALGO",
+      "year": 2025,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 1,
+      "raw_co_code": "CO1",
+      "course_outcome": "CO1",
+      "co_description": "Analyze the complexity of different algorithms using asymptotic analysis.",
+      "bloom_level": "Analyse level",
+      "marks": 5,
+      "marks_breakdown": null,
+      "topic_id": "ALGO_01",
+      "topic_name": "Introduction: Asymptotic Analysis, Sorting/Searching Review",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "ALGO_2025_test2_q2",
+    "document": "Q2. As the project manager at a leading tech company, you are tasked with selecting and scheduling multiple short-term projects from various clients. Each project requires exactly one day to complete, offers a profit if finished on time, and has a strict deadline. Since only one project can be handled at a time, your objective is to maximize the total profit by prioritizing and scheduling the most profitable projects without missing any deadlines. Projects that cannot be completed within their deadline must be skipped. Given n projects, where each project is represented as a tuple (deadline, profit), develop an algorithmic approach and corresponding pseudocode to find the maximum possible profit and the optimal schedule of selected projects.",
+    "metadata": {
+      "source": "PYQs\\T2 Aps.pdf",
+      "subject": "ALGO",
+      "year": 2025,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 2,
+      "raw_co_code": "CO3",
+      "course_outcome": "CO3",
+      "co_description": "Apply algorithmic principles for solving a given problem.",
+      "bloom_level": "Apply level",
+      "marks": 4,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO3' maps to 4 topics — pick one: ALGO_03 (Divide and Conquer), ALGO_04 (Greedy Algorithms), ALGO_07 (String Algorithms), ALGO_08 (Problem Spaces and Search (BFS/DFS/A*))"
+    }
+  },
+  {
+    "id": "ALGO_2025_test2_q3",
+    "document": "Q3. An e-commerce company generates sales report files for different products in varying sizes throughout the day. These reports need to be merged into a single comprehensive report for analysis. The merging cost is the sum of the sizes of the two reports being merged.\na. Give an algorithm to merge the files into a single file such that the merging cost is minimal.\nb. You are given the following sales report files with their respective sizes (in MB). Calculate the minimum cost of merging the files into a single file.\n\n| Sales Report | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 |\n| Size (in MB) | 5 | 8 | 3 | 6 | 2 | 9 | 4 | 7 |",
+    "metadata": {
+      "source": "PYQs\\T2 Aps.pdf",
+      "subject": "ALGO",
+      "year": 2025,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 3,
+      "raw_co_code": "CO4",
+      "course_outcome": "CO4",
+      "co_description": "Identify, formulate and design an efficient solution to a given problem using appropriate data structure and algorithm design technique.",
+      "bloom_level": "Create level",
+      "marks": 4,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO4' maps to 3 topics — pick one: ALGO_05 (Backtracking Algorithms), ALGO_06 (Dynamic Programming), ALGO_09 (Tractable and Non-Tractable Problems (P, NP, NP-Complete))"
+    }
+  },
+  {
+    "id": "ALGO_2025_test2_q4",
+    "document": "Q4. (a). A text streaming platform has an occurrence of an offensive phrase (\"BARBARIC\") and scans a text comment of 10,000 characters. How would the KMP algorithm ensure faster detection of all such offensive phrases than all other string-matching algorithms? Create and describe the role of the LPS (Longest Prefix Suffix) table in this context.\n\n(b). Consider the alphabet set {A,B,C,D,E,I,R}, construct the finite automaton for the pattern P = \"BARBARIC\"",
+    "metadata": {
+      "source": "PYQs\\T2 Aps.pdf",
+      "subject": "ALGO",
+      "year": 2025,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 4,
+      "raw_co_code": "CO3",
+      "course_outcome": "CO3",
+      "co_description": "Apply algorithmic principles for solving a given problem.",
+      "bloom_level": "Apply level",
+      "marks": 7,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO3' maps to 4 topics — pick one: ALGO_03 (Divide and Conquer), ALGO_04 (Greedy Algorithms), ALGO_07 (String Algorithms), ALGO_08 (Problem Spaces and Search (BFS/DFS/A*))"
+    }
+  }
+]

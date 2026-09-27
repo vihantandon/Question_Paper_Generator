@@ -1,0 +1,124 @@
+[
+  {
+    "id": "SDF1_2023_test2_header",
+    "document": "POSSESSION OF MOBILES IN EXAM IS UFM PRACTICE.\n\nName: Riya (handwritten)  \n\nJaypee Institute of Information Technology, Noida  \nTest-2 Examination, ODD 2023  \nB. Tech, 1st Semester  \n\nCourse Title: Software Development Fundamentals-1  \nCourse Code: 15B11CI111  \n\nMaximum Time: 1 Hour  \nMaximum Marks: 20  \n\n---\n\n### Course Outcomes (COs) Table\n\n| COs | Course Outcomes | LEVEL |\n| :--- | :--- | :--- |\n| **C109.1** | Explain the logic for solving problems considering various phases of software development life cycle and depicting them using algorithm and flowcharts. | Understand (L2) |\n| **C109.2** | Explain basics of C programming concepts to make decision for solving problems. | Understand (L2) |\n| **C109.3** | Demonstrate and contrast different methods for writing modular programs in C | Understand (L2) |\n| **C109.4** | Use various C programming constructs to implement iteration, and recursion. | Apply (L3) |\n| **C109.5** | Apply and implement arrays, pointers, structures and file handling for solving real world problems. | Apply (L3) |\n\n---\n\nAttempt all questions:",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "subject_name": "Software Development Fundamentals - I",
+      "year": 2023,
+      "exam": "test2",
+      "type": "header"
+    }
+  },
+  {
+    "id": "SDF1_2023_test2_q1",
+    "document": "**Q1.** Write a function in C that can take an integer as an argument and returns the sum of factors it has. Call this function via the main function and print the sum of factors in the main function.  \nExample:  \nsumOfFactors(10) will return 18 (i.e. 1+2+5+10=18)",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 1,
+      "raw_co_code": "C109.3",
+      "course_outcome": "CO3",
+      "co_description": "Demonstrate and contrast different methods for writing modular programs in C",
+      "bloom_level": "Understand L2",
+      "marks": 4,
+      "marks_breakdown": null,
+      "topic_id": "SDF1_05",
+      "topic_name": "Functions",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "SDF1_2023_test2_q2",
+    "document": "**Q2.** Write a program in C that should print the number with the highest frequency in a given array. You are given an array of non-negative integers where each integer is less than 10, and your task is to find the number that appears most frequently in the array. If there are multiple numbers with the same highest frequency, then print the smallest number whose frequency is highest.  \nExample 1: Given the input array [2,3,2,4,2,5,2], the program should print 2 because 2 appears with the highest frequency in the array.  \nExample 2: Given the input array [2,3,5,4,3,5,5,3], the program should print 3 because 3 (smallest number) appears with the highest frequency in the array.",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 2,
+      "raw_co_code": "C109.5",
+      "course_outcome": "CO5",
+      "co_description": "Apply and implement arrays, pointers, Structures and file handling for solving real world problems",
+      "bloom_level": "Apply L3",
+      "marks": 4,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO5' maps to 4 topics — pick one: SDF1_03 (Arrays), SDF1_04 (Pointers), SDF1_06 (Structures and Unions), SDF1_07 (File Handling)"
+    }
+  },
+  {
+    "id": "SDF1_2023_test2_q3",
+    "document": "**Q3.** Write a program in C that performs the following tasks:  \nI. Ask the user to input a square matrix A.  \nII. Detects the maximum element in the upper triangular matrix of A (including the diagonal elements).  \nIII. Detects the minimum element in the lower triangular matrix of A (including the diagonal elements).  \nIV. If the sum of these two elements (max in upper triangular and min in lower triangular matrix) is equal to the sum of elements in the leading diagonal (from top left to bottom right) of the original matrix then print: \"Traceable\" else print \"Non-Traceable\".  \n\nTest cases are provided on the next page.\nTest Case 1:\nEnter the size of the square matrix A: 3\nEnter the element of the square matrix A (row by row):\n1 2 3\n4 5 6\n7 8 0\nMaximum element in the upper triangular matrix: 6\nMinimum element of the lower triangular matrix: 0\nSum of max and min elements: 6\nSum of elements in the leading diagonal: 6\nTraceable\n\nTest Case 2:\nEnter the size of the square matrix A: 3\nEnter the elements of the square matrix A (row by row):\n1 2 9\n4 5 6\n7 8 5\nMaximum element in upper triangular matrix: 9\nMinimum element in lower triangular matrix :1\nSum of max and min elements: 10\nSum of elements in the leading diagonal: 11\nNon- Traceable",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 3,
+      "raw_co_code": "C109.5",
+      "course_outcome": "CO5",
+      "co_description": "Apply and implement arrays, pointers, Structures and file handling for solving real world problems",
+      "bloom_level": "Apply L3",
+      "marks": 6,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO5' maps to 4 topics — pick one: SDF1_03 (Arrays), SDF1_04 (Pointers), SDF1_06 (Structures and Unions), SDF1_07 (File Handling)"
+    }
+  },
+  {
+    "id": "SDF1_2023_test2_q4",
+    "document": "Q4. Write a C program that takes a string as input and reverses each word in the string. A word is\ndefined as a sequence of non- space characters. You should maintain the order of words in the original\nstring, but reverse the characters within each word. For example, if the input string is \"Hello, World\",\nyour program should modify it to become \"olleH droW\".\nNote:\nString should be accessed via pointer variable.\nYou can assume that the input string contains only printable ASCII characters and is null-terminated.",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 4,
+      "raw_co_code": "C109.5",
+      "course_outcome": "CO5",
+      "co_description": "Apply and implement arrays, pointers, Structures and file handling for solving real world problems",
+      "bloom_level": "Apply L3",
+      "marks": 4,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO5' maps to 4 topics — pick one: SDF1_03 (Arrays), SDF1_04 (Pointers), SDF1_06 (Structures and Unions), SDF1_07 (File Handling)"
+    }
+  },
+  {
+    "id": "SDF1_2023_test2_q5",
+    "document": "Q5. Write the output of the following code with proper explanation:\n\n```c\n#include<stdio.h>\n#include<string.h>\nint main()\n{\n    char p[20];\n    char *s = \"string\";\n    int length = strlen(s);\n    int i;\n    for (i=0; i<length; i++)\n        p[i]= s[length-i];\n    printf(\"%s\",p);\n    return 0;\n}\n```",
+    "metadata": {
+      "source": "PYQs\\T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "year": 2023,
+      "exam": "test2",
+      "type": "question",
+      "question_number": 5,
+      "raw_co_code": "C109.5",
+      "course_outcome": "CO5",
+      "co_description": "Apply and implement arrays, pointers, Structures and file handling for solving real world problems",
+      "bloom_level": "Apply L3",
+      "marks": 2,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO5' maps to 4 topics — pick one: SDF1_03 (Arrays), SDF1_04 (Pointers), SDF1_06 (Structures and Unions), SDF1_07 (File Handling)"
+    }
+  }
+]

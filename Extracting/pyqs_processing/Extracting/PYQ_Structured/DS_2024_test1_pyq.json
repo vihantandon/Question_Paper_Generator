@@ -1,0 +1,146 @@
+[
+  {
+    "id": "DS_2024_test1_header",
+    "document": "```\nPOSESSION OF MOBILES IN EXAM IS UFM PRACTICE.\n             Jaypee Institute of Information Technology, Noida\n             T1 Examination, Odd 2024\n             B. Tech CSE, Int CSE, III Semester\nCourse Title: Data Structures                  Maximum Time: 01 Hr\nCourse Code: 15B11CI311                       Maximum Marks: 20\n```\n\n---\n\n### COURSE OUTCOMES / COGNITIVE LEVELS TABLE\n\n| COURSE OUTCOMES | COGNITIVE LEVELS |\n| :--- | :--- |\n| **C210.1** Explain abstract data types, memory allocation schemes, and need of linear and non-linear data structures | Understand Level (Level 2) |\n| **C210.2** Apply and implement various linear data structures, like array, linked list, stack, and queue in different problems and applications | Apply Level (Level 3) |\n| **C210.3** Analyse the performance of various sorting and searching techniques | Analyse Level (Level 4) |\n| **C210.4** Demonstrate and implement various operations like search, traverse, insertion, deletion, etc. on different non-linear data structures | Apply Level (Level 4) |\n| **C210.5** Apply appropriate data structure to design an efficient solution for given and identified problem | Create Level (Level 6) |\n\n---\n\n`Note: Attempt all the questions.`\n\n---\n\n`",
+    "metadata": {
+      "source": "PYQs\\T1 Dsa.pdf",
+      "subject": "DS",
+      "subject_name": "Data Structures",
+      "year": 2024,
+      "exam": "test1",
+      "type": "header"
+    }
+  },
+  {
+    "id": "DS_2024_test1_q1",
+    "document": "Q.1 Add code in line no. 4, 9 and 12 i.e. dotted lines such that the function reverses the linked list.\n\n```text\nNode * reverseList (LinkedList * l)\n1. {\n2. Node * a=l->head;\n3. Node *b = l->head->next;\n4. while(---------)\n5. { Node * c=b->next;\n6. b->next=a;\n7. a=b;\n8. b=c;\n9. ........... }\n10. b->next=a;\n11. l->head->next=NULL;\n12. ---------;\n13. return l->head;\n14. }\n```\n*(Note: In the exam paper, lines 1–7 are printed in the left column and lines 8–14 in the right column to save space, but they form a single sequential function as shown above.)*",
+    "metadata": {
+      "source": "PYQs\\T1 Dsa.pdf",
+      "subject": "DS",
+      "year": 2024,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 1,
+      "raw_co_code": "CO1",
+      "course_outcome": "CO1",
+      "co_description": "Explain abstract data types, memory allocation schemes, and need of linear and non-linear data structures",
+      "bloom_level": "Understanding",
+      "marks": 3,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO1' maps to 2 topics — pick one: DS_01 (Linear Data Structures (Array, Linked List, Stack, Queue)), DS_03 (Non-Linear DS: Multi List, Tree, Priority Queue (Heaps))"
+    }
+  },
+  {
+    "id": "DS_2024_test1_q2",
+    "document": "Q.2 Apply insertion sort to sort the content of a singly linked list with the starting node address stored in head pointer using a function insertionSort(LLNode * head).",
+    "metadata": {
+      "source": "PYQs\\T1 Dsa.pdf",
+      "subject": "DS",
+      "year": 2024,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 2,
+      "raw_co_code": "CO2",
+      "course_outcome": "CO2",
+      "co_description": "Apply and implement various linear data structures like array, linked list, stack, and queue in different problems and applications",
+      "bloom_level": "Applying",
+      "marks": 5,
+      "marks_breakdown": null,
+      "topic_id": "DS_01",
+      "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "DS_2024_test1_q3",
+    "document": "Q.3 A queue data structure when implemented using an array post many shortcomings like false overflow (queue is full even though space is available) or overheads of shifting elements if element is deleted to avoid false overflow. Propose a modified queue data structure in which the front and rear indexes of the array be manipulated for enqueuing (insertion) and dequeuing (deletion) of elements eliminating the overhead of elements shifting altogether.\nWrite the following enqueue and dequeue functions for the modified queue with overflow and underflow conditions.\na) enQ(int * Q, int size, int info) that add integer info at the rear index of the array Q implemented as a Queue.\nb) int deQ(int * Q, int size) which delete the element from the front index and return it.",
+    "metadata": {
+      "source": "PYQs\\T1 Dsa.pdf",
+      "subject": "DS",
+      "year": 2024,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 3,
+      "raw_co_code": "CO2",
+      "course_outcome": "CO2",
+      "co_description": "Apply and implement various linear data structures like array, linked list, stack, and queue in different problems and applications",
+      "bloom_level": "Applying",
+      "marks": 4,
+      "marks_breakdown": null,
+      "topic_id": "DS_01",
+      "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "DS_2024_test1_q4",
+    "document": "Q.4 In context of sorting the array of integer elements {1,2,3,4,5,6,7,8} using quick sort; arrange these elements for the following cases individually:\na) If pivot is always taken as the first element, and quick sort algorithm needs maximum swaps.\nb) If pivot is always taken as the last element, and quick sort algorithm needs minimum swaps.\nc) If pivot is always taken as the mid element, and quick sort algorithm needs minimum swaps.\nd) If pivot is always taken as the first element, and quick sort algorithm needs minimum swaps.",
+    "metadata": {
+      "source": "PYQs\\T1 Dsa.pdf",
+      "subject": "DS",
+      "year": 2024,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 4,
+      "raw_co_code": "CO3",
+      "course_outcome": "CO3",
+      "co_description": "Analyse the performance of various sorting and searching techniques",
+      "bloom_level": "Analysing",
+      "marks": 2,
+      "marks_breakdown": null,
+      "topic_id": "DS_02",
+      "topic_name": "Searching and Sorting",
+      "needs_review": false,
+      "review_reason": null
+    }
+  },
+  {
+    "id": "DS_2024_test1_q5",
+    "document": "Q. 5 Comprehend the following recursive codes and write the output showing all intermediate steps.\n\na) \n```c\n#include<stdio.h>\nvoid abc1(int);\nvoid abc2(int);\nvoid abc1(int num)\n{\nif(num==0)\nreturn;\nprintf(\"%d\", num);\nabc2(num-3);\nprintf(\"%d\",num);\n}\n```\n```c\nvoid abc2(int num){\nif(num==0) return;\nprintf(\"%d\",num);\nabc1(-num);\nprintf(\"%d\",num);\n}\nint main()\n{\nabc1(7);\nreturn 0;\n}\n```\n\nb) \n```c\n#include<stdio.h>\nint Xf(int num)\n{\nprintf(\"%d\\n\",\nnum);\nif(num > 8)\n{\nXf(Xf(Xf(-num)));\n}\nreturn num;\n}\n```\n```c\nint main()\n{\nXf(10),\nreturn 0;\n}\n```",
+    "metadata": {
+      "source": "PYQs\\T1 Dsa.pdf",
+      "subject": "DS",
+      "year": 2024,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 5,
+      "raw_co_code": "CO1",
+      "course_outcome": "CO1",
+      "co_description": "Explain abstract data types, memory allocation schemes, and need of linear and non-linear data structures",
+      "bloom_level": "Understanding",
+      "marks": 3,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO1' maps to 2 topics — pick one: DS_01 (Linear Data Structures (Array, Linked List, Stack, Queue)), DS_03 (Non-Linear DS: Multi List, Tree, Priority Queue (Heaps))"
+    }
+  },
+  {
+    "id": "DS_2024_test1_q6",
+    "document": "Q. 6 Analyse the correctness of the following statements.\n\na) Interpolation Search is always better than binary search for sorted array of elements.\nb) Binary search is always better than linear search irrespective of the data on which the search is performed.\nc) For finding 5 largest elements from an array of 1000 elements, selection/bubble sort will require lesser comparisons than merge sort.",
+    "metadata": {
+      "source": "PYQs\\T1 Dsa.pdf",
+      "subject": "DS",
+      "year": 2024,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 6,
+      "raw_co_code": "CO3",
+      "course_outcome": "CO3",
+      "co_description": "Analyse the performance of various sorting and searching techniques",
+      "bloom_level": "Analysing",
+      "marks": 3,
+      "marks_breakdown": null,
+      "topic_id": "DS_02",
+      "topic_name": "Searching and Sorting",
+      "needs_review": false,
+      "review_reason": null
+    }
+  }
+]

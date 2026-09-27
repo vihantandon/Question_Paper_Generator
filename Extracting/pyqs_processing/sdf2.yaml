@@ -1,0 +1,69 @@
+subject: SDF2
+subject_name: "Software Development Fundamentals - II"
+semester: 2
+
+
+course_outcomes:
+  CO1: "Explain various object-oriented concepts like class and objects, constructors, abstraction, data hiding (access specifies), etc."
+  CO2: "Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems."
+  CO3: "Apply SQL commands to create tables and perform various operations like insert, delete, select on tables."
+  CO4: "Analyze the source code for the possible Outcomes, exceptions and to debug the errors."
+  CO5: "Design and implement the class diagram for various real-life problems using OOPs."
+
+
+topics:
+  - id: SDF2_01
+    name: Introduction to OOP
+    co: [CO1]
+  - id: SDF2_02
+    name: "OOP Concepts using C++ (Classes, Objects, Constructors)"
+    co: [CO1]
+  - id: SDF2_03
+    name: Inheritance (C++)
+    co: [CO2]
+  - id: SDF2_04
+    name: Polymorphism (C++)
+    co: [CO2]
+  - id: SDF2_05
+    name: UML / Relationship Implementation
+    co: [CO5]
+  - id: SDF2_06
+    name: Exceptions, Templates, STL
+    co: [CO2, CO4]  
+  - id: SDF2_07
+    name: Introduction to Databases & SQL
+    co: [CO3]
+
+
+
+prerequisites:
+  - topic: SDF2_02
+    requires: SDF2_01
+    strength: hard
+  - topic: SDF2_02
+    requires: SDF1_06
+    strength: hard
+  - topic: SDF2_02
+    requires: SDF1_05
+    strength: hard
+  - topic: SDF2_03
+    requires: SDF2_02
+    strength: hard
+  - topic: SDF2_04
+    requires: SDF2_03
+    strength: hard
+  - topic: SDF2_05
+    requires: SDF2_03
+    strength: hard
+  - topic: SDF2_05
+    requires: SDF2_04
+    strength: soft
+  - topic: SDF2_06
+    requires: SDF2_02
+    strength: hard
+  - topic: SDF2_06
+    requires: SDF1_05
+    strength: soft
+  - topic: SDF2_07
+    requires: SDF1_02
+    strength: soft

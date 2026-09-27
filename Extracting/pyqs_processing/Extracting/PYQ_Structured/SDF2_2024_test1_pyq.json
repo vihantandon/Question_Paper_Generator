@@ -1,0 +1,121 @@
+[
+  {
+    "id": "SDF2_2024_test1_header",
+    "document": "POSSESSION OF MOBILES IN EXAM IS UFM PRACTICE.\nJaypee Institute of Information Technology, Noida\nT1 Examination, Even 2024\nB.Tech/Dual (CSE/IT/ECE) Semester II\nCourse Title : Software Development Fundamentals - II Maximum Time : 1 Hour\nCourse Code : 15B11CI211 Maximum Marks : 20\n\nCourse Outcomes:\nCO1 Explain various object-oriented concepts like class and objects, constructors, abstraction, data hiding (access specifiers) etc. Understand level (Level 2)\nCO2 Apply object-oriented concepts like inheritance, polymorphism and templates to various real-world problems. Apply level (Level 3)\nCO3 Apply SQL commands to create tables and perform various operations like insert, delete, select on tables. Apply level (Level 3)\nCO4 Analyze the source code for possible outcomes, exceptions and debugging the errors. Analyze level (Level 4)\nCO5 Design and implement the class diagrams for varied real life problems using OOPs. Create level (Level 5)\n\nNote: Attempt all questions:",
+    "metadata": {
+      "source": "PYQs\\T1 exam SDF 2.pdf",
+      "subject": "SDF2",
+      "subject_name": "Software Development Fundamentals - II",
+      "year": 2024,
+      "exam": "test1",
+      "type": "header"
+    }
+  },
+  {
+    "id": "SDF2_2024_test1_q1",
+    "document": "Q1. Design a C++ program that computes the annual tax of an employee. Assume, there is an Employee class having data members eid(int), eName(string) and annualSalary(double) and a TaxDeductibles class having data members eid(int), insurancePremium(double) and homeLoanInterest(double). Design a non-member function that can accept one object from both the classes and compute tax payable by an employee (eid should match with both the Employee and TaxDeductibles object) as per the following rules:\nA) The total deduction = insurance premium + home loan interest (Case 1).\nB) The maximum limit of insurance premium is 50,000. If any employee has insurance premium above 50,000 will be considered for deduction (Case 2).\nC) Annual tax = 10% of (annual salary- total deductions).\n\nTest Cases:\n1. Enter Employee Details... eid:123 eName: Rohit annualSalary: 1000000 Enter Tax Deductibles... eid: 123 insurancePremium: 40000 homeLoanInterest: 160000 Your Total deduction = 40000+160000 = 200000. Your Annual Tax =10% of (1000000-200000) = 80000.\n2. Enter Employee Details... eid:100 eName: Virat annualSalary: 1500000 Enter Tax Deductibles... eid: 100 insurancePremium: 50000 homeLoanInterest: 250000 Your Total deduction = 50000+250000 = 300000. Your Annual Tax =10% of (1500000-300000) = 120000.\n3. Enter Employee Details... eid:123 eName: Rohit annualSalary: 1000000 Enter Tax Deductibles... eid: 324 insurancePremium: 40000 homeLoanInterest: 160000 Sorry!! Unable to compute tax as the eid don't match.\nHere is the complete transcription of the page, preserving the printed text, handwritten notes, and code snippets exactly as they appear.\n\n### Handwritten Notes on the Page:\n*   On the left of",
+    "metadata": {
+      "source": "PYQs\\T1 exam SDF 2.pdf",
+      "subject": "SDF2",
+      "year": 2024,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 1,
+      "raw_co_code": "CO2",
+      "course_outcome": "CO2",
+      "co_description": "Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems.",
+      "bloom_level": "Apply",
+      "marks": 5,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO2' maps to 3 topics — pick one: SDF2_03 (Inheritance (C++)), SDF2_04 (Polymorphism (C++)), SDF2_06 (Exceptions, Templates, STL)"
+    }
+  },
+  {
+    "id": "SDF2_2024_test1_q3",
+    "document": "Q3: **DMA** (with an arrow pointing to the text)\n*   Under",
+    "metadata": {
+      "source": "PYQs\\T1 exam SDF 2.pdf",
+      "subject": "SDF2",
+      "year": 2024,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 3,
+      "raw_co_code": null,
+      "course_outcome": null,
+      "co_description": null,
+      "bloom_level": null,
+      "marks": null,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "no CO detected in question text"
+    }
+  },
+  {
+    "id": "SDF2_2024_test1_q2",
+    "document": "Q2: **$\\rightarrow$ Operator overloading**\n*   Under",
+    "metadata": {
+      "source": "PYQs\\T1 exam SDF 2.pdf",
+      "subject": "SDF2",
+      "year": 2024,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 2,
+      "raw_co_code": null,
+      "course_outcome": null,
+      "co_description": null,
+      "bloom_level": null,
+      "marks": null,
+      "marks_breakdown": null,
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "no CO detected in question text"
+    }
+  },
+  {
+    "id": "SDF2_2024_test1_q4",
+    "document": "Q4: **Output $\\rightarrow$ Banky** (or **Binary**)\n\nThe position of an object in 2-dimensional space in vector notation is represented as P=ax+by while the velocity of the object is represented as V=v1x+v2y. Assuming that the initial position of a boat in a lake is (ax+by)m from its starting point and its velocity is (v1x+v2y) m/s, the final position of the boat after t secs (t is a scaler) can be computed as (ax+by)+(v1x+v2y)*t from its initial position. Design a class whose objects can store the position and velocity of an object in 2D space in the given format and overload the + and * operator to get the final position. The initial position, velocity and the time interval must be entered by the user.                      ****\n\nCreate a Product class having data members as costPrice(double), markedPrice(double) and discount(double). A product is called a feasible product if and only if its selling price (marked price*(1-discount/100)) is greater than its cost price. Write a C++ program that will create any number of products dynamically. The program will terminate as soon as a product is created whose selling price falls b elow its cost price. All the products must be initialized via a parameterized constructor. Also display the number of feasible products created at the end.\n\n**Test Cases:**\n\n| Enter product details: <br> 1000 2000 15 <br> Cost price=1000, Marked price=2000, Discount=15%, Selling Price=1700 | Enter product details: <br> 5000 7000 10 <br> Cost price=5000, Marked price=7000, Discount=10%, Selling Price=6300 | Enter product details: <br> 1000 1200 20 <br> A total of 2 feasible products were created. |\n| :--- | :--- | :--- |\n\n                                                                                                                              ****\n\nFind the output with suitable explanation for the below given snippets:\n\n#### Snippet 1 (Left):\n```cpp\n#include<iosstream>\nusing namespace std;\nclass Number{\npublic:\nint x;\nNumber(){\nx=10;\n}\nNumber(int y = 5){\nx=y;\n}\nvoid display(){\ncout<<x;\n}\n};\nint main(){\nNumber obj1;\nobj1.display();\nreturn 0;\n}\n```\n\n#### Snippet 2 (Middle):\n```cpp\n#include<iosstream>\nvoid modifyArray(int *arr, int size){\nfor(int i=0;i<size;++i){\n*arr = (*arr++ * 2) + 5;\narr++;\n}\n}\nint main(){\nint arr[]={10,20,30,40,50};\nint len=sizeof(arr)/sizeof(arr[0]);\nmodifyArray(arr,len);\nstd::cout<<\"Modified Array:\";\nfor(int i=0;i<len;i++)\nstd::cout<<arr[i]<<\"\\t\";\nreturn 0;\n}\n```\n\n#### Snippet 3 (Right):\n```cpp\n#include<iosstream>\nvoid processArray(int* arr, int size){\nfor(int i=0;i<size;++i){\narr[i] = 2*arr[i] * 2;\n}\n}\nint main(){\nint * originalArray=new int[5];\nfor(int i=0;i<5;++i){\noriginalArray[i] = i*i + 1;\n}\nprocessArray(originalArray,5);\nfor(int i=0;i<5;++i){\nstd::cout<<originalArray[i]<<\"\\t\";\n}\ndelete[] originalArray;\nreturn 0;\n}\n```\n\n                                                                                                                              ****",
+    "metadata": {
+      "source": "PYQs\\T1 exam SDF 2.pdf",
+      "subject": "SDF2",
+      "year": 2024,
+      "exam": "test1",
+      "type": "question",
+      "question_number": 4,
+      "raw_co_code": "CO2",
+      "course_outcome": "CO2",
+      "co_description": "Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems.",
+      "bloom_level": "Apply",
+      "marks": 15,
+      "marks_breakdown": [
+        {
+          "raw_co_code": "CO2",
+          "co_short": "CO2",
+          "bloom_level": "Apply",
+          "marks": 4
+        },
+        {
+          "raw_co_code": "CO1",
+          "co_short": "CO1",
+          "bloom_level": "Understand",
+          "marks": 5
+        },
+        {
+          "raw_co_code": "CO1",
+          "co_short": "CO1",
+          "bloom_level": "Understand",
+          "marks": 6
+        }
+      ],
+      "topic_id": null,
+      "topic_name": null,
+      "needs_review": true,
+      "review_reason": "CO 'CO2' maps to 3 topics — pick one: SDF2_03 (Inheritance (C++)), SDF2_04 (Polymorphism (C++)), SDF2_06 (Exceptions, Templates, STL)"
+    }
+  }
+]
