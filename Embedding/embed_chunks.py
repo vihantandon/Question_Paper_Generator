@@ -14,7 +14,8 @@ from tqdm import tqdm
 CHROMA_HOST = "localhost"
 CHROMA_PORT = 8000
 COLLECTION_NAME = "book_content"
-PROCESSED_DIR = Path("Extracting/Processed")
+ROOT = Path(__file__).resolve().parent.parent
+PROCESSED_DIR = ROOT / "Extracting" / "Processed"
 
 EMBED_MODEL = "all-MiniLM-L6-v2"
 BATCH_SIZE = 64
@@ -22,6 +23,8 @@ BATCH_SIZE = 64
 def  load_all_chunks(processed_dir: Path):
     chunks = []
     for jsonl_file in processed_dir.glob("*_chunks.jsonl"):
+        if jsonl_file.name.endswith("_tutorial_chunks.jsonl"):
+            continue
         with open (jsonl_file, "r", encoding="utf-8") as f:
             for line in f:
                 if line.strip():

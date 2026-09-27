@@ -37,7 +37,7 @@ from pathlib import Path
 
 import yaml
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 
 CHROMA_HOST = "localhost"
 CHROMA_PORT = 8000
