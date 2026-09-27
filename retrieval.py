@@ -17,7 +17,7 @@ CHROMA_HOST , CHROMA_PORT , COLLECTION = "localhost" , 8080 , "book_content"
 
 def _query(collection , embed_fn , text , topic_id , n):
     res = collection.query(
-        query_embedings = [embed_fn(text)],
+        query_embeddings = [embed_fn(text)],
         n_results=n,
         where = {"$and": [{"topic_id": topic_id}, {"needs_review": False}]},
         include = ["documents" , "metadatas", "distances"],
@@ -50,4 +50,4 @@ if __name__ == "__main__":
                                     {"id": "ALGO_06", "name": "Dynamic Programming"},
                                     {"id": "SDF1_04", "name": "Pointers"}):
         print(c["role"], c["topic_id"], c["subject"], c["section"], c["pages"])
-        print("   ", c["text"][:120].replace("\n", " "))
+        print("   ", c["text"].replace("\n", " "))
