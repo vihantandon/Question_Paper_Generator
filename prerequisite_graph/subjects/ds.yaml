@@ -2,34 +2,25 @@ subject: DS
 subject_name: "Data Structures"
 semester: 3
 
-# NOTE: DRAFT COs — replace with your official syllabus text before use.
-course_outcomes:
-  CO1: "Understand and implement linear data structures and basic tree/graph representations."  # C210.1 — Remember, Understand
-  CO2: "Apply searching and sorting algorithms with time and space complexity analysis."          # C210.2 — Evaluate
-  CO3: "Implement hashing techniques and evaluate their efficiency."                              # C210.3 — Evaluate
-  CO4: "Design and apply advanced tree and heap structures for optimized data organization and retrieval."  # C210.4 — Apply
-  CO5: "Use graphs, special trees, and string data structures in solving computational problems." # C210.5 — Apply
 
-# COs according to 2024 PYQs
-# CO1: Explain abstract data types, memory allocation schemes. and need Of
-#     linear and non-linear data structures
-# CO2: Apply and implement various linear data Structures. like array,
-#     linked list, stack, and queue in different problems and applications
-# CO3: Analyse the performance or various sorting and searching techniques
-# CO4: Demonstrate and implement •sarious operations like search, traverse,
-#     insertion, deletion, etc. on different non-linear data structures
-# CO5: Apply appropriate data structure to design an efficient solution for
-#     given and identified problem
+course_outcomes:
+  CO1: "Explain abstract data types, memory allocation schemes, and need of linear and non-linear data structures"
+  CO2: "Apply and implement various linear data structures like array, linked list, stack, and queue in different problems and applications"
+  CO3: "Analyse the performance of various sorting and searching techniques"
+  CO4: "Demonstrate and implement various operations like search, traverse, insertion, deletion, etc. on different non-linear data structures"
+  CO5: "Apply appropriate data structure to design an efficient solution for given and identified problem"
+
+
 topics:
   - id: DS_01
     name: "Linear Data Structures (Array, Linked List, Stack, Queue)"
-    co: [CO1]
+    co: [CO1, CO2]  
   - id: DS_02
     name: Searching and Sorting
-    co: [CO2]
+    co: [CO3]
   - id: DS_03
     name: "Non-Linear DS: Multi List, Tree, Priority Queue (Heaps)"
-    co: [CO4]
+    co: [CO1, CO4]  
   - id: DS_04
     name: "Non-Linear DS: BST, AVL, RB Tree, B/B+ Tree"
     co: [CO4]
@@ -41,7 +32,7 @@ topics:
     co: [CO5]
   - id: DS_07
     name: "Hashing (Hash Tables, Collision Resolution)"
-    co: [CO3]
+    co: [CO5]
 
 prerequisites:
   - topic: DS_01

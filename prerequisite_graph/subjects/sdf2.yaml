@@ -2,20 +2,14 @@ subject: SDF2
 subject_name: "Software Development Fundamentals - II"
 semester: 2
 
-# NOTE: DRAFT COs — replace with your official syllabus text before use.
-course_outcomes:
-  CO1: "Explain various object-oriented concepts like class and objects, friend function, function and operator overloading, etc."  # official CO1
-  CO2: "Apply and implement the relationships of association, aggregation, composition, and inheritance"  # official CO2
-  CO3: "Apply SQL commands to create tables and perform various operations like insert, delete, select, etc."  # official CO3
-  CO4: "Analyze the output of the source code and able to debug the errors"  # official CO4 — see note above, unmapped
-  CO5: "Design the class diagram for real life problems and implement it using virtual functions, abstract classes, templates, and exception handling"  # official CO5
 
-# COs according to 2024 PYQs
-# CO1: Explain various object-oriented concepts like class and objects, constructors, abstraction, data hiding (access specifies), etc.
-# CO2: Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems.
-# CO3: Apply SQL commands to create tables and perform various operations like insert, delete, select on tables.
-# CO4: Analyze the source code for the possible Outcomes, exceptions and to debug the errors.
-# CO5: Design and implement the class diagram for various real-life problems using OOPs.
+course_outcomes:
+  CO1: "Explain various object-oriented concepts like class and objects, constructors, abstraction, data hiding (access specifies), etc."
+  CO2: "Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems."
+  CO3: "Apply SQL commands to create tables and perform various operations like insert, delete, select on tables."
+  CO4: "Analyze the source code for the possible Outcomes, exceptions and to debug the errors."
+  CO5: "Design and implement the class diagram for various real-life problems using OOPs."
+
 
 topics:
   - id: SDF2_01
@@ -23,22 +17,23 @@ topics:
     co: [CO1]
   - id: SDF2_02
     name: "OOP Concepts using C++ (Classes, Objects, Constructors)"
-    co: [CO1, CO4]  
+    co: [CO1]
   - id: SDF2_03
     name: Inheritance (C++)
-    co: [CO2, CO4]
+    co: [CO2]
   - id: SDF2_04
     name: Polymorphism (C++)
-    co: [CO1, CO4, CO5]  
+    co: [CO2]
   - id: SDF2_05
     name: UML / Relationship Implementation
-    co: [CO2, CO5]  
+    co: [CO5]
   - id: SDF2_06
     name: Exceptions, Templates, STL
-    co: [CO5]
+    co: [CO2, CO4]  
   - id: SDF2_07
     name: Introduction to Databases & SQL
     co: [CO3]
+
 
 
 prerequisites:
