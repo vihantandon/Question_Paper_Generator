@@ -1,6 +1,6 @@
 [
   {
-    "id": "end_term_ds_header",
+    "id": "end_term_ds_2024_header",
     "document": "Course Title: Data Structures (15B11C1311). Institute: Jaypee Institute of Information Technology, Noida. Exam: End Term Examination, ODD 2024 (B.Tech III Semester). Max Time: 2 hr. Max Marks: 35.",
     "metadata": {
       "source": "End Term DS_2.pdf",
@@ -13,7 +13,7 @@
     }
   },
   {
-    "id": "end_term_ds_q1",
+    "id": "end_term_ds_2024_q1",
     "document": "Q1. The T&P cell maintains (insert, delete, update) the record of offered packages to the students which are unique. Propose an efficient and customized non-linear data structure to retrieve lowest, highest, and median packages along with algorithms.",
     "metadata": {
       "source": "End Term DS_2.pdf",
@@ -31,7 +31,7 @@
     }
   },
   {
-    "id": "end_term_ds_q2",
+    "id": "end_term_ds_2024_q2",
     "document": "Q2. Trace quicksort partition function fun() on integer array A=[10,9,2,19,23,32,4,7,46,18] and state the updated values of array A after execution.",
     "metadata": {
       "source": "End Term DS_2.pdf",
@@ -45,7 +45,7 @@
     }
   },
   {
-    "id": "end_term_ds_q3",
+    "id": "end_term_ds_2024_q3",
     "document": "Q3. Binomial heap union H3 = H1 + H2. H1 contains trees of order 5, 6, 8. H2 contains trees of order 4, 5, 9. (a) Find order of trees in H3 after union. (b) Calculate total nodes at level 3 of H3.",
     "metadata": {
       "source": "End Term DS_2.pdf",
@@ -63,7 +63,7 @@
     }
   },
   {
-    "id": "end_term_ds_q4",
+    "id": "end_term_ds_2024_q4",
     "document": "Q4. Given string S='CALCUTTA'. (a) Create a suffix array Ar for finding substring 'CALC'. (b) Show intermediate steps and count the number of times array Ar is accessed during search.",
     "metadata": {
       "source": "End Term DS_2.pdf",
@@ -81,7 +81,7 @@
     }
   },
   {
-    "id": "end_term_ds_q5",
+    "id": "end_term_ds_2024_q5",
     "document": "Q5. Given an expression containing different types of brackets [, (, ), ], implement a function to check whether the expression is balanced using both stack & queue.",
     "metadata": {
       "source": "End Term DS_2.pdf",
@@ -99,7 +99,7 @@
     }
   },
   {
-    "id": "end_term_ds_q6",
+    "id": "end_term_ds_2024_q6",
     "document": "Q6. Integer array A=[10,9,2,19,23,32,4,7,46,18]. Draw the segment tree showing indexes and values of each node for range sum query (RSQ).",
     "metadata": {
       "source": "End Term DS_2.pdf",
@@ -117,7 +117,7 @@
     }
   },
   {
-    "id": "end_term_ds_q7",
+    "id": "end_term_ds_2024_q7",
     "document": "Q7. Communication network optimization for 'n' integrated circuits to eliminate short circuits (cycles) and minimize total wire length (Minimum Spanning Tree). Show steps for given circuit graph.",
     "metadata": {
       "source": "End Term DS_2.pdf",
