@@ -1,0 +1,83 @@
+[
+  {
+    "id": "t2_sdf1_2023_header",
+    "document": "Course Title: Software Development Fundamentals-1 (15B11C1111). Institute: Jaypee Institute of Information Technology, Noida. Exam: Test-2 Examination, ODD 2023 (B.Tech 1st Semester). Max Time: 1 Hour. Max Marks: 20.",
+    "metadata": {
+      "source": "T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "subject_name": "Software Development Fundamentals - I",
+      "semester": 1,
+      "type": "header"
+    }
+  },
+  {
+    "id": "t2_sdf1_2023_q1",
+    "document": "Q1. Write a function in C taking an integer argument and returning sum of its factors. Call and print sum in main.",
+    "metadata": {
+      "source": "T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "question_number": 1,
+      "course_outcome": "CO4",
+      "co_description": "Apply and implement functions with or without pointers for different problems",
+      "topic_id": "SDF1_05",
+      "topic_name": "Functions",
+      "marks": 4
+    }
+  },
+  {
+    "id": "t2_sdf1_2023_q2",
+    "document": "Q2. C program to find the number with highest frequency in an array of non-negative integers (<10). Return smallest number in case of ties.",
+    "metadata": {
+      "source": "T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "question_number": 2,
+      "course_outcome": "CO2",
+      "co_description": "Explain various data types, memory allocation schemes, precedence of arithmetical and logical operations, and need of array and structures",
+      "topic_id": "SDF1_03",
+      "topic_name": "Arrays",
+      "marks": 4
+    }
+  },
+  {
+    "id": "t2_sdf1_2023_q3",
+    "document": "Q3. C program on square matrix A: find max in upper triangular and min in lower triangular. Print 'Traceable' if sum equals leading diagonal sum, else 'Non-Traceable'.",
+    "metadata": {
+      "source": "T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "question_number": 3,
+      "course_outcome": "CO2",
+      "co_description": "Explain various data types, memory allocation schemes, precedence of arithmetical and logical operations, and need of array and structures",
+      "topic_id": "SDF1_03",
+      "topic_name": "Arrays",
+      "marks": 6
+    }
+  },
+  {
+    "id": "t2_sdf1_2023_q4",
+    "document": "Q4. C program to reverse each word in a string while preserving original word order, accessing string via pointers.",
+    "metadata": {
+      "source": "T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "question_number": 4,
+      "course_outcome": "CO4",
+      "co_description": "Apply and implement functions with or without pointers for different problems",
+      "topic_id": "SDF1_04",
+      "topic_name": "Pointers",
+      "marks": 4
+    }
+  },
+  {
+    "id": "t2_sdf1_2023_q5",
+    "document": "Q5. Analyze code output for character array copy loop using string pointer strlen(s) and write explanation.",
+    "metadata": {
+      "source": "T2 SDF 1.pdf",
+      "subject": "SDF1",
+      "question_number": 5,
+      "course_outcome": "CO4",
+      "co_description": "Apply and implement functions with or without pointers for different problems",
+      "topic_id": "SDF1_04",
+      "topic_name": "Pointers",
+      "marks": 2
+    }
+  }
+]

@@ -1,0 +1,69 @@
+[
+  {
+    "id": "t1_aps_2025_header",
+    "document": "Course Title: Algorithms and Problem-Solving (15B11C1411). Institute: Jaypee Institute of Information Technology, Noida. Exam: Test-I Examination, 2025 (B.Tech 4th Semester). Max Time: 1 Hr. Max Marks: 20.",
+    "metadata": {
+      "source": "T1 APS.pdf",
+      "subject": "ALGO",
+      "subject_name": "Algorithms and Problem Solving",
+      "semester": 4,
+      "type": "header"
+    }
+  },
+  {
+    "id": "t1_aps_2025_q1",
+    "document": "Q1. Consider the function f() with nested loops calling A(n). (i) Return value of function A is Theta(F(n)). Find F(n). (ii) Time complexity of function f() in terms of n.",
+    "metadata": {
+      "source": "T1 APS.pdf",
+      "subject": "ALGO",
+      "question_number": 1,
+      "course_outcome": "CO1",
+      "co_description": "Analyze the complexity of different algorithms using asymptotic analysis.",
+      "topic_id": "ALGO_01",
+      "topic_name": "Introduction: Asymptotic Analysis, Sorting/Searching Review",
+      "marks": 4
+    }
+  },
+  {
+    "id": "t1_aps_2025_q2",
+    "document": "Q2. A string S is nice if every letter appears both in uppercase and lowercase. Find longest substring that is nice. (i) Propose a divide and conquer algorithm and pseudocode. (ii) Trace for 'EabcABCde'. (iii) Derive Big O time complexity.",
+    "metadata": {
+      "source": "T1 APS.pdf",
+      "subject": "ALGO",
+      "question_number": 2,
+      "course_outcome": "CO2",
+      "co_description": "Select an appropriate data structure and apply related operations for a given problem.",
+      "topic_id": "ALGO_03",
+      "topic_name": "Divide and Conquer",
+      "marks": 6
+    }
+  },
+  {
+    "id": "t1_aps_2025_q3",
+    "document": "Q3. Code fragment analysis for function1 searching for x in array a[]. (i) Determine functionality for sorted array where >half elements equal x. Compute best and worst case time complexity. (ii) Implement optimal version with pseudocode and worst-case complexity.",
+    "metadata": {
+      "source": "T1 APS.pdf",
+      "subject": "ALGO",
+      "question_number": 3,
+      "course_outcome": "CO1",
+      "co_description": "Analyze the complexity of different algorithms using asymptotic analysis.",
+      "topic_id": "ALGO_01",
+      "topic_name": "Introduction: Asymptotic Analysis, Sorting/Searching Review",
+      "marks": 5
+    }
+  },
+  {
+    "id": "t1_aps_2025_q4",
+    "document": "Q4. Backtracking solution for TSP problem on 5-node graph (A to E). (i) Design state space tree. (ii) Minimum cost to visit all cities starting from A.",
+    "metadata": {
+      "source": "T1 APS.pdf",
+      "subject": "ALGO",
+      "question_number": 4,
+      "course_outcome": "CO2",
+      "co_description": "Select an appropriate data structure and apply related operations for a given problem.",
+      "topic_id": "ALGO_05",
+      "topic_name": "Backtracking Algorithms",
+      "marks": 5
+    }
+  }
+]

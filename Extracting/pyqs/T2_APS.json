@@ -1,0 +1,69 @@
+[
+  {
+    "id": "t2_aps_2025_header",
+    "document": "Course Title: Algorithms and Problem Solving (15B11C1411). Institute: Jaypee Institute of Information Technology, Noida. Exam: TEST2 Examination, 2025 (BTech/Dual CSE 4th Semester). Max Time: 1 Hr. Max Marks: 20.",
+    "metadata": {
+      "source": "T2 Aps.pdf",
+      "subject": "ALGO",
+      "subject_name": "Algorithms and Problem Solving",
+      "semester": 4,
+      "type": "header"
+    }
+  },
+  {
+    "id": "t2_aps_2025_q1",
+    "document": "Q1. Ford-Fulkerson network flow with DFS. (a) Compute maximum flow from S to T and show augmenting paths. (b) Worst-case time complexity. (c) Compare DFS vs BFS performance in finding augmenting paths.",
+    "metadata": {
+      "source": "T2 Aps.pdf",
+      "subject": "ALGO",
+      "question_number": 1,
+      "course_outcome": "CO1",
+      "co_description": "Analyze the complexity of different algorithms using asymptotic analysis.",
+      "topic_id": "ALGO_08",
+      "topic_name": "Problem Spaces and Search (BFS/DFS/A*)",
+      "marks": 5
+    }
+  },
+  {
+    "id": "t2_aps_2025_q2",
+    "document": "Q2. Project scheduling with deadlines and profits. Develop greedy algorithmic approach and pseudocode to maximize profit and find optimal schedule.",
+    "metadata": {
+      "source": "T2 Aps.pdf",
+      "subject": "ALGO",
+      "question_number": 2,
+      "course_outcome": "CO3",
+      "co_description": "Apply algorithmic principles for solving a given problem.",
+      "topic_id": "ALGO_04",
+      "topic_name": "Greedy Algorithms",
+      "marks": 4
+    }
+  },
+  {
+    "id": "t2_aps_2025_q3",
+    "document": "Q3. File merging problem for sales reports of varying sizes. (a) Optimal merge pattern algorithm. (b) Calculate minimum merge cost for report sizes [5, 8, 3, 6, 2, 9, 4, 7] MB.",
+    "metadata": {
+      "source": "T2 Aps.pdf",
+      "subject": "ALGO",
+      "question_number": 3,
+      "course_outcome": "CO4",
+      "co_description": "Identify, formulate and design an efficient solution to a given problem using appropriate data structure and algorithm design technique.",
+      "topic_id": "ALGO_04",
+      "topic_name": "Greedy Algorithms",
+      "marks": 4
+    }
+  },
+  {
+    "id": "t2_aps_2025_q4",
+    "document": "Q4. String matching for pattern P='BARBARIC'. (a) KMP algorithm detection, LPS table role and construction. (b) Construct finite automaton for alphabet set (A,B,C,D,E,I,R).",
+    "metadata": {
+      "source": "T2 Aps.pdf",
+      "subject": "ALGO",
+      "question_number": 4,
+      "course_outcome": "CO3",
+      "co_description": "Apply algorithmic principles for solving a given problem.",
+      "topic_id": "ALGO_07",
+      "topic_name": "String Algorithms",
+      "marks": 7
+    }
+  }
+]

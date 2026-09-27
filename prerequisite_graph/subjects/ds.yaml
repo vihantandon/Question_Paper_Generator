@@ -10,6 +10,16 @@ course_outcomes:
   CO4: "Design and apply advanced tree and heap structures for optimized data organization and retrieval."  # C210.4 — Apply
   CO5: "Use graphs, special trees, and string data structures in solving computational problems." # C210.5 — Apply
 
+# COs according to 2024 PYQs
+# CO1: Explain abstract data types, memory allocation schemes. and need Of
+#     linear and non-linear data structures
+# CO2: Apply and implement various linear data Structures. like array,
+#     linked list, stack, and queue in different problems and applications
+# CO3: Analyse the performance or various sorting and searching techniques
+# CO4: Demonstrate and implement •sarious operations like search, traverse,
+#     insertion, deletion, etc. on different non-linear data structures
+# CO5: Apply appropriate data structure to design an efficient solution for
+#     given and identified problem
 topics:
   - id: DS_01
     name: "Linear Data Structures (Array, Linked List, Stack, Queue)"

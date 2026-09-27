@@ -10,6 +10,12 @@ course_outcomes:
   CO4: "Analyze the output of the source code and able to debug the errors"  # official CO4 — see note above, unmapped
   CO5: "Design the class diagram for real life problems and implement it using virtual functions, abstract classes, templates, and exception handling"  # official CO5
 
+# COs according to 2024 PYQs
+# CO1: Explain various object-oriented concepts like class and objects, constructors, abstraction, data hiding (access specifies), etc.
+# CO2: Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems.
+# CO3: Apply SQL commands to create tables and perform various operations like insert, delete, select on tables.
+# CO4: Analyze the source code for the possible Outcomes, exceptions and to debug the errors.
+# CO5: Design and implement the class diagram for various real-life problems using OOPs.
 
 topics:
   - id: SDF2_01

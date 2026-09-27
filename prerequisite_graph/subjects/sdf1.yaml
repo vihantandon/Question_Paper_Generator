@@ -13,6 +13,17 @@ course_outcomes:
   CO4: "Apply and implement functions with or without pointers for different problems"  # C109.4
   CO5: "Demonstrate and implement various operations like traverse, insertion, deletion, etc. on files"  # C109.5
 
+# COs according to 2024 PYQs
+# CO1: Explain the logic for solving problems considering various phases Of
+# software development life cycle and depicting them using algorithm and
+# flowcharts.
+# CO2: Explain basics of C programming concepts to make decision for solving
+# problems.
+# CO3: Demonstrate and contrast different methods for writing modular programs in C
+# CO4: Use various C programming constructs to implement iteration, and
+# recursion
+# CO5: Apply and implement arrays, pointers, Structures and file handling for
+# solving real world problems
 
 topics:
   - id: SDF1_01

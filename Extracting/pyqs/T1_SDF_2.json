@@ -1,0 +1,69 @@
+[
+  {
+    "id": "t1_sdf2_2024_header",
+    "document": "Course Title: Software Development Fundamentals - II (15B11C1211). Institute: Jaypee Institute of Information Technology, Noida. Exam: T1 Examination, Even 2024 (B.Tech/Dual Semester II). Max Time: 1 Hour. Max Marks: 20.",
+    "metadata": {
+      "source": "T1 exam SDF 2.pdf",
+      "subject": "SDF2",
+      "subject_name": "Software Development Fundamentals - II",
+      "semester": 2,
+      "type": "header"
+    }
+  },
+  {
+    "id": "t1_sdf2_2024_q1",
+    "document": "Q1. Design an Employee class and TaxDeductibles class in C++. Implement a friend function to calculate annual tax payable based on matching employee ID (eid) and deduction conditions.",
+    "metadata": {
+      "source": "T1 exam SDF 2.pdf",
+      "subject": "SDF2",
+      "question_number": 1,
+      "course_outcome": "CO1",
+      "co_description": "Explain various object-oriented concepts like class and objects, friend function, function and operator overloading, etc.",
+      "topic_id": "SDF2_02",
+      "topic_name": "OOP Concepts using C++ (Classes, Objects, Constructors)",
+      "marks": 5
+    }
+  },
+  {
+    "id": "t1_sdf2_2024_q2",
+    "document": "Q2. Design a 2D vector position/velocity class and overload the + and * operators to calculate final boat position after time t from initial position (ax+by) and velocity (v1x+v2y).",
+    "metadata": {
+      "source": "T1 exam SDF 2.pdf",
+      "subject": "SDF2",
+      "question_number": 2,
+      "course_outcome": "CO1",
+      "co_description": "Explain various object-oriented concepts like class and objects, friend function, function and operator overloading, etc.",
+      "topic_id": "SDF2_04",
+      "topic_name": "Polymorphism (C++)",
+      "marks": 4
+    }
+  },
+  {
+    "id": "t1_sdf2_2024_q3",
+    "document": "Q3. Product class with costPrice, markedPrice, discount. Write C++ program creating dynamic products via parameterized constructor and terminate when selling price falls below cost price, returning count of feasible products.",
+    "metadata": {
+      "source": "T1 exam SDF 2.pdf",
+      "subject": "SDF2",
+      "question_number": 3,
+      "course_outcome": "CO1",
+      "co_description": "Explain various object-oriented concepts like class and objects, friend function, function and operator overloading, etc.",
+      "topic_id": "SDF2_02",
+      "topic_name": "OOP Concepts using C++ (Classes, Objects, Constructors)",
+      "marks": 5
+    }
+  },
+  {
+    "id": "t1_sdf2_2024_q4",
+    "document": "Q4. Predict and explain output for 3 code snippets: (a) Ambiguous default vs parameterized constructor call in Number obj1. (b) Pointer arithmetic and array modification in modifyArray function. (c) Dynamic array allocation, modification via processArray function, and memory deletion.",
+    "metadata": {
+      "source": "T1 exam SDF 2.pdf",
+      "subject": "SDF2",
+      "question_number": 4,
+      "course_outcome": "CO4",
+      "co_description": "Analyze the output of the source code and able to debug the errors",
+      "topic_id": "SDF2_02",
+      "topic_name": "OOP Concepts using C++ (Classes, Objects, Constructors)",
+      "marks": 6
+    }
+  }
+]

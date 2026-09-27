@@ -1,0 +1,97 @@
+[
+  {
+    "id": "t1_dsa_2024_header",
+    "document": "Course Title: Data Structures (15B11C1311). Institute: Jaypee Institute of Information Technology, Noida. Exam: T1 Examination, Odd 2024 (B.Tech III Semester). Max Time: 01 Hr. Max Marks: 20.",
+    "metadata": {
+      "source": "T1 Dsa.pdf",
+      "subject": "DS",
+      "subject_name": "Data Structures",
+      "semester": 3,
+      "type": "header"
+    }
+  },
+  {
+    "id": "t1_dsa_2024_q1",
+    "document": "Q1. Fill missing code statements in lines 4, 9, and 12 for iterative linked list reversal function reverseList(LinkedList l).",
+    "metadata": {
+      "source": "T1 Dsa.pdf",
+      "subject": "DS",
+      "question_number": 1,
+      "course_outcome": "CO1",
+      "co_description": "Understand and implement linear data structures and basic tree/graph representations.",
+      "topic_id": "DS_01",
+      "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+      "marks": 5
+    }
+  },
+  {
+    "id": "t1_dsa_2024_q2",
+    "document": "Q2. Apply insertion sort to sort the contents of a singly linked list starting with head pointer using insertionSort(LLNode * head).",
+    "metadata": {
+      "source": "T1 Dsa.pdf",
+      "subject": "DS",
+      "question_number": 2,
+      "course_outcome": "CO2",
+      "co_description": "Apply searching and sorting algorithms with time and space complexity analysis.",
+      "topic_id": "DS_02",
+      "topic_name": "Searching and Sorting",
+      "marks": 5
+    }
+  },
+  {
+    "id": "t1_dsa_2024_q3",
+    "document": "Q3. Propose a circular array queue data structure to eliminate false overflow and element shifting. Write enQ(int* Q, int size, int info) and int deQ(int* Q, int size) functions with overflow/underflow handling.",
+    "metadata": {
+      "source": "T1 Dsa.pdf",
+      "subject": "DS",
+      "question_number": 3,
+      "course_outcome": "CO2",
+      "co_description": "Apply searching and sorting algorithms with time and space complexity analysis.",
+      "topic_id": "DS_01",
+      "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+      "marks": 4
+    }
+  },
+  {
+    "id": "t1_dsa_2024_q4",
+    "document": "Q4. Arrange integer array elements (1..8) for Quicksort under 4 conditions: (a) First element pivot, max swaps. (b) Last element pivot, min swaps. (c) Mid element pivot, min swaps. (d) First element pivot, min swaps.",
+    "metadata": {
+      "source": "T1 Dsa.pdf",
+      "subject": "DS",
+      "question_number": 4,
+      "course_outcome": "CO3",
+      "co_description": "Implement hashing techniques and evaluate their efficiency.",
+      "topic_id": "DS_02",
+      "topic_name": "Searching and Sorting",
+      "marks": 2
+    }
+  },
+  {
+    "id": "t1_dsa_2024_q5",
+    "document": "Q5. Analyze C recursion functions and trace outputs step-by-step: (a) Mutual recursion with abc1(7) and abc2(). (b) Nested recursive calls Xf(10) with condition num > 8.",
+    "metadata": {
+      "source": "T1 Dsa.pdf",
+      "subject": "DS",
+      "question_number": 5,
+      "course_outcome": "CO1",
+      "co_description": "Understand and implement linear data structures and basic tree/graph representations.",
+      "topic_id": "DS_01",
+      "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+      "marks": 3
+    }
+  },
+  {
+    "id": "t1_dsa_2024_q6",
+    "document": "Q6. Analyze correctness of statements: (a) Interpolation Search vs Binary Search. (b) Binary Search vs Linear Search. (c) Finding top 5 elements from 1000 items (Selection/Bubble vs Merge sort comparisons).",
+    "metadata": {
+      "source": "T1 Dsa.pdf",
+      "subject": "DS",
+      "question_number": 6,
+      "course_outcome": "CO3",
+      "co_description": "Implement hashing techniques and evaluate their efficiency.",
+      "topic_id": "DS_02",
+      "topic_name": "Searching and Sorting",
+      "marks": 1
+    }
+  }
+]

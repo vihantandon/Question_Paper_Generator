@@ -1,0 +1,97 @@
+[
+  {
+    "id": "end_term_sdf1_2023_header",
+    "document": "Course Title: Software Development Fundamentals - 1 (15B11CI111). Institute: Jaypee Institute of Information Technology, Noida. Exam: End-Term Examination, 2023 (1st Semester). Max Time: 2 hr. Max Marks: 35.",
+    "metadata": {
+      "source": "End Term Sdf 1.pdf",
+      "subject": "SDF1",
+      "subject_name": "Software Development Fundamentals - I",
+      "semester": 1,
+      "type": "header"
+    }
+  },
+  {
+    "id": "end_term_sdf1_2023_q1",
+    "document": "Q1. Draw flowchart for finding all roots of N quadratic equations (ax^2 + bx + c = 0) and state whether roots are real & equal, real & unequal, or imaginary.",
+    "metadata": {
+      "source": "End Term Sdf 1.pdf",
+      "subject": "SDF1",
+      "question_number": 1,
+      "course_outcome": "CO3",
+      "co_description": "Design the flow chart and write the high level code for different problems",
+      "topic_id": "SDF1_01",
+      "topic_name": "Introduction to SDLC & Problem Solving",
+      "marks": 4
+    }
+  },
+  {
+    "id": "end_term_sdf1_2023_q2",
+    "document": "Q2. Given unsorted array Arr of N numbers, rearrange elements into alternate positive and negative numbers without changing relative order.",
+    "metadata": {
+      "source": "End Term Sdf 1.pdf",
+      "subject": "SDF1",
+      "question_number": 2,
+      "course_outcome": "CO2",
+      "co_description": "Explain various data types, memory allocation schemes, precedence of arithmetical and logical operations, and need of array and structures",
+      "topic_id": "SDF1_03",
+      "topic_name": "Arrays",
+      "marks": 6
+    }
+  },
+  {
+    "id": "end_term_sdf1_2023_q3",
+    "document": "Q3. C function isValid() to validate IPv4 dot-decimal address string (0-255 per octet, reject leading zeros) without using strtok().",
+    "metadata": {
+      "source": "End Term Sdf 1.pdf",
+      "subject": "SDF1",
+      "question_number": 3,
+      "course_outcome": "CO4",
+      "co_description": "Apply and implement functions with or without pointers for different problems",
+      "topic_id": "SDF1_05",
+      "topic_name": "Functions",
+      "marks": 6
+    }
+  },
+  {
+    "id": "end_term_sdf1_2023_q4",
+    "document": "Q4. Write a recursive function to print the Aliquot Sequence for a given number 'n' (sum of proper divisors), stopping upon sequence repetition or 0.",
+    "metadata": {
+      "source": "End Term Sdf 1.pdf",
+      "subject": "SDF1",
+      "question_number": 4,
+      "course_outcome": "CO4",
+      "co_description": "Apply and implement functions with or without pointers for different problems",
+      "topic_id": "SDF1_05",
+      "topic_name": "Functions",
+      "marks": 6
+    }
+  },
+  {
+    "id": "end_term_sdf1_2023_q5",
+    "document": "Q5. C program storing student records (Science/Arts streams) in a single structure minimizing memory (unions/structs), ranking top 3 based on average marks with tie-breakers.",
+    "metadata": {
+      "source": "End Term Sdf 1.pdf",
+      "subject": "SDF1",
+      "question_number": 5,
+      "course_outcome": "CO2",
+      "co_description": "Explain various data types, memory allocation schemes, precedence of arithmetical and logical operations, and need of array and structures",
+      "topic_id": "SDF1_06",
+      "topic_name": "Structures and Unions",
+      "marks": 7
+    }
+  },
+  {
+    "id": "end_term_sdf1_2023_q6",
+    "document": "Q6. C program reading file 'MobileNumberRecord' of MobileNo structs (area, extension) and filtering numbers divisible by sum of digits of area code into new file 'Filtered'.",
+    "metadata": {
+      "source": "End Term Sdf 1.pdf",
+      "subject": "SDF1",
+      "question_number": 6,
+      "course_outcome": "CO5",
+      "co_description": "Demonstrate and implement various operations like traverse, insertion, deletion, etc. on files",
+      "topic_id": "SDF1_07",
+      "topic_name": "File Handling",
+      "marks": 6
+    }
+  }
+]
