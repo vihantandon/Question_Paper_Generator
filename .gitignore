@@ -1,5 +1,5 @@
 # Ignore local ChromaDB database files
 chroma_data/
-Processed/
-*.jsonl
+#Processed/
+#*.jsonl
 .env
