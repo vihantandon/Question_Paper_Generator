@@ -1,0 +1,25 @@
+# Python 3.10+   (install with:  pip install -r requirements.txt)
+# The Neo4j loader has its own small list in prerequisite_graph/loader/requirements.txt
+# (that one is only used inside its Docker image).
+
+# --- core: databases, embeddings, pipeline -------------------------------
+# chromadb client must match the chromadb/chroma Docker image major version (1.x)
+chromadb>=1.0
+# sentence-transformers also installs PyTorch (large download, first time only)
+sentence-transformers>=2.7
+tqdm
+pyyaml>=6.0
+neo4j>=5.20
+langgraph>=0.2
+
+# --- extraction: only needed to re-extract PDFs ---------------------------
+# PyMuPDF (imported as "fitz" / "pymupdf")
+pymupdf>=1.24
+python-dotenv
+pillow
+# Gemini, for Extracting/tutorial_chunks.py
+google-genai
+# OpenRouter vision model, for Extracting/pyqs_processing/pdf_extract_full.py
+openai
+# Extracting/pyqs_processing/model_search.py
+groq

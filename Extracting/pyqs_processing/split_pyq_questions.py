@@ -1,4 +1,23 @@
 # split_pyq_questions.py
+"""
+Step 2 of the PYQ pipeline: page texts -> one atomic record per question.
+
+    Extracting/Processed/pyq_pages/*_pages.jsonl
+        -> Extracting/Processed/pyq_structured/<SUBJ>_<year>_<exam>_pyq.json
+
+COs and topics come from prerequisite_graph/subjects/*.yaml -- the SAME
+files the Neo4j loader reads (there is no second copy any more), so a CO you
+edit there is what PYQ tagging uses too.
+
+All paths are found relative to this file, so it runs from any folder:
+    python Extracting/pyqs_processing/split_pyq_questions.py
+
+WARNING: this REWRITES the *_pyq.json files. Any hand fixes you made in them
+(e.g. a topic_id you set manually) are lost. Use --out-dir to write
+somewhere else and compare first.
+Next step: embed_pyqs.py
+"""
+import argparse
 import difflib
 import json
 import re
@@ -7,10 +26,12 @@ from pathlib import Path
 
 import yaml
 
-PAGES_DIR = Path("Extracting/Processed")
-# Output now lives in its own folder, separate from the raw page-level
-# jsonl files in Extracting/Processed, so the two don't get mixed together.
-OUT_DIR = Path("Extracting/PYQ_Structured")
+HERE = Path(__file__).resolve().parent            # Extracting/pyqs_processing
+ROOT = HERE.parent.parent                          # repo root
+PROCESSED = ROOT / "Extracting" / "Processed"
+PAGES_DIR = PROCESSED / "pyq_pages"                # input  (from pdf_extract_full.py)
+OUT_DIR = PROCESSED / "pyq_structured"             # output (read by embed_pyqs.py)
+SUBJECTS_DIR = ROOT / "prerequisite_graph" / "subjects"   # single source of truth
 
 # Question boundary. The trailing punctuation after the number is OPTIONAL
 # ("Q.1 Add code..." has no ":"/"." right after the "1", just whitespace),
@@ -413,10 +434,10 @@ def process_pages_file(pages_path: Path, subject_yamls: dict) -> list[dict]:
 
 
 def process_all(pages_dir=PAGES_DIR, out_dir=OUT_DIR, yaml_paths=None):
-    yaml_paths = yaml_paths or ["subjects/sdf1.yaml", 
-                                "subjects/sdf2.yaml", 
-                                "subjects/ds.yaml", 
-                                "subjects/algo.yaml"]
+    pages_dir, out_dir = Path(pages_dir), Path(out_dir)
+    yaml_paths = yaml_paths or sorted(str(p) for p in SUBJECTS_DIR.glob("*.y*ml"))
+    if not yaml_paths:
+        raise SystemExit(f"No subject YAMLs found in {SUBJECTS_DIR}")
     subject_yamls = load_subject_yamls(yaml_paths)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -432,4 +453,9 @@ def process_all(pages_dir=PAGES_DIR, out_dir=OUT_DIR, yaml_paths=None):
 
 
 if __name__ == "__main__":
-    process_all()
+    ap = argparse.ArgumentParser(description="page-level PYQ jsonl -> one record per question")
+    ap.add_argument("--pages-dir", default=str(PAGES_DIR))
+    ap.add_argument("--out-dir", default=str(OUT_DIR),
+                    help="where *_pyq.json go (existing files there are overwritten)")
+    args = ap.parse_args()
+    process_all(args.pages_dir, args.out_dir)

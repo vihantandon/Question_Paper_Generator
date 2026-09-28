@@ -101,6 +101,101 @@ This split is reasonable if you want modularity or expect other tools/clients to
 | PDF rendering | HTML/CSS template → headless-browser render (e.g. Playwright/Puppeteer), or a PDF library — deterministic step, not agent-driven |
 | QA cache | Key-value or vector store (e.g. Redis, or a dedicated Chroma collection) keyed on topic + CO + Bloom's + marks, storing validated questions + metadata |
 
+## Quick start
+
+Requires Docker Desktop and Python 3.10+. Run everything from the repo root.
+
+```bash
+# one-time setup
+python -m venv .venv
+.venv\Scripts\activate            # Windows  (Linux/macOS: source .venv/bin/activate)
+pip install -r requirements.txt
+copy .env.example .env             # Windows  (Linux/macOS: cp .env.example .env)
+
+# 1. start Neo4j + Chroma + Redis
+docker compose up -d
+
+# 2. load the subject YAMLs into Neo4j
+#    add --reset after removing/renaming anything in a YAML (clears old nodes/edges first)
+docker compose --profile tools run --rm loader --reset
+
+# 3. embed everything into Chroma (safe to re-run, it upserts)
+python Embedding/embed_chunks.py                  # books     -> book_content
+python Embedding/embed_tutorial_chunks.py         # tutorials -> tut_content
+python Extracting/pyqs_processing/embed_pyqs.py   # PYQs      -> pyq_bank
+
+# 4. check what is in Chroma, and which topics have no grounding text
+python check_chroma.py
+
+# 5. try the graph lookup + difficulty blend, and retrieval
+python prerequisite_graph/loader/integration.py
+python retrieval.py
+```
+
+Neo4j browser: http://localhost:7474 (user `neo4j`, password from `.env`).
+
+### Re-extracting source material (only when the PDFs change)
+
+| Step | Command | Output |
+|---|---|---|
+| Books → chunks | `python Extracting/extract.py` | `Extracting/Processed/<book>_chunks.jsonl` |
+| Tag chunks with graph topics | `python tag_topics.py` | adds `topic_id` to the chunk files |
+| Tutorials → chunks (Gemini) | `python Extracting/tutorial_chunks.py` | `Extracting/Processed/<subj>_tutorial_chunks.jsonl` |
+| PYQ PDFs → page text (OpenRouter) | `python Extracting/pyqs_processing/pdf_extract_full.py` | `Extracting/Processed/pyq_pages/` |
+| Page text → one record per question | `python Extracting/pyqs_processing/split_pyq_questions.py` | `Extracting/Processed/pyq_structured/` |
+
+`split_pyq_questions.py` overwrites the `*_pyq.json` files, so hand fixes made in them are lost. Use `--out-dir` to write somewhere else and compare first. After re-extracting, run the matching embed script again.
+
+---
+
+## Project structure
+
+```
+Question_Paper_Generator/
+├── Books/                      raw input: one textbook PDF per subject
+├── Tutorials/<SUBJ>/           raw input: tutorial sheet PDFs
+├── PYQs/                       raw input: previous-year question papers
+│
+├── Extracting/                 PDFs -> text
+│   ├── extract.py              books -> section-aware chunks
+│   ├── tutorial_chunks.py      tutorials -> chunks (+ diagram transcription)
+│   ├── topic_map.yaml          book chapter -> graph topic_id
+│   ├── tutorial_images/        figures cut out of tutorial sheets
+│   ├── pyqs_processing/
+│   │   ├── pdf_extract_full.py      PYQ PDF -> page text
+│   │   ├── split_pyq_questions.py   page text -> one record per question
+│   │   ├── embed_pyqs.py            -> Chroma "pyq_bank"
+│   │   ├── test_pyq_embed.py        sample PYQ search
+│   │   └── model_search.py          lists Groq models
+│   └── Processed/              every processed data file lives here
+│       ├── <book>_chunks.jsonl
+│       ├── <subj>_tutorial_chunks.jsonl
+│       ├── pyq_pages/          page text per paper
+│       └── pyq_structured/     one record per question (CO, Bloom, marks, topic)
+│
+├── Embedding/
+│   ├── embed_chunks.py          -> Chroma "book_content"
+│   └── embed_tutorial_chunks.py -> Chroma "tut_content"
+│
+├── prerequisite_graph/
+│   ├── subjects/*.yaml          topics, COs, prerequisites (single source of truth)
+│   └── loader/
+│       ├── build_prereq_graph.py    YAMLs -> Neo4j (runs in Docker)
+│       ├── difficulty_blend.py      picks the prerequisite to blend in
+│       └── integration.py           LangGraph graph-lookup node
+│
+├── tag_topics.py               adds topic_id to book chunks
+├── retrieval.py                grounding text for a topic (book + tutorial)
+├── check_chroma.py             verifies all Chroma collections
+├── check.py                    older quick count of book/tutorial vectors
+├── diagrams/                   README figures
+├── docker-compose.yml          neo4j + chroma + redis + loader
+├── requirements.txt
+└── .env.example
+```
+
+---
+
 ## Contributors
 | @riya19verma | Riya Verma |
 | @vihantandon | Vihan Tandon |

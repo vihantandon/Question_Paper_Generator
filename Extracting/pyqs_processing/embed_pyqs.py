@@ -11,6 +11,7 @@ USAGE
     python embed_pyqs.py                 # embed everything found
     python embed_pyqs.py --dry-run       # show what would be embedded
     python embed_pyqs.py --dir <path>    # folder containing *_pyq.json
+                                         # (default: Extracting/Processed/pyq_structured)
     python embed_pyqs.py --reset         # delete + rebuild the collection
 """
 # --- MUST come before any sentence_transformers / transformers import ------
@@ -32,8 +33,9 @@ EMBED_MODEL = "all-MiniLM-L6-v2"      # same model as book_content / tut_content
 BATCH_SIZE = 64
 MIN_DOC_CHARS = 60                    # shorter than this = extraction junk
 
-HERE = Path(__file__).resolve().parent
-DEFAULT_DIR = HERE / "Extracting" / "PYQ_Structured"
+HERE = Path(__file__).resolve().parent            # Extracting/pyqs_processing
+ROOT = HERE.parent.parent                          # repo root
+DEFAULT_DIR = ROOT / "Extracting" / "Processed" / "pyq_structured"
 
 
 def sanitize_metadata(meta: dict) -> dict:
@@ -77,7 +79,7 @@ def main():
 
     folder = Path(args.dir)
     if not folder.exists():
-        raise SystemExit(f"Folder not found: {folder}\nPass --dir <path to PYQ_Structured>")
+        raise SystemExit(f"Folder not found: {folder}\nPass --dir <folder with *_pyq.json>")
 
     files, records, skipped = load_records(folder)
     print(f"{len(files)} PYQ file(s) in {folder}")

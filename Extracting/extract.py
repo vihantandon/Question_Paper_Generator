@@ -122,7 +122,15 @@ def process_pdf(path , subject):
             ))
     return all_chunks
 
-def process_all_books(books_dir = "../Books", output_dir = "Processed"):
+HERE = Path(__file__).resolve().parent     # Extracting/
+ROOT = HERE.parent                          # repo root
+
+
+def process_all_books(books_dir = ROOT / "Books", output_dir = HERE / "Processed"):
+    """Books/*.pdf -> Extracting/Processed/<book>_chunks.jsonl.
+    Paths are found relative to this file, so it runs from any folder.
+    NOTE: this rewrites the chunk files and drops the topic_id fields added
+    by tag_topics.py -- run  python tag_topics.py  again afterwards."""
     books_path = Path(books_dir)
     output_path = Path(output_dir)
 

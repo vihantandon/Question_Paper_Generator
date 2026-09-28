@@ -1,6 +1,8 @@
 # Usage:
 #   docker compose up -d                          # start neo4j + chroma + redis
-#   docker compose --profile tools run --rm loader  # load subject YAMLs into Neo4j
+#   docker compose --profile tools run --rm loader          # load subject YAMLs into Neo4j
+#   docker compose --profile tools run --rm loader --reset  # wipe Topic/CO nodes, then reload
+#                                                           # (use after removing/renaming anything in a YAML)
 
 services:
   neo4j:

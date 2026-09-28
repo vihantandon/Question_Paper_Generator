@@ -1,6 +1,6 @@
 """
 embed_tutorial_chunks.py -- embeds ONLY the tutorial chunk files produced by
-ingest_tutorials.py. Kept separate from embed_chunks.py on purpose (that
+Extracting/tutorial_chunks.py. Kept separate from embed_chunks.py on purpose (that
 script stays untouched for the book pipeline); this one only ever looks at
 files named "*_tutorial_chunks.jsonl", so running both is safe and neither
 will double-process the other's files.
@@ -17,14 +17,15 @@ WHY MULTI-TOPIC CHUNKS ARE SPLIT
     can't filter on a list field. So a chunk with N topic_ids becomes N
     Chroma documents here (ids "<chunk_id>__<topic_id>"), same text, each
     with ONE topic_id. This keeps retrieval.py's simple
-    where={"topic_id": topic_id} filter working without any changes, for
-    either content type. The full original topic set is kept too, as a
+    where={"topic_id": topic_id} filter working the same way for books and
+    tutorials. The full original topic set is kept too, as a
     comma-joined reference field (topic_ids_all / topics_all) -- not meant
     to be filtered on, just so you can see everything a chunk covered.
 
-Writes into the SAME Chroma collection the book pipeline uses
-("book_content"), tagged "type": "tutorial", so retrieval.py finds both
-book and tutorial grounding text for a given topic_id without extra code.
+Writes into its OWN Chroma collection, "tut_content" (books live in
+"book_content"). Every row is tagged "type": "tutorial". retrieval.py
+searches BOTH collections and merges the results, so a topic_id gets book
+and tutorial grounding text together.
 
 USAGE
     python embed_tutorial_chunks.py                  # process every subject
@@ -54,7 +55,7 @@ NONE_TOPIC = "NONE"
 # --------------------------------------------------------------------------- graph metadata
 def load_topic_index():
     """topic_id -> {subject, semester}, straight from the graph's own subject
-    YAMLs -- the same source tag_topics.py and ingest_tutorials.py read."""
+    YAMLs -- the same source tag_topics.py and tutorial_chunks.py read."""
     index = {}
     subject_semester = {}
     for f in sorted(SUBJECTS_DIR.glob("*.y*ml")):
@@ -67,7 +68,7 @@ def load_topic_index():
 
 def load_book_to_yaml_subject():
     """Tutorial-folder-name -> graph subject (e.g. 'APS' -> 'ALGO'), reusing
-    topic_map.yaml's own books: bridge -- same as ingest_tutorials.py."""
+    topic_map.yaml's own books: bridge -- same as Extracting/tutorial_chunks.py."""
     if not TOPIC_MAP_FILE.exists():
         return {}
     cfg = yaml.safe_load(TOPIC_MAP_FILE.read_text(encoding="utf-8"))
