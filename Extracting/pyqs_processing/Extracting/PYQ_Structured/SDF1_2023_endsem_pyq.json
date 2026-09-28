@@ -11,6 +11,7 @@
       "type": "header"
     }
   },
+  
   {
     "id": "SDF1_2023_endsem_q1",
     "document": "Q1. Draw a flowchart for finding all the roots of 'N' different quadratic equations (where N is provided by the user) of the form ax^2+bx+c=0, where a, b and c are real constants. Formula for calculating the roots of the quadratic equation is as follows:\n              -b±√D\n        Roots = -----\n                 2a\n        where D = (b * b) - (4 * a * c)\nYour flowcharts should additionally show whether the roots will be “real and equal” or “real and unequal” or “imaginary”.",

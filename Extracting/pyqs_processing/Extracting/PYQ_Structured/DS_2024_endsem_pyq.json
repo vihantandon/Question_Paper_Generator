@@ -143,6 +143,7 @@
       "review_reason": "CO 'CO4' maps to 2 topics — pick one: DS_03 (Non-Linear DS: Multi List, Tree, Priority Queue (Heaps)), DS_04 (Non-Linear DS: BST, AVL, RB Tree, B/B+ Tree)"
     }
   },
+  
   {
     "id": "DS_2024_endsem_q7",
     "document": "Q7. You are engineer tasked with optimizing a poorly designed communication network for ‘n’ integrated circuits (IC’s) in a high-performance electronic system. The current system uses wires of various lengths to connect the IC’s but it is prone to catastrophic failure. The current starts flowing from a specific IC. If current flows from any IC and loops back to the same IC, causes a short circuit.\nYour task is to redesign the network by removing unnecessary connections to ensure no such looping paths exist while keeping all IC’s connected either directly or indirectly. Additionally, the new design should minimize the total length of wires. Determine the minimum total length of wires required to transform the given network into safe and efficient one. Show all the intermediate steps and data structures used while optimizing the network given in Fig. 1.\n\n[DIAGRAM: Undirected weighted graph labeled \"Fig. 1 Integrated Circuit\" with 8 nodes: IC1, IC2, IC3, IC4, IC5, IC6, IC7, IC8. \nEdges with weights:\n- (IC1, IC6): 10\n- (IC1, IC8): 5\n- (IC1, IC2): 8\n- (IC6, IC3): 3\n- (IC6, IC2): 4\n- (IC3, IC4): 3\n- (IC3, IC2): 4\n- (IC4, IC2): 6\n- (IC4, IC5): 1\n- (IC4, IC7): 2\n- (IC5, IC2): 4\n- (IC5, IC7): 3\n- (IC7, IC8): 3\n- (IC8, IC2): 4]\n\nFig. 1 Integrated Circuit",

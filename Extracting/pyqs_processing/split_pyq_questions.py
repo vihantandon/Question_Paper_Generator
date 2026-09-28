@@ -413,7 +413,10 @@ def process_pages_file(pages_path: Path, subject_yamls: dict) -> list[dict]:
 
 
 def process_all(pages_dir=PAGES_DIR, out_dir=OUT_DIR, yaml_paths=None):
-    yaml_paths = yaml_paths or ["sdf1.yaml", "sdf2.yaml", "ds.yaml", "algo.yaml"]
+    yaml_paths = yaml_paths or ["subjects/sdf1.yaml", 
+                                "subjects/sdf2.yaml", 
+                                "subjects/ds.yaml", 
+                                "subjects/algo.yaml"]
     subject_yamls = load_subject_yamls(yaml_paths)
     out_dir.mkdir(parents=True, exist_ok=True)
 

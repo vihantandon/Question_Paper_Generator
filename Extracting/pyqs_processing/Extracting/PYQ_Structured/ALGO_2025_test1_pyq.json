@@ -11,6 +11,7 @@
       "type": "header"
     }
   },
+  
   {
     "id": "ALGO_2025_test1_q1",
     "document": "Q1. Consider the following function:\n[DIAGRAM: Two code blocks side-by-side. Left box: int f() { int i, x; x=A(n); for (i=x; i>=1; i=i/2) { Print (\"Nothing\"); } return 0; }. Right box: int A (int n) { int i, j, k=0; for (i=n/2; i<=n; i++) ( for (j=1; j<=n; j=j*5) ( k = k + n/2; return (k); ) } }]\n(i) Consider the return value of the function A is Θ(F(n)). Find out F(n).\n(ii) What will be the time complexity of the function f() in terms of n?",

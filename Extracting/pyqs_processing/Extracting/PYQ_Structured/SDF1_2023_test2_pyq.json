@@ -55,6 +55,7 @@
       "review_reason": "CO 'CO5' maps to 4 topics — pick one: SDF1_03 (Arrays), SDF1_04 (Pointers), SDF1_06 (Structures and Unions), SDF1_07 (File Handling)"
     }
   },
+  
   {
     "id": "SDF1_2023_test2_q3",
     "document": "**Q3.** Write a program in C that performs the following tasks:  \nI. Ask the user to input a square matrix A.  \nII. Detects the maximum element in the upper triangular matrix of A (including the diagonal elements).  \nIII. Detects the minimum element in the lower triangular matrix of A (including the diagonal elements).  \nIV. If the sum of these two elements (max in upper triangular and min in lower triangular matrix) is equal to the sum of elements in the leading diagonal (from top left to bottom right) of the original matrix then print: \"Traceable\" else print \"Non-Traceable\".  \n\nTest cases are provided on the next page.\nTest Case 1:\nEnter the size of the square matrix A: 3\nEnter the element of the square matrix A (row by row):\n1 2 3\n4 5 6\n7 8 0\nMaximum element in the upper triangular matrix: 6\nMinimum element of the lower triangular matrix: 0\nSum of max and min elements: 6\nSum of elements in the leading diagonal: 6\nTraceable\n\nTest Case 2:\nEnter the size of the square matrix A: 3\nEnter the elements of the square matrix A (row by row):\n1 2 9\n4 5 6\n7 8 5\nMaximum element in upper triangular matrix: 9\nMinimum element in lower triangular matrix :1\nSum of max and min elements: 10\nSum of elements in the leading diagonal: 11\nNon- Traceable",

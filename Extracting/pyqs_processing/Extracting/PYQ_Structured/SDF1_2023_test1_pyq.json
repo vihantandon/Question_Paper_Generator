@@ -121,6 +121,7 @@
       "review_reason": null
     }
   },
+  
   {
     "id": "SDF1_2023_test1_q6",
     "document": "Q6. Write a C program to print a butterfly pattern based on the height of the butterfly provided by the user. Your program must ensure that the height entered by the user must be an even positive integer.\nEnter height: 10\n\n[DIAGRAM: Sample console output showing a butterfly-shaped pattern printed with asterisk (*) characters for height=10 -- two symmetric wing shapes made of rows of asterisks that widen toward the middle rows and narrow again toward top and bottom, with a gap down the center.]",

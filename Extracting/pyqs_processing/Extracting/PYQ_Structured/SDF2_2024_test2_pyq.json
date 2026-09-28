@@ -11,6 +11,7 @@
       "type": "header"
     }
   },
+  
   {
     "id": "SDF2_2024_test2_q1",
     "document": "Q1. Create a class student having data members as name (string) and rollno (int). Each student can be either a cricketer or footballer or both. Every cricketer has runs (int) and wickets (int) while every footballer has goals scored (int) and assists (int). A star performer is a student who plays both cricket and football have a star performer index calculated using the following formula: star performer index = [(runs-1000)/runs+(goal-10)/goal]. Develop a C++ program that can simulate the following rules adhering to the above inheritance structure (you can define additional necessary method).\na) Create a star performer object.\nb) Set the student details and the cricketer/footballer or both by calling the appropriate methods from the star performer class.\nc) Compute the star performer index value using the above mentioned formula.\nd) Display the details of the students if he/she is a star performer. A Student is considered as a star performer if and only if star performer index is grater then zero.",

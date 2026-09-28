@@ -99,6 +99,7 @@
       "review_reason": null
     }
   },
+  
   {
     "id": "DS_2024_test1_q5",
     "document": "Q. 5 Comprehend the following recursive codes and write the output showing all intermediate steps.\n\na) \n```c\n#include<stdio.h>\nvoid abc1(int);\nvoid abc2(int);\nvoid abc1(int num)\n{\nif(num==0)\nreturn;\nprintf(\"%d\", num);\nabc2(num-3);\nprintf(\"%d\",num);\n}\n```\n```c\nvoid abc2(int num){\nif(num==0) return;\nprintf(\"%d\",num);\nabc1(-num);\nprintf(\"%d\",num);\n}\nint main()\n{\nabc1(7);\nreturn 0;\n}\n```\n\nb) \n```c\n#include<stdio.h>\nint Xf(int num)\n{\nprintf(\"%d\\n\",\nnum);\nif(num > 8)\n{\nXf(Xf(Xf(-num)));\n}\nreturn num;\n}\n```\n```c\nint main()\n{\nXf(10),\nreturn 0;\n}\n```",
