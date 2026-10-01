@@ -6,7 +6,7 @@ files in this repo), for all three collections:
 
     book_content  <- Extracting/Processed/*_chunks.jsonl            (embed_chunks.py)
     tut_content   <- Extracting/Processed/*_tutorial_chunks.jsonl   (embed_tutorial_chunks.py)
-    pyq_bank      <- Extracting/Processed/pyq_structured/*_pyq.json         (embed_pyqs.py)
+    pyq_bank      <- Extracting/Processed/pyq_structured/*_pyq.json         (Embedding/embed_pyqs.py)
 
 It does NOT load the embedding model -- it only reads ids + metadata, so it
 runs in a few seconds.
@@ -161,7 +161,7 @@ def main():
     tut = check_collection(client, "tut_content", expected_tutorial_ids(),
                            "Embedding/embed_tutorial_chunks.py")
     check_collection(client, "pyq_bank", expected_pyq_ids(),
-                     "Extracting/pyqs_processing/embed_pyqs.py")
+                     "Embedding/embed_pyqs.py")
     topic_coverage(book, tut)
 
 

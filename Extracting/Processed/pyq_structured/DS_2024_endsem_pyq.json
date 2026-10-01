@@ -24,13 +24,17 @@
       "raw_co_code": "C210.5",
       "course_outcome": "CO5",
       "co_description": "Apply appropriate data structure to design an efficient solution for given and identified problem",
-      "bloom_level": "Create Level",
+      "bloom_level": "Create",
       "marks": 8,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO5' maps to 3 topics — pick one: DS_05 (Non-Linear DS: Graphs), DS_06 (Advanced DS: Segment/Interval Tree, Suffix Tree/Array, Tries), DS_07 (Hashing (Hash Tables, Collision Resolution))"
+      "topic_id": "DS_03",
+      "topic_name": "Non-Linear DS: Multi List, Tree, Priority Queue (Heaps)",
+      "needs_review": false,
+      "review_reason": "manual: topic set to DS_03 after reading the question",
+      "tag_method": "manual",
+      "bloom_level_raw": "Create Level",
+      "bloom_rank": 6,
+      "topic_id_from_co": "DS_03"
     }
   },
   {
@@ -46,13 +50,17 @@
       "raw_co_code": "C210.2",
       "course_outcome": "CO2",
       "co_description": "Apply and implement various linear data structures like array, linked list, stack, and queue in different problems and applications",
-      "bloom_level": "Apply Level",
+      "bloom_level": "Apply",
       "marks": 3,
       "marks_breakdown": null,
-      "topic_id": "DS_01",
-      "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+      "topic_id": "DS_02",
+      "topic_name": "Searching and Sorting",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": "manual: topic set to DS_02 after reading the question",
+      "tag_method": "manual",
+      "bloom_level_raw": "Apply Level",
+      "bloom_rank": 3,
+      "topic_id_from_co": "DS_02"
     }
   },
   {
@@ -68,13 +76,20 @@
       "raw_co_code": "C210.4",
       "course_outcome": "CO4",
       "co_description": "Demonstrate and implement various operations like search, traverse, insertion, deletion, etc. on different non-linear data structures",
-      "bloom_level": "Apply Level",
+      "bloom_level": "Apply",
       "marks": 3,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO4' maps to 2 topics — pick one: DS_03 (Non-Linear DS: Multi List, Tree, Priority Queue (Heaps)), DS_04 (Non-Linear DS: BST, AVL, RB Tree, B/B+ Tree)"
+      "topic_id": "DS_03",
+      "topic_name": "Non-Linear DS: Multi List, Tree, Priority Queue (Heaps)",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Apply Level",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0496,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"DS_03\", 0.5714], [\"DS_04\", 0.5218], [\"DS_01\", 0.5107]]"
     }
   },
   {
@@ -90,13 +105,20 @@
       "raw_co_code": "C210.3",
       "course_outcome": "CO3",
       "co_description": "Analyse the performance of various sorting and searching techniques",
-      "bloom_level": "Analyze Level",
+      "bloom_level": "Analyze",
       "marks": 5,
       "marks_breakdown": null,
-      "topic_id": "DS_02",
-      "topic_name": "Searching and Sorting",
-      "needs_review": false,
-      "review_reason": null
+      "topic_id": "DS_06",
+      "topic_name": "Advanced DS: Segment/Interval Tree, Suffix Tree/Array, Tries",
+      "needs_review": true,
+      "review_reason": "content matches DS_06 (0.459) better than every CO3 topic (best DS_02, 0.353); check the CO -> topic mapping in the subject YAML",
+      "bloom_level_raw": "Analyze Level",
+      "bloom_rank": 4,
+      "topic_id_from_co": "DS_02",
+      "tag_method": "content-override",
+      "topic_confidence": 0.0684,
+      "co_topic_mismatch": true,
+      "topic_scores": "[[\"DS_06\", 0.4592], [\"DS_04\", 0.3908], [\"DS_02\", 0.353]]"
     }
   },
   {
@@ -112,13 +134,20 @@
       "raw_co_code": "C210.2",
       "course_outcome": "CO2",
       "co_description": "Apply and implement various linear data structures like array, linked list, stack, and queue in different problems and applications",
-      "bloom_level": "Apply Level",
+      "bloom_level": "Apply",
       "marks": 6,
       "marks_breakdown": null,
       "topic_id": "DS_01",
       "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Apply Level",
+      "bloom_rank": 3,
+      "topic_id_from_co": "DS_01",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"DS_01\", 0.4919], [\"DS_03\", 0.3935], [\"DS_06\", 0.3505]]"
     }
   },
   {
@@ -134,16 +163,22 @@
       "raw_co_code": "C210.4",
       "course_outcome": "CO4",
       "co_description": "Demonstrate and implement various operations like search, traverse, insertion, deletion, etc. on different non-linear data structures",
-      "bloom_level": "Apply Level",
+      "bloom_level": "Apply",
       "marks": 4,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
+      "topic_id": "DS_06",
+      "topic_name": "Advanced DS: Segment/Interval Tree, Suffix Tree/Array, Tries",
       "needs_review": true,
-      "review_reason": "CO 'CO4' maps to 2 topics — pick one: DS_03 (Non-Linear DS: Multi List, Tree, Priority Queue (Heaps)), DS_04 (Non-Linear DS: BST, AVL, RB Tree, B/B+ Tree)"
+      "review_reason": "content matches DS_06 (0.600) better than every CO4 topic (best DS_04, 0.499); check the CO -> topic mapping in the subject YAML",
+      "bloom_level_raw": "Apply Level",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "content-override",
+      "topic_confidence": 0.1009,
+      "co_topic_mismatch": true,
+      "topic_scores": "[[\"DS_06\", 0.6001], [\"DS_04\", 0.4992], [\"DS_03\", 0.4798]]"
     }
   },
-  
   {
     "id": "DS_2024_endsem_q7",
     "document": "Q7. You are engineer tasked with optimizing a poorly designed communication network for ‘n’ integrated circuits (IC’s) in a high-performance electronic system. The current system uses wires of various lengths to connect the IC’s but it is prone to catastrophic failure. The current starts flowing from a specific IC. If current flows from any IC and loops back to the same IC, causes a short circuit.\nYour task is to redesign the network by removing unnecessary connections to ensure no such looping paths exist while keeping all IC’s connected either directly or indirectly. Additionally, the new design should minimize the total length of wires. Determine the minimum total length of wires required to transform the given network into safe and efficient one. Show all the intermediate steps and data structures used while optimizing the network given in Fig. 1.\n\n[DIAGRAM: Undirected weighted graph labeled \"Fig. 1 Integrated Circuit\" with 8 nodes: IC1, IC2, IC3, IC4, IC5, IC6, IC7, IC8. \nEdges with weights:\n- (IC1, IC6): 10\n- (IC1, IC8): 5\n- (IC1, IC2): 8\n- (IC6, IC3): 3\n- (IC6, IC2): 4\n- (IC3, IC4): 3\n- (IC3, IC2): 4\n- (IC4, IC2): 6\n- (IC4, IC5): 1\n- (IC4, IC7): 2\n- (IC5, IC2): 4\n- (IC5, IC7): 3\n- (IC7, IC8): 3\n- (IC8, IC2): 4]\n\nFig. 1 Integrated Circuit",
@@ -157,13 +192,20 @@
       "raw_co_code": "C210.5",
       "course_outcome": "CO5",
       "co_description": "Apply appropriate data structure to design an efficient solution for given and identified problem",
-      "bloom_level": "Create Level",
+      "bloom_level": "Create",
       "marks": 6,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO5' maps to 3 topics — pick one: DS_05 (Non-Linear DS: Graphs), DS_06 (Advanced DS: Segment/Interval Tree, Suffix Tree/Array, Tries), DS_07 (Hashing (Hash Tables, Collision Resolution))"
+      "topic_id": "DS_05",
+      "topic_name": "Non-Linear DS: Graphs",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Create Level",
+      "bloom_rank": 6,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.1429,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"DS_05\", 0.4589], [\"DS_04\", 0.3698], [\"DS_06\", 0.316]]"
     }
   }
 ]

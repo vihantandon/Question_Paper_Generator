@@ -11,7 +11,6 @@
       "type": "header"
     }
   },
-  
   {
     "id": "ALGO_2025_test1_q1",
     "document": "Q1. Consider the following function:\n[DIAGRAM: Two code blocks side-by-side. Left box: int f() { int i, x; x=A(n); for (i=x; i>=1; i=i/2) { Print (\"Nothing\"); } return 0; }. Right box: int A (int n) { int i, j, k=0; for (i=n/2; i<=n; i++) ( for (j=1; j<=n; j=j*5) ( k = k + n/2; return (k); ) } }]\n(i) Consider the return value of the function A is Θ(F(n)). Find out F(n).\n(ii) What will be the time complexity of the function f() in terms of n?",
@@ -25,13 +24,20 @@
       "raw_co_code": "CO1",
       "course_outcome": "CO1",
       "co_description": "Analyze the complexity of different algorithms using asymptotic analysis.",
-      "bloom_level": "Analyse level",
+      "bloom_level": "Analyze",
       "marks": 4,
       "marks_breakdown": null,
       "topic_id": "ALGO_01",
       "topic_name": "Introduction: Asymptotic Analysis, Sorting/Searching Review",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Analyse level",
+      "bloom_rank": 4,
+      "topic_id_from_co": "ALGO_01",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"ALGO_01\", 0.5375], [\"ALGO_03\", 0.5093], [\"ALGO_06\", 0.487]]"
     }
   },
   {
@@ -47,13 +53,20 @@
       "raw_co_code": "CO2",
       "course_outcome": "CO2",
       "co_description": "Select an appropriate data structure and apply related operations for a given problem.",
-      "bloom_level": "Apply level",
+      "bloom_level": "Apply",
       "marks": 6,
       "marks_breakdown": null,
-      "topic_id": "ALGO_02",
-      "topic_name": "Search Trees & Priority Queue (Segment/Interval/RB Tree, Binomial/Fibonacci Heap)",
-      "needs_review": false,
-      "review_reason": null
+      "topic_id": "ALGO_07",
+      "topic_name": "String Algorithms",
+      "needs_review": true,
+      "review_reason": "content matches ALGO_07 (0.603) better than every CO2 topic (best ALGO_02, 0.296); check the CO -> topic mapping in the subject YAML",
+      "bloom_level_raw": "Apply level",
+      "bloom_rank": 3,
+      "topic_id_from_co": "ALGO_02",
+      "tag_method": "content-override",
+      "topic_confidence": 0.0923,
+      "co_topic_mismatch": true,
+      "topic_scores": "[[\"ALGO_07\", 0.6033], [\"ALGO_06\", 0.5109], [\"ALGO_04\", 0.4689]]"
     }
   },
   {
@@ -69,13 +82,20 @@
       "raw_co_code": "CO1",
       "course_outcome": "CO1",
       "co_description": "Analyze the complexity of different algorithms using asymptotic analysis.",
-      "bloom_level": "Analyse level",
+      "bloom_level": "Analyze",
       "marks": 5,
       "marks_breakdown": null,
       "topic_id": "ALGO_01",
       "topic_name": "Introduction: Asymptotic Analysis, Sorting/Searching Review",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Analyse level",
+      "bloom_rank": 4,
+      "topic_id_from_co": "ALGO_01",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"ALGO_01\", 0.6071], [\"ALGO_03\", 0.4997], [\"ALGO_06\", 0.4747]]"
     }
   },
   {
@@ -91,13 +111,17 @@
       "raw_co_code": "CO2",
       "course_outcome": "CO2",
       "co_description": "Select an appropriate data structure and apply related operations for a given problem.",
-      "bloom_level": "Apply level",
+      "bloom_level": "Apply",
       "marks": 5,
       "marks_breakdown": null,
-      "topic_id": "ALGO_02",
-      "topic_name": "Search Trees & Priority Queue (Segment/Interval/RB Tree, Binomial/Fibonacci Heap)",
+      "topic_id": "ALGO_05",
+      "topic_name": "Backtracking Algorithms",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": "manual: topic set to ALGO_05 after reading the question",
+      "tag_method": "manual",
+      "bloom_level_raw": "Apply level",
+      "bloom_rank": 3,
+      "topic_id_from_co": "ALGO_05"
     }
   }
 ]

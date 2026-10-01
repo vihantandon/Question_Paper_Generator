@@ -24,13 +24,20 @@
       "raw_co_code": "CO2",
       "course_outcome": "CO2",
       "co_description": "Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems.",
-      "bloom_level": "Applying",
+      "bloom_level": "Apply",
       "marks": 6,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO2' maps to 3 topics — pick one: SDF2_03 (Inheritance (C++)), SDF2_04 (Polymorphism (C++)), SDF2_06 (Exceptions, Templates, STL)"
+      "topic_id": "SDF2_06",
+      "topic_name": "Exceptions, Templates, STL",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Applying",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0625,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_06\", 0.4547], [\"SDF2_02\", 0.4149], [\"SDF2_04\", 0.3922]]"
     }
   },
   {
@@ -46,13 +53,20 @@
       "raw_co_code": "CO3",
       "course_outcome": "CO3",
       "co_description": "Apply SQL commands to create tables and perform various operations like insert, delete, select on tables.",
-      "bloom_level": "Applying",
+      "bloom_level": "Apply",
       "marks": 7,
       "marks_breakdown": null,
       "topic_id": "SDF2_07",
       "topic_name": "Introduction to Databases & SQL",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Applying",
+      "bloom_rank": 3,
+      "topic_id_from_co": "SDF2_07",
+      "tag_method": "co-only",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_02\", 0.2091], [\"SDF2_06\", 0.2009], [\"SDF2_04\", 0.1889]]"
     }
   },
   {
@@ -68,13 +82,20 @@
       "raw_co_code": "CO2",
       "course_outcome": "CO2",
       "co_description": "Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems.",
-      "bloom_level": "Applying",
+      "bloom_level": "Apply",
       "marks": 5,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO2' maps to 3 topics — pick one: SDF2_03 (Inheritance (C++)), SDF2_04 (Polymorphism (C++)), SDF2_06 (Exceptions, Templates, STL)"
+      "topic_id": "SDF2_06",
+      "topic_name": "Exceptions, Templates, STL",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Applying",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0365,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_06\", 0.4102], [\"SDF2_04\", 0.3737], [\"SDF2_02\", 0.3303]]"
     }
   },
   {
@@ -90,13 +111,20 @@
       "raw_co_code": "CO4",
       "course_outcome": "CO4",
       "co_description": "Analyze the source code for the possible Outcomes, exceptions and to debug the errors.",
-      "bloom_level": "Analysing",
+      "bloom_level": "Analyze",
       "marks": 5,
       "marks_breakdown": null,
       "topic_id": "SDF2_06",
       "topic_name": "Exceptions, Templates, STL",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Analysing",
+      "bloom_rank": 4,
+      "topic_id_from_co": "SDF2_06",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_06\", 0.4673], [\"SDF2_04\", 0.4359], [\"SDF2_02\", 0.3969]]"
     }
   },
   {
@@ -112,16 +140,22 @@
       "raw_co_code": "CO1",
       "course_outcome": "CO1",
       "co_description": "Explain various object-oriented concepts like class and objects, constructors, abstraction, data hiding (access specifies), etc.",
-      "bloom_level": "Understanding",
+      "bloom_level": "Understand",
       "marks": 4,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO1' maps to 2 topics — pick one: SDF2_01 (Introduction to OOP), SDF2_02 (OOP Concepts using C++ (Classes, Objects, Constructors))"
+      "topic_id": "SDF2_01",
+      "topic_name": "Introduction to OOP",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Understanding",
+      "bloom_rank": 2,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0164,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_04\", 0.3425], [\"SDF2_03\", 0.33], [\"SDF2_06\", 0.3241]]"
     }
   },
-  
   {
     "id": "SDF2_2024_endsem_q6",
     "document": "Q6: Write a C++ code for the UML diagram given below & include the suitable Methods. \n\n[DIAGRAM: UML class diagram showing an aggregation relationship between School and Teacher.\nClass \"School\" has attributes:\n-Name(String)\n-Location(String)\n-ID(int)\nClass \"Teacher\" has attributes:\n-Name(String)\n-Dept(String)\n-ID(int)\nAn aggregation line connects School to Teacher, with a hollow diamond at the School end and multiplicity \"0..*\" at the Teacher end.]",
@@ -135,13 +169,20 @@
       "raw_co_code": "CO5",
       "course_outcome": "CO5",
       "co_description": "Design and implement the class diagram for various real-life problems using OOPs.",
-      "bloom_level": "Creation",
+      "bloom_level": "Create",
       "marks": 4,
       "marks_breakdown": null,
       "topic_id": "SDF2_05",
       "topic_name": "UML / Relationship Implementation",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Creation",
+      "bloom_rank": 6,
+      "topic_id_from_co": "SDF2_05",
+      "tag_method": "co-only",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_01\", 0.3901], [\"SDF2_04\", 0.3332], [\"SDF2_06\", 0.3144]]"
     }
   },
   {
@@ -157,13 +198,20 @@
       "raw_co_code": "CO4",
       "course_outcome": "CO4",
       "co_description": "Analyze the source code for the possible Outcomes, exceptions and to debug the errors.",
-      "bloom_level": "Analysing",
+      "bloom_level": "Analyze",
       "marks": 4,
       "marks_breakdown": null,
       "topic_id": "SDF2_06",
       "topic_name": "Exceptions, Templates, STL",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Analysing",
+      "bloom_rank": 4,
+      "topic_id_from_co": "SDF2_06",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_04\", 0.5945], [\"SDF2_02\", 0.5888], [\"SDF2_01\", 0.5834]]"
     }
   }
 ]

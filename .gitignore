@@ -3,3 +3,8 @@ chroma_data/
 #Processed/
 #*.jsonl
 .env
+
+# Python / local tooling
+__pycache__/
+*.pyc
+.venv/

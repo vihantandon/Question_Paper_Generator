@@ -30,7 +30,11 @@
       "topic_id": "SDF2_02",
       "topic_name": "OOP Concepts using C++ (Classes, Objects, Constructors)",
       "needs_review": true,
-      "review_reason": "topic set manually from content (non-member/friend access to two classes); paper tags CO2 but SDF2_02 is a CO1 topic in the graph"
+      "review_reason": "topic set manually from content (non-member/friend access to two classes); paper tags CO2 but SDF2_02 is a CO1 topic in the graph",
+      "bloom_level_raw": "Apply",
+      "bloom_rank": 3,
+      "topic_id_from_co": "SDF2_02",
+      "tag_method": "manual"
     }
   },
   {
@@ -52,7 +56,11 @@
       "topic_id": "SDF2_04",
       "topic_name": "Polymorphism (C++)",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": "manual: topic set to SDF2_04 after reading the question",
+      "tag_method": "manual",
+      "bloom_level_raw": "Apply",
+      "bloom_rank": 3,
+      "topic_id_from_co": "SDF2_04"
     }
   },
   {
@@ -74,7 +82,14 @@
       "topic_id": "SDF2_02",
       "topic_name": "OOP Concepts using C++ (Classes, Objects, Constructors)",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Understand",
+      "bloom_rank": 2,
+      "topic_id_from_co": "SDF2_02",
+      "tag_method": "co+content",
+      "topic_confidence": 0.0469,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_06\", 0.4484], [\"SDF2_04\", 0.4444], [\"SDF2_02\", 0.4109]]"
     }
   },
   {
@@ -96,7 +111,14 @@
       "topic_id": "SDF2_02",
       "topic_name": "OOP Concepts using C++ (Classes, Objects, Constructors)",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Understand",
+      "bloom_rank": 2,
+      "topic_id_from_co": "SDF2_02",
+      "tag_method": "co+content",
+      "topic_confidence": 0.1027,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_02\", 0.637], [\"SDF2_04\", 0.6269], [\"SDF2_06\", 0.6215]]"
     }
   }
 ]

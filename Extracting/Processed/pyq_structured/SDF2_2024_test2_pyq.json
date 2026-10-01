@@ -11,7 +11,6 @@
       "type": "header"
     }
   },
-  
   {
     "id": "SDF2_2024_test2_q1",
     "document": "Q1. Create a class student having data members as name (string) and rollno (int). Each student can be either a cricketer or footballer or both. Every cricketer has runs (int) and wickets (int) while every footballer has goals scored (int) and assists (int). A star performer is a student who plays both cricket and football have a star performer index calculated using the following formula: star performer index = [(runs-1000)/runs+(goal-10)/goal]. Develop a C++ program that can simulate the following rules adhering to the above inheritance structure (you can define additional necessary method).\na) Create a star performer object.\nb) Set the student details and the cricketer/footballer or both by calling the appropriate methods from the star performer class.\nc) Compute the star performer index value using the above mentioned formula.\nd) Display the details of the students if he/she is a star performer. A Student is considered as a star performer if and only if star performer index is grater then zero.",
@@ -25,13 +24,20 @@
       "raw_co_code": "CO2",
       "course_outcome": "CO2",
       "co_description": "Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems.",
-      "bloom_level": "Applying",
+      "bloom_level": "Apply",
       "marks": 5,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO2' maps to 3 topics — pick one: SDF2_03 (Inheritance (C++)), SDF2_04 (Polymorphism (C++)), SDF2_06 (Exceptions, Templates, STL)"
+      "topic_id": "SDF2_04",
+      "topic_name": "Polymorphism (C++)",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Applying",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0212,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_02\", 0.4129], [\"SDF2_04\", 0.3862], [\"SDF2_06\", 0.365]]"
     }
   },
   {
@@ -47,13 +53,20 @@
       "raw_co_code": "CO5",
       "course_outcome": "CO5",
       "co_description": "Design and implement the class diagram for various real-life problems using OOPs.",
-      "bloom_level": "Creating",
+      "bloom_level": "Create",
       "marks": 5,
       "marks_breakdown": null,
       "topic_id": "SDF2_05",
       "topic_name": "UML / Relationship Implementation",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Creating",
+      "bloom_rank": 6,
+      "topic_id_from_co": "SDF2_05",
+      "tag_method": "co-only",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_01\", 0.2322], [\"SDF2_03\", 0.221], [\"SDF2_02\", 0.217]]"
     }
   },
   {
@@ -69,13 +82,20 @@
       "raw_co_code": "CO2",
       "course_outcome": "CO2",
       "co_description": "Apply object-oriented concepts like inheritance, polymorphism and template to various real-world problems.",
-      "bloom_level": "Creating",
+      "bloom_level": "Create",
       "marks": 4,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO2' maps to 3 topics — pick one: SDF2_03 (Inheritance (C++)), SDF2_04 (Polymorphism (C++)), SDF2_06 (Exceptions, Templates, STL)"
+      "topic_id": "SDF2_06",
+      "topic_name": "Exceptions, Templates, STL",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Creating",
+      "bloom_rank": 6,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0266,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_06\", 0.3384], [\"SDF2_04\", 0.3118], [\"SDF2_02\", 0.2873]]"
     }
   },
   {
@@ -91,7 +111,7 @@
       "raw_co_code": "CO4",
       "course_outcome": "CO4",
       "co_description": "Analyze the source code for the possible Outcomes, exceptions and to debug the errors.",
-      "bloom_level": "Analyzing",
+      "bloom_level": "Analyze",
       "marks": 6,
       "marks_breakdown": [
         {
@@ -116,7 +136,14 @@
       "topic_id": "SDF2_06",
       "topic_name": "Exceptions, Templates, STL",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Analyzing",
+      "bloom_rank": 4,
+      "topic_id_from_co": "SDF2_06",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF2_02\", 0.6471], [\"SDF2_04\", 0.6411], [\"SDF2_06\", 0.6013]]"
     }
   }
 ]

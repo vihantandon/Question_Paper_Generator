@@ -24,13 +24,20 @@
       "raw_co_code": "C109.3",
       "course_outcome": "CO3",
       "co_description": "Demonstrate and contrast different methods for writing modular programs in C",
-      "bloom_level": "Understand L2",
+      "bloom_level": "Understand",
       "marks": 4,
       "marks_breakdown": null,
       "topic_id": "SDF1_05",
       "topic_name": "Functions",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Understand L2",
+      "bloom_rank": 2,
+      "topic_id_from_co": "SDF1_05",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF1_05\", 0.5556], [\"SDF1_02\", 0.5201], [\"SDF1_04\", 0.4488]]"
     }
   },
   {
@@ -46,16 +53,22 @@
       "raw_co_code": "C109.5",
       "course_outcome": "CO5",
       "co_description": "Apply and implement arrays, pointers, Structures and file handling for solving real world problems",
-      "bloom_level": "Apply L3",
+      "bloom_level": "Apply",
       "marks": 4,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO5' maps to 4 topics — pick one: SDF1_03 (Arrays), SDF1_04 (Pointers), SDF1_06 (Structures and Unions), SDF1_07 (File Handling)"
+      "topic_id": "SDF1_03",
+      "topic_name": "Arrays",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Apply L3",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0907,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF1_03\", 0.4902], [\"SDF1_02\", 0.4433], [\"SDF1_05\", 0.4101]]"
     }
   },
-  
   {
     "id": "SDF1_2023_test2_q3",
     "document": "**Q3.** Write a program in C that performs the following tasks:  \nI. Ask the user to input a square matrix A.  \nII. Detects the maximum element in the upper triangular matrix of A (including the diagonal elements).  \nIII. Detects the minimum element in the lower triangular matrix of A (including the diagonal elements).  \nIV. If the sum of these two elements (max in upper triangular and min in lower triangular matrix) is equal to the sum of elements in the leading diagonal (from top left to bottom right) of the original matrix then print: \"Traceable\" else print \"Non-Traceable\".  \n\nTest cases are provided on the next page.\nTest Case 1:\nEnter the size of the square matrix A: 3\nEnter the element of the square matrix A (row by row):\n1 2 3\n4 5 6\n7 8 0\nMaximum element in the upper triangular matrix: 6\nMinimum element of the lower triangular matrix: 0\nSum of max and min elements: 6\nSum of elements in the leading diagonal: 6\nTraceable\n\nTest Case 2:\nEnter the size of the square matrix A: 3\nEnter the elements of the square matrix A (row by row):\n1 2 9\n4 5 6\n7 8 5\nMaximum element in upper triangular matrix: 9\nMinimum element in lower triangular matrix :1\nSum of max and min elements: 10\nSum of elements in the leading diagonal: 11\nNon- Traceable",
@@ -69,13 +82,20 @@
       "raw_co_code": "C109.5",
       "course_outcome": "CO5",
       "co_description": "Apply and implement arrays, pointers, Structures and file handling for solving real world problems",
-      "bloom_level": "Apply L3",
+      "bloom_level": "Apply",
       "marks": 6,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO5' maps to 4 topics — pick one: SDF1_03 (Arrays), SDF1_04 (Pointers), SDF1_06 (Structures and Unions), SDF1_07 (File Handling)"
+      "topic_id": "SDF1_03",
+      "topic_name": "Arrays",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Apply L3",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.1504,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF1_03\", 0.4357], [\"SDF1_02\", 0.3617], [\"SDF1_05\", 0.3423]]"
     }
   },
   {
@@ -91,13 +111,20 @@
       "raw_co_code": "C109.5",
       "course_outcome": "CO5",
       "co_description": "Apply and implement arrays, pointers, Structures and file handling for solving real world problems",
-      "bloom_level": "Apply L3",
+      "bloom_level": "Apply",
       "marks": 4,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO5' maps to 4 topics — pick one: SDF1_03 (Arrays), SDF1_04 (Pointers), SDF1_06 (Structures and Unions), SDF1_07 (File Handling)"
+      "topic_id": "SDF1_03",
+      "topic_name": "Arrays",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Apply L3",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0601,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF1_03\", 0.5818], [\"SDF1_07\", 0.5217], [\"SDF1_02\", 0.5147]]"
     }
   },
   {
@@ -113,13 +140,20 @@
       "raw_co_code": "C109.5",
       "course_outcome": "CO5",
       "co_description": "Apply and implement arrays, pointers, Structures and file handling for solving real world problems",
-      "bloom_level": "Apply L3",
+      "bloom_level": "Apply",
       "marks": 2,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO5' maps to 4 topics — pick one: SDF1_03 (Arrays), SDF1_04 (Pointers), SDF1_06 (Structures and Unions), SDF1_07 (File Handling)"
+      "topic_id": "SDF1_03",
+      "topic_name": "Arrays",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Apply L3",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0401,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF1_03\", 0.6797], [\"SDF1_04\", 0.6396], [\"SDF1_02\", 0.6324]]"
     }
   }
 ]

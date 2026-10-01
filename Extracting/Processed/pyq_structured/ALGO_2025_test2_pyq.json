@@ -24,13 +24,20 @@
       "raw_co_code": "CO1",
       "course_outcome": "CO1",
       "co_description": "Analyze the complexity of different algorithms using asymptotic analysis.",
-      "bloom_level": "Analyse level",
+      "bloom_level": "Analyze",
       "marks": 5,
       "marks_breakdown": null,
-      "topic_id": "ALGO_01",
-      "topic_name": "Introduction: Asymptotic Analysis, Sorting/Searching Review",
-      "needs_review": false,
-      "review_reason": null
+      "topic_id": "ALGO_04",
+      "topic_name": "Greedy Algorithms",
+      "needs_review": true,
+      "review_reason": "content matches ALGO_04 (0.509) better than every CO1 topic (best ALGO_01, 0.368); check the CO -> topic mapping in the subject YAML",
+      "bloom_level_raw": "Analyse level",
+      "bloom_rank": 4,
+      "topic_id_from_co": "ALGO_01",
+      "tag_method": "content-override",
+      "topic_confidence": 0.0137,
+      "co_topic_mismatch": true,
+      "topic_scores": "[[\"ALGO_04\", 0.5088], [\"ALGO_06\", 0.4951], [\"ALGO_08\", 0.4832]]"
     }
   },
   {
@@ -46,16 +53,22 @@
       "raw_co_code": "CO3",
       "course_outcome": "CO3",
       "co_description": "Apply algorithmic principles for solving a given problem.",
-      "bloom_level": "Apply level",
+      "bloom_level": "Apply",
       "marks": 4,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO3' maps to 4 topics — pick one: ALGO_03 (Divide and Conquer), ALGO_04 (Greedy Algorithms), ALGO_07 (String Algorithms), ALGO_08 (Problem Spaces and Search (BFS/DFS/A*))"
+      "topic_id": "ALGO_04",
+      "topic_name": "Greedy Algorithms",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Apply level",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0961,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"ALGO_06\", 0.4784], [\"ALGO_04\", 0.4777], [\"ALGO_09\", 0.4729]]"
     }
   },
-  
   {
     "id": "ALGO_2025_test2_q3",
     "document": "Q3. An e-commerce company generates sales report files for different products in varying sizes throughout the day. These reports need to be merged into a single comprehensive report for analysis. The merging cost is the sum of the sizes of the two reports being merged.\na. Give an algorithm to merge the files into a single file such that the merging cost is minimal.\nb. You are given the following sales report files with their respective sizes (in MB). Calculate the minimum cost of merging the files into a single file.\n\n| Sales Report | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 |\n| Size (in MB) | 5 | 8 | 3 | 6 | 2 | 9 | 4 | 7 |",
@@ -69,13 +82,17 @@
       "raw_co_code": "CO4",
       "course_outcome": "CO4",
       "co_description": "Identify, formulate and design an efficient solution to a given problem using appropriate data structure and algorithm design technique.",
-      "bloom_level": "Create level",
+      "bloom_level": "Create",
       "marks": 4,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO4' maps to 3 topics — pick one: ALGO_05 (Backtracking Algorithms), ALGO_06 (Dynamic Programming), ALGO_09 (Tractable and Non-Tractable Problems (P, NP, NP-Complete))"
+      "topic_id": "ALGO_04",
+      "topic_name": "Greedy Algorithms",
+      "needs_review": false,
+      "review_reason": "manual: topic set to ALGO_04 after reading the question",
+      "tag_method": "manual",
+      "bloom_level_raw": "Create level",
+      "bloom_rank": 6,
+      "topic_id_from_co": "ALGO_04"
     }
   },
   {
@@ -91,13 +108,20 @@
       "raw_co_code": "CO3",
       "course_outcome": "CO3",
       "co_description": "Apply algorithmic principles for solving a given problem.",
-      "bloom_level": "Apply level",
+      "bloom_level": "Apply",
       "marks": 7,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO3' maps to 4 topics — pick one: ALGO_03 (Divide and Conquer), ALGO_04 (Greedy Algorithms), ALGO_07 (String Algorithms), ALGO_08 (Problem Spaces and Search (BFS/DFS/A*))"
+      "topic_id": "ALGO_07",
+      "topic_name": "String Algorithms",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Apply level",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.1842,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"ALGO_07\", 0.5638], [\"ALGO_06\", 0.4222], [\"ALGO_04\", 0.3796]]"
     }
   }
 ]

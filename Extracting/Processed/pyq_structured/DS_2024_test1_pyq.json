@@ -24,13 +24,20 @@
       "raw_co_code": "CO1",
       "course_outcome": "CO1",
       "co_description": "Explain abstract data types, memory allocation schemes, and need of linear and non-linear data structures",
-      "bloom_level": "Understanding",
+      "bloom_level": "Understand",
       "marks": 3,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO1' maps to 2 topics — pick one: DS_01 (Linear Data Structures (Array, Linked List, Stack, Queue)), DS_03 (Non-Linear DS: Multi List, Tree, Priority Queue (Heaps))"
+      "topic_id": "DS_01",
+      "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Understanding",
+      "bloom_rank": 2,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0465,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"DS_01\", 0.5603], [\"DS_03\", 0.5138], [\"DS_04\", 0.4904]]"
     }
   },
   {
@@ -46,13 +53,20 @@
       "raw_co_code": "CO2",
       "course_outcome": "CO2",
       "co_description": "Apply and implement various linear data structures like array, linked list, stack, and queue in different problems and applications",
-      "bloom_level": "Applying",
+      "bloom_level": "Apply",
       "marks": 5,
       "marks_breakdown": null,
       "topic_id": "DS_01",
       "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Applying",
+      "bloom_rank": 3,
+      "topic_id_from_co": "DS_01",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"DS_01\", 0.5419], [\"DS_04\", 0.5051], [\"DS_03\", 0.4776]]"
     }
   },
   {
@@ -68,13 +82,20 @@
       "raw_co_code": "CO2",
       "course_outcome": "CO2",
       "co_description": "Apply and implement various linear data structures like array, linked list, stack, and queue in different problems and applications",
-      "bloom_level": "Applying",
+      "bloom_level": "Apply",
       "marks": 4,
       "marks_breakdown": null,
       "topic_id": "DS_01",
       "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Applying",
+      "bloom_rank": 3,
+      "topic_id_from_co": "DS_01",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"DS_01\", 0.7538], [\"DS_03\", 0.5923], [\"DS_06\", 0.5536]]"
     }
   },
   {
@@ -90,16 +111,22 @@
       "raw_co_code": "CO3",
       "course_outcome": "CO3",
       "co_description": "Analyse the performance of various sorting and searching techniques",
-      "bloom_level": "Analysing",
+      "bloom_level": "Analyze",
       "marks": 2,
       "marks_breakdown": null,
       "topic_id": "DS_02",
       "topic_name": "Searching and Sorting",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Analysing",
+      "bloom_rank": 4,
+      "topic_id_from_co": "DS_02",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"DS_02\", 0.6444], [\"DS_03\", 0.6122], [\"DS_01\", 0.4589]]"
     }
   },
-  
   {
     "id": "DS_2024_test1_q5",
     "document": "Q. 5 Comprehend the following recursive codes and write the output showing all intermediate steps.\n\na) \n```c\n#include<stdio.h>\nvoid abc1(int);\nvoid abc2(int);\nvoid abc1(int num)\n{\nif(num==0)\nreturn;\nprintf(\"%d\", num);\nabc2(num-3);\nprintf(\"%d\",num);\n}\n```\n```c\nvoid abc2(int num){\nif(num==0) return;\nprintf(\"%d\",num);\nabc1(-num);\nprintf(\"%d\",num);\n}\nint main()\n{\nabc1(7);\nreturn 0;\n}\n```\n\nb) \n```c\n#include<stdio.h>\nint Xf(int num)\n{\nprintf(\"%d\\n\",\nnum);\nif(num > 8)\n{\nXf(Xf(Xf(-num)));\n}\nreturn num;\n}\n```\n```c\nint main()\n{\nXf(10),\nreturn 0;\n}\n```",
@@ -113,13 +140,17 @@
       "raw_co_code": "CO1",
       "course_outcome": "CO1",
       "co_description": "Explain abstract data types, memory allocation schemes, and need of linear and non-linear data structures",
-      "bloom_level": "Understanding",
+      "bloom_level": "Understand",
       "marks": 3,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO1' maps to 2 topics — pick one: DS_01 (Linear Data Structures (Array, Linked List, Stack, Queue)), DS_03 (Non-Linear DS: Multi List, Tree, Priority Queue (Heaps))"
+      "topic_id": "DS_01",
+      "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+      "needs_review": false,
+      "review_reason": "manual: topic set to DS_01 after reading the question",
+      "tag_method": "manual",
+      "bloom_level_raw": "Understanding",
+      "bloom_rank": 2,
+      "topic_id_from_co": "DS_01"
     }
   },
   {
@@ -135,13 +166,20 @@
       "raw_co_code": "CO3",
       "course_outcome": "CO3",
       "co_description": "Analyse the performance of various sorting and searching techniques",
-      "bloom_level": "Analysing",
+      "bloom_level": "Analyze",
       "marks": 3,
       "marks_breakdown": null,
       "topic_id": "DS_02",
       "topic_name": "Searching and Sorting",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Analysing",
+      "bloom_rank": 4,
+      "topic_id_from_co": "DS_02",
+      "tag_method": "co+content",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"DS_02\", 0.5537], [\"DS_01\", 0.5218], [\"DS_04\", 0.5039]]"
     }
   }
 ]

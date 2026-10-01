@@ -122,14 +122,20 @@ docker compose --profile tools run --rm loader --reset
 # 3. embed everything into Chroma (safe to re-run, it upserts)
 python Embedding/embed_chunks.py                  # books     -> book_content
 python Embedding/embed_tutorial_chunks.py         # tutorials -> tut_content
-python Extracting/pyqs_processing/embed_pyqs.py   # PYQs      -> pyq_bank
+python Embedding/embed_pyqs.py                   # PYQs      -> pyq_bank
 
 # 4. check what is in Chroma, and which topics have no grounding text
 python check_chroma.py
 
-# 5. try the graph lookup + difficulty blend, and retrieval
-python prerequisite_graph/loader/integration.py
-python retrieval.py
+# 5. clean the PYQ labels (Bloom level, OCR'd COs, topic) -- preview, then save
+python Extracting/pyqs_processing/resolve_pyq_labels.py
+python Extracting/pyqs_processing/resolve_pyq_labels.py --write
+
+# 6. run the pipeline for one topic: graph lookup -> retrieve
+python -m pipeline.graph ALGO_06 hard 10
+
+# unit tests (no Docker needed)
+python -m unittest tests.test_phase1
 ```
 
 Neo4j browser: http://localhost:7474 (user `neo4j`, password from `.env`).
@@ -143,6 +149,8 @@ Neo4j browser: http://localhost:7474 (user `neo4j`, password from `.env`).
 | Tutorials → chunks (Gemini) | `python Extracting/tutorial_chunks.py` | `Extracting/Processed/<subj>_tutorial_chunks.jsonl` |
 | PYQ PDFs → page text (OpenRouter) | `python Extracting/pyqs_processing/pdf_extract_full.py` | `Extracting/Processed/pyq_pages/` |
 | Page text → one record per question | `python Extracting/pyqs_processing/split_pyq_questions.py` | `Extracting/Processed/pyq_structured/` |
+| Embed the questions | `python Embedding/embed_pyqs.py` | Chroma `pyq_bank` |
+| Clean Bloom / CO / topic labels | `python Extracting/pyqs_processing/resolve_pyq_labels.py --write` | updates the JSON and `pyq_bank` |
 
 `split_pyq_questions.py` overwrites the `*_pyq.json` files, so hand fixes made in them are lost. Use `--out-dir` to write somewhere else and compare first. After re-extracting, run the matching embed script again.
 
@@ -164,7 +172,7 @@ Question_Paper_Generator/
 │   ├── pyqs_processing/
 │   │   ├── pdf_extract_full.py      PYQ PDF -> page text
 │   │   ├── split_pyq_questions.py   page text -> one record per question
-│   │   ├── embed_pyqs.py            -> Chroma "pyq_bank"
+│   │   ├── resolve_pyq_labels.py    cleans Bloom / CO / topic labels
 │   │   ├── test_pyq_embed.py        sample PYQ search
 │   │   └── model_search.py          lists Groq models
 │   └── Processed/              every processed data file lives here
@@ -175,17 +183,26 @@ Question_Paper_Generator/
 │
 ├── Embedding/
 │   ├── embed_chunks.py          -> Chroma "book_content"
-│   └── embed_tutorial_chunks.py -> Chroma "tut_content"
+│   ├── embed_tutorial_chunks.py -> Chroma "tut_content"
+│   └── embed_pyqs.py            -> Chroma "pyq_bank"
 │
 ├── prerequisite_graph/
 │   ├── subjects/*.yaml          topics, COs, prerequisites (single source of truth)
 │   └── loader/
-│       ├── build_prereq_graph.py    YAMLs -> Neo4j (runs in Docker)
-│       ├── difficulty_blend.py      picks the prerequisite to blend in
-│       └── integration.py           LangGraph graph-lookup node
+│       └── build_prereq_graph.py    YAMLs -> Neo4j (runs in Docker)
 │
+├── pipeline/                   the LangGraph question pipeline
+│   ├── state.py                what flows between the steps
+│   ├── resources.py            Neo4j / Chroma / embedding model, opened once
+│   ├── difficulty_blend.py     blend rules (easy / medium / hard)
+│   ├── nodes/
+│   │   ├── graph_lookup.py     topic, COs, prerequisite to blend (Neo4j)
+│   │   └── retrieve.py         grounding text + similar PYQs (Chroma)
+│   └── graph.py                START -> graph_lookup -> retrieve -> END
+│
+├── tests/test_phase1.py        unit tests with fake Neo4j / Chroma
 ├── tag_topics.py               adds topic_id to book chunks
-├── retrieval.py                grounding text for a topic (book + tutorial)
+├── retrieval.py                grounding text (book + tutorial) + similar PYQs
 ├── check_chroma.py             verifies all Chroma collections
 ├── check.py                    older quick count of book/tutorial vectors
 ├── diagrams/                   README figures

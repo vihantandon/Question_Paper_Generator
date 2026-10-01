@@ -11,7 +11,6 @@
       "type": "header"
     }
   },
-  
   {
     "id": "SDF1_2023_endsem_q1",
     "document": "Q1. Draw a flowchart for finding all the roots of 'N' different quadratic equations (where N is provided by the user) of the form ax^2+bx+c=0, where a, b and c are real constants. Formula for calculating the roots of the quadratic equation is as follows:\n              -b±√D\n        Roots = -----\n                 2a\n        where D = (b * b) - (4 * a * c)\nYour flowcharts should additionally show whether the roots will be “real and equal” or “real and unequal” or “imaginary”.",
@@ -31,7 +30,14 @@
       "topic_id": "SDF1_01",
       "topic_name": "Introduction to SDLC & Problem Solving",
       "needs_review": false,
-      "review_reason": null
+      "review_reason": null,
+      "bloom_level_raw": "Understand",
+      "bloom_rank": 2,
+      "topic_id_from_co": "SDF1_01",
+      "tag_method": "co-only",
+      "topic_confidence": null,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF1_02\", 0.3007], [\"SDF1_05\", 0.207], [\"SDF1_03\", 0.1997]]"
     }
   },
   {
@@ -50,10 +56,17 @@
       "bloom_level": "Understand",
       "marks": 6,
       "marks_breakdown": null,
-      "topic_id": "SDF1_02",
-      "topic_name": "Data Types, Operators, Control Flow",
-      "needs_review": false,
-      "review_reason": null
+      "topic_id": "SDF1_03",
+      "topic_name": "Arrays",
+      "needs_review": true,
+      "review_reason": "content matches SDF1_03 (0.494) better than every CO2 topic (best SDF1_02, 0.342); check the CO -> topic mapping in the subject YAML",
+      "bloom_level_raw": "Understand",
+      "bloom_rank": 2,
+      "topic_id_from_co": "SDF1_02",
+      "tag_method": "content-override",
+      "topic_confidence": 0.1526,
+      "co_topic_mismatch": true,
+      "topic_scores": "[[\"SDF1_03\", 0.4942], [\"SDF1_02\", 0.3417], [\"SDF1_05\", 0.273]]"
     }
   },
   {
@@ -67,15 +80,19 @@
       "type": "question",
       "question_number": 3,
       "raw_co_code": "C03",
-      "course_outcome": null,
-      "co_description": null,
+      "course_outcome": "CO3",
+      "co_description": "Demonstrate and contrast different methods for writing modular programs in C",
       "bloom_level": "Understand",
       "marks": 6,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "code 'C03' could not be resolved to a CO in SDF1.yaml (course-outcome table missing or didn't match)"
+      "topic_id": "SDF1_05",
+      "topic_name": "Functions",
+      "needs_review": false,
+      "review_reason": "manual: topic set to SDF1_05 after reading the question",
+      "tag_method": "manual",
+      "bloom_level_raw": "Understand",
+      "bloom_rank": 2,
+      "topic_id_from_co": "SDF1_05"
     }
   },
   {
@@ -94,10 +111,17 @@
       "bloom_level": "Apply",
       "marks": 6,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO4' maps to 2 topics — pick one: SDF1_02 (Data Types, Operators, Control Flow), SDF1_05 (Functions)"
+      "topic_id": "SDF1_05",
+      "topic_name": "Functions",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Apply",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0867,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF1_05\", 0.5145], [\"SDF1_02\", 0.4277], [\"SDF1_03\", 0.3903]]"
     }
   },
   {
@@ -111,15 +135,22 @@
       "type": "question",
       "question_number": 5,
       "raw_co_code": "C05",
-      "course_outcome": null,
-      "co_description": null,
+      "course_outcome": "CO5",
+      "co_description": "Apply and implement arrays, pointers, Structures and file handling for solving real world problems",
       "bloom_level": "Apply",
       "marks": 7,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "code 'C05' could not be resolved to a CO in SDF1.yaml (course-outcome table missing or didn't match)"
+      "topic_id": "SDF1_03",
+      "topic_name": "Arrays",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Apply",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.1126,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF1_03\", 0.5461], [\"SDF1_02\", 0.4544], [\"SDF1_06\", 0.4335]]"
     }
   },
   {
@@ -138,10 +169,17 @@
       "bloom_level": "Apply",
       "marks": 6,
       "marks_breakdown": null,
-      "topic_id": null,
-      "topic_name": null,
-      "needs_review": true,
-      "review_reason": "CO 'CO4' maps to 2 topics — pick one: SDF1_02 (Data Types, Operators, Control Flow), SDF1_05 (Functions)"
+      "topic_id": "SDF1_02",
+      "topic_name": "Data Types, Operators, Control Flow",
+      "needs_review": false,
+      "review_reason": null,
+      "bloom_level_raw": "Apply",
+      "bloom_rank": 3,
+      "topic_id_from_co": null,
+      "tag_method": "co+content",
+      "topic_confidence": 0.0249,
+      "co_topic_mismatch": false,
+      "topic_scores": "[[\"SDF1_07\", 0.4342], [\"SDF1_02\", 0.4069], [\"SDF1_05\", 0.382]]"
     }
   }
 ]

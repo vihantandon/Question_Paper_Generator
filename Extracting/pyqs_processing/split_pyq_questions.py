@@ -15,7 +15,7 @@ All paths are found relative to this file, so it runs from any folder:
 WARNING: this REWRITES the *_pyq.json files. Any hand fixes you made in them
 (e.g. a topic_id you set manually) are lost. Use --out-dir to write
 somewhere else and compare first.
-Next step: embed_pyqs.py
+Next steps: Embedding/embed_pyqs.py, then resolve_pyq_labels.py
 """
 import argparse
 import difflib
@@ -97,9 +97,15 @@ def normalize(s: str) -> str:
     return re.sub(r'[^a-z0-9]', '', s.lower())
 
 
+OCR_ZERO_FOR_O_RE = re.compile(r'C0(\d)')
+
+
 def normalize_code(raw_code: str) -> str:
-    """'C109.1' -> 'C109.1', 'CO 4' -> 'CO4', 'co4' -> 'CO4'."""
-    return re.sub(r'\s+', '', raw_code).upper()
+    """'C109.1' -> 'C109.1', 'CO 4' -> 'CO4', 'co4' -> 'CO4',
+    'C03' -> 'CO3' (OCR read the letter O as the digit 0)."""
+    code = re.sub(r'\s+', '', raw_code).upper()
+    m = OCR_ZERO_FOR_O_RE.fullmatch(code)
+    return f"CO{m.group(1)}" if m else code
 
 
 def load_subject_yamls(yaml_paths: list[str]) -> dict:
