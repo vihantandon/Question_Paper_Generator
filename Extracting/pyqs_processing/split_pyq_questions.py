@@ -190,10 +190,69 @@ def detect_exam_and_year(header_text: str, filename: str = "") -> tuple[str, int
     return "unknown", year
 
 
-def redact_pii(header_text: str) -> str:
-    lines = header_text.split("\n")
-    kept = [l for l in lines if "enrollment" not in l.lower()
-            and not re.search(r'name\s*\$?\\underline', l, re.I)]
+# The scanned papers carry the candidate's own handwritten details, and the
+# vision model transcribes them along with the printed text, e.g.:
+#   "Name Asha Rao Enrollment No. 21103045"
+#   "Name: Asha (handwritten)"   /   "Enrollment No.: 2110 3045 (handwritten)"
+#   "Name $\underline{\text{ Asha Rao }}$ Enrollment No. $\underline{...}$"
+# A line only counts when it STARTS with the form label and a filled-in value
+# follows, so question text ("Name the data structure ...", "... has name
+# (string) and rollno (int)", "roll_no = 5;") is left alone.
+_FIELD_START = r'^[\s>*_#|`•\-]*'                  # markdown / table decoration
+_NAME_FIELD_RE = re.compile(
+    _FIELD_START + r"(?:(?:student|candidate)(?:'?s)?\s+)?name"
+    r"(?:\s+of\s+(?:the\s+)?(?:student|candidate))?\b(?P<sep>\s*[:\-–])?", re.I)
+_ID_LABEL = (r"(?:(?:enrol+ment|roll|registration|regn?\.?)\s+(?:no|number|num|id)\b"
+             r"|enrol+ment(?=\s*:))[\s.:#\-–]*")
+_ID_FIELD_RE = re.compile(_FIELD_START + _ID_LABEL, re.I)
+_ID_LABEL_RE = re.compile(r'\b' + _ID_LABEL, re.I)
+
+
+def _filled_in(value: str, id_like: bool) -> bool:
+    """True if a form field holds a real value: not blank and not prose."""
+    latex = re.search(r'\\underline\s*\{(.*)\}', value)
+    if latex:
+        return bool(re.search(r'[A-Za-z0-9]', re.sub(r'\\[A-Za-z]+', '', latex.group(1))))
+    words = re.sub(r'\([^)]*\)', ' ', value)             # "(handwritten)"
+    words = re.sub(r'[*_`$"|]', ' ', words).split()
+    if not 0 < len(words) <= 4:
+        return False
+    if id_like:                                          # "21103045", "2110 3045", "NJG132512"
+        first = words[0]
+        return bool(re.fullmatch(r'[A-Za-z0-9/\-]+', first)) and (
+            any(ch.isdigit() for ch in first) or (first.isupper() and len(first) >= 5))
+    return all(re.fullmatch(r"[A-Z][A-Za-z.'\-]*", w) for w in words)
+
+
+def _is_candidate_field(line: str, in_header: bool) -> bool:
+    id_first = _ID_FIELD_RE.match(line)                  # "Enrollment No. 21103045"
+    if id_first:
+        return _filled_in(line[id_first.end():], id_like=True)
+    name = _NAME_FIELD_RE.match(line)
+    if not name:
+        return False
+    rest = line[name.end():]
+    if not (name.group("sep") or rest[:1].isspace()):    # "Name(String)"
+        return False
+    id_later = _ID_LABEL_RE.search(rest)                 # "Name ... Enrollment No. ..."
+    if id_later and _filled_in(rest[id_later.end():], id_like=True):
+        return True
+    # A bare "Name Asha Rao" is only trusted above the first question;
+    # further down the page it could be question text.
+    value = rest[:id_later.start()] if id_later else rest
+    return in_header and _filled_in(value, id_like=False)
+
+
+def redact_pii(text: str) -> str:
+    """Drop the lines holding the candidate's own name / enrollment number.
+    Works on a header block and on a whole page of transcribed text."""
+    first_question = QUESTION_START_RE.search(text)
+    header_end = first_question.start() if first_question else len(text)
+    kept, pos = [], 0
+    for line in text.split("\n"):
+        start, pos = pos, pos + len(line) + 1
+        if not _is_candidate_field(line, in_header=start < header_end):
+            kept.append(line)
     return "\n".join(kept)
 
 

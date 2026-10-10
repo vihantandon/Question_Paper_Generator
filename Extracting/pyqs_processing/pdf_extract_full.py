@@ -17,6 +17,7 @@ import fitz  # PyMuPDF
 import json
 import io
 import os
+import sys
 import time
 import base64
 from pathlib import Path
@@ -25,6 +26,9 @@ from openai import OpenAI
 
 HERE = Path(__file__).resolve().parent            # Extracting/pyqs_processing
 ROOT = HERE.parent.parent                          # repo root
+
+sys.path.insert(0, str(HERE))                      # split_pyq_questions.py
+from split_pyq_questions import redact_pii         # noqa: E402  one PII rule, one place
 DEFAULT_INPUT_DIR = ROOT / "PYQs"
 DEFAULT_OUTPUT_DIR = ROOT / "Extracting" / "Processed" / "pyq_pages"
 
@@ -143,7 +147,8 @@ def process_pdf(path: str, subject: str) -> list[dict]:
             "source_file": _display_path(path),
             "page_num": i + 1,
             "extraction_method": method,
-            "text": text,
+            # the candidate's name / enrollment number never reach the file
+            "text": redact_pii(text),
         })
         print(f"  page {i+1}/{len(doc)} -> {method}")
     return records
