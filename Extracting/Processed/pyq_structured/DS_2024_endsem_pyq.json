@@ -87,9 +87,9 @@
       "bloom_rank": 3,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.0393,
+      "topic_confidence": 0.0639,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"DS_03\", 0.561], [\"DS_04\", 0.5218], [\"DS_01\", 0.5107]]"
+      "topic_scores": "[[\"DS_03\", 0.5819], [\"DS_04\", 0.518], [\"DS_02\", 0.4856]]"
     }
   },
   {
@@ -110,15 +110,12 @@
       "marks_breakdown": null,
       "topic_id": "DS_06",
       "topic_name": "Advanced DS: Segment/Interval Tree, Suffix Tree/Array, Tries",
-      "needs_review": true,
-      "review_reason": "content matches DS_06 (0.459) better than every CO3 topic (best DS_02, 0.353); check the CO -> topic mapping in the subject YAML",
+      "needs_review": false,
+      "review_reason": "manual: topic set to DS_06 after reading the question (suffix array; paper tags CO3)",
+      "tag_method": "manual",
       "bloom_level_raw": "Analyze Level",
       "bloom_rank": 4,
-      "topic_id_from_co": "DS_02",
-      "tag_method": "content-override",
-      "topic_confidence": 0.0684,
-      "co_topic_mismatch": true,
-      "topic_scores": "[[\"DS_06\", 0.4592], [\"DS_04\", 0.3908], [\"DS_02\", 0.353]]"
+      "topic_id_from_co": "DS_02"
     }
   },
   {
@@ -147,7 +144,7 @@
       "tag_method": "co+content",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"DS_01\", 0.4919], [\"DS_03\", 0.3935], [\"DS_06\", 0.3505]]"
+      "topic_scores": "[[\"DS_01\", 0.5027], [\"DS_03\", 0.4168], [\"DS_06\", 0.3565]]"
     }
   },
   {
@@ -168,15 +165,12 @@
       "marks_breakdown": null,
       "topic_id": "DS_06",
       "topic_name": "Advanced DS: Segment/Interval Tree, Suffix Tree/Array, Tries",
-      "needs_review": true,
-      "review_reason": "content matches DS_06 (0.600) better than every CO4 topic (best DS_04, 0.499); check the CO -> topic mapping in the subject YAML",
+      "needs_review": false,
+      "review_reason": "manual: topic set to DS_06 after reading the question (segment tree; paper tags CO4)",
+      "tag_method": "manual",
       "bloom_level_raw": "Apply Level",
       "bloom_rank": 3,
-      "topic_id_from_co": null,
-      "tag_method": "content-override",
-      "topic_confidence": 0.1009,
-      "co_topic_mismatch": true,
-      "topic_scores": "[[\"DS_06\", 0.6001], [\"DS_04\", 0.4992], [\"DS_03\", 0.4798]]"
+      "topic_id_from_co": null
     }
   },
   {
@@ -203,9 +197,9 @@
       "bloom_rank": 6,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.1429,
+      "topic_confidence": 0.1525,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"DS_05\", 0.4589], [\"DS_04\", 0.3698], [\"DS_06\", 0.316]]"
+      "topic_scores": "[[\"DS_05\", 0.5037], [\"DS_04\", 0.4123], [\"DS_06\", 0.3512]]"
     }
   }
 ]

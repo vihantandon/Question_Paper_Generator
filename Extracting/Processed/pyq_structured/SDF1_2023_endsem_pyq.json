@@ -37,7 +37,7 @@
       "tag_method": "co-only",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_02\", 0.3007], [\"SDF1_05\", 0.207], [\"SDF1_03\", 0.1997]]"
+      "topic_scores": "[[\"SDF1_02\", 0.3378], [\"SDF1_05\", 0.2192], [\"SDF1_03\", 0.2058]]"
     }
   },
   {
@@ -58,15 +58,12 @@
       "marks_breakdown": null,
       "topic_id": "SDF1_03",
       "topic_name": "Arrays",
-      "needs_review": true,
-      "review_reason": "content matches SDF1_03 (0.494) better than every CO2 topic (best SDF1_02, 0.342); check the CO -> topic mapping in the subject YAML",
+      "needs_review": false,
+      "review_reason": "manual: topic set to SDF1_03 after reading the question (array rearrangement; paper tags CO2)",
+      "tag_method": "manual",
       "bloom_level_raw": "Understand",
       "bloom_rank": 2,
-      "topic_id_from_co": "SDF1_02",
-      "tag_method": "content-override",
-      "topic_confidence": 0.1526,
-      "co_topic_mismatch": true,
-      "topic_scores": "[[\"SDF1_03\", 0.4942], [\"SDF1_02\", 0.3417], [\"SDF1_05\", 0.273]]"
+      "topic_id_from_co": "SDF1_02"
     }
   },
   {
@@ -119,9 +116,9 @@
       "bloom_rank": 3,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.0867,
+      "topic_confidence": 0.0475,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_05\", 0.5145], [\"SDF1_02\", 0.4277], [\"SDF1_03\", 0.3903]]"
+      "topic_scores": "[[\"SDF1_05\", 0.5337], [\"SDF1_02\", 0.4862], [\"SDF1_03\", 0.3885]]"
     }
   },
   {
@@ -148,9 +145,9 @@
       "bloom_rank": 3,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.1126,
+      "topic_confidence": 0.0252,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_03\", 0.5461], [\"SDF1_02\", 0.4544], [\"SDF1_06\", 0.4335]]"
+      "topic_scores": "[[\"SDF1_03\", 0.5473], [\"SDF1_07\", 0.5221], [\"SDF1_06\", 0.5055]]"
     }
   },
   {
@@ -169,17 +166,14 @@
       "bloom_level": "Apply",
       "marks": 6,
       "marks_breakdown": null,
-      "topic_id": "SDF1_02",
-      "topic_name": "Data Types, Operators, Control Flow",
+      "topic_id": "SDF1_07",
+      "topic_name": "File Handling",
       "needs_review": false,
-      "review_reason": null,
+      "review_reason": "manual: topic set to SDF1_07 after reading the question (reads and writes files of structures; paper tags CO4)",
+      "tag_method": "manual",
       "bloom_level_raw": "Apply",
       "bloom_rank": 3,
-      "topic_id_from_co": null,
-      "tag_method": "co+content",
-      "topic_confidence": 0.0249,
-      "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_07\", 0.4342], [\"SDF1_02\", 0.4069], [\"SDF1_05\", 0.382]]"
+      "topic_id_from_co": null
     }
   }
 ]

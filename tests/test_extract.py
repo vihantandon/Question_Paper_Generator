@@ -117,5 +117,99 @@ class TestNoPageIsChunkedTwice(unittest.TestCase):
                          {("1 Intro", 1, 2), ("2 Arrays", 3, 4)})
 
 
+# ---------------------------------------------------------------- chunk size
+# The embedding model reads only EMBED_MAX_TOKENS tokens of a chunk. These
+# tests use extract.estimate_tokens (no model needed) as the measure.
+def prose(n_lines, first=0):
+    """n printed lines of a book page, with no blank line between them
+    (the way PyMuPDF returns a page of CLRS or the DS handbook)."""
+    return "\n".join(f"line {i} of the page has about a dozen plain words in it"
+                     for i in range(first, first + n_lines))
+
+
+def lines_of(chunks):
+    return [line for chunk in chunks for line in chunk.split("\n")]
+
+
+def size(chunk):
+    """A chunk's size the way the chunker adds it up: line by line."""
+    return sum(extract.estimate_tokens(line) for line in chunk.split("\n"))
+
+
+class TestChunksFitTheEmbeddingModel(unittest.TestCase):
+    def assert_all_fit(self, chunks):
+        for c in chunks:
+            self.assertLessEqual(extract.estimate_tokens(c), extract.MAX_CHUNK_TOKENS, c[:60])
+
+    def test_a_whole_page_is_split_into_chunks_that_fit(self):
+        page = prose(60)                     # ~700 words: one "paragraph" for the old code
+        chunks = extract.split_into_chunks(page)
+        self.assertGreater(len(chunks), 1)
+        self.assert_all_fit(chunks)
+
+    def test_no_line_is_lost_repeated_or_reordered(self):
+        page = prose(60)
+        self.assertEqual(lines_of(extract.split_into_chunks(page)), page.split("\n"))
+
+    def test_blank_lines_and_page_breaks_change_nothing(self):
+        # the old code cut at blank lines, which mostly meant "at every page"
+        one_block = prose(40)
+        with_breaks = prose(15) + "\n\n" + prose(15, first=15) + "\n \n\n" + prose(10, first=30)
+        self.assertEqual(extract.split_into_chunks(with_breaks), extract.split_into_chunks(one_block))
+
+    def test_a_line_longer_than_a_chunk_is_cut_between_words(self):
+        words = [f"word{i}" for i in range(900)]       # e.g. a listing with no line breaks
+        chunks = extract.split_into_chunks(" ".join(words))
+        self.assertGreater(len(chunks), 1)
+        self.assert_all_fit(chunks)
+        self.assertEqual(" ".join(chunks).split(), words)
+
+    def test_code_is_measured_by_its_symbols_not_its_words(self):
+        loop = "for(i=0;i<n;i++)"                      # 1 word, 14 tokens for the real model
+        self.assertEqual(len(loop.split()), 1)
+        self.assertGreaterEqual(extract.estimate_tokens(loop), 14)
+        code = "\n".join(f"for(i{k}=0;i{k}<n;i{k}++){{a[i{k}]=b[i{k}]+c[i{k}];}}" for k in range(40))
+        chunks = extract.split_into_chunks(code)
+        self.assertGreater(len(chunks), 1)             # 40 "words" would have been one chunk
+        self.assert_all_fit(chunks)
+
+    def test_a_short_section_is_one_chunk(self):
+        self.assertEqual(extract.split_into_chunks(prose(3)), [prose(3)])
+        self.assertEqual(extract.split_into_chunks(" \n\n "), [])
+
+
+class TestNoTinyChunks(unittest.TestCase):
+    TITLE_PAGE = "Chapter 16\nInheritance\n419\nC++\n"
+
+    def test_chapter_title_page_is_not_a_chunk_of_its_own(self):
+        # SDF-2: this 5-word page was a chunk, and the top search hit for "Inheritance"
+        doc = FakeDoc([self.TITLE_PAGE, prose(60), prose(60, first=60)], [[1, "Ch16 Inheritance", 1]])
+        with mock.patch.object(extract.fitz, "open", lambda path: doc, create=True):
+            chunks = extract.process_pdf("Books/FAKE.pdf", subject="FAKE")
+        self.assertTrue(chunks[0].text.startswith("Chapter 16\nInheritance\n419\nC++\nline 0 of the page"))
+        for c in chunks:
+            self.assertGreaterEqual(size(c.text), extract.MIN_CHUNK_TOKENS, c.text[:60])
+
+    def test_short_last_chunk_is_evened_out_with_the_one_before(self):
+        # find a length where packing line by line leaves a single line over
+        for n in range(20, 60):
+            page = prose(n)
+            chunks = extract.split_into_chunks(page, max_tokens=10 ** 9)   # sanity: fits in one
+            self.assertEqual(chunks, [page])
+            chunks = extract.split_into_chunks(page)
+            if len(chunks) < 2:
+                continue
+            self.assertEqual(lines_of(chunks), page.split("\n"), n)
+            for c in chunks:
+                self.assertLessEqual(size(c), extract.MAX_CHUNK_TOKENS, n)
+                self.assertGreaterEqual(size(c), extract.MIN_CHUNK_TOKENS, n)
+
+    def test_evening_out_never_makes_a_chunk_too_long(self):
+        # 10 + 240 fill a chunk; the 30 left over cannot be shared without breaking the limit
+        a, b, c = ("w " * 8).strip(), ("w " * 200).strip(), ("w " * 25).strip()
+        self.assertEqual([extract.estimate_tokens(x) for x in (a, b, c)], [10, 240, 30])
+        self.assertEqual(extract.split_into_chunks("\n".join([a, b, c])), [a + "\n" + b, c])
+
+
 if __name__ == "__main__":
     unittest.main()

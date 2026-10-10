@@ -37,7 +37,7 @@
       "tag_method": "co+content",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"ALGO_01\", 0.5375], [\"ALGO_03\", 0.5093], [\"ALGO_06\", 0.487]]"
+      "topic_scores": "[[\"ALGO_01\", 0.5759], [\"ALGO_03\", 0.5392], [\"ALGO_06\", 0.507]]"
     }
   },
   {
@@ -56,17 +56,14 @@
       "bloom_level": "Apply",
       "marks": 6,
       "marks_breakdown": null,
-      "topic_id": "ALGO_07",
-      "topic_name": "String Algorithms",
-      "needs_review": true,
-      "review_reason": "content matches ALGO_07 (0.603) better than every CO2 topic (best ALGO_02, 0.296); check the CO -> topic mapping in the subject YAML",
+      "topic_id": "ALGO_03",
+      "topic_name": "Divide and Conquer",
+      "needs_review": false,
+      "review_reason": "manual: topic set to ALGO_03 after reading the question (it asks for a divide and conquer algorithm; paper tags CO2)",
+      "tag_method": "manual",
       "bloom_level_raw": "Apply level",
       "bloom_rank": 3,
-      "topic_id_from_co": "ALGO_02",
-      "tag_method": "content-override",
-      "topic_confidence": 0.0923,
-      "co_topic_mismatch": true,
-      "topic_scores": "[[\"ALGO_07\", 0.6033], [\"ALGO_06\", 0.5109], [\"ALGO_04\", 0.4689]]"
+      "topic_id_from_co": "ALGO_02"
     }
   },
   {
@@ -95,7 +92,7 @@
       "tag_method": "co+content",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"ALGO_01\", 0.6071], [\"ALGO_03\", 0.4997], [\"ALGO_06\", 0.4747]]"
+      "topic_scores": "[[\"ALGO_01\", 0.6268], [\"ALGO_03\", 0.575], [\"ALGO_06\", 0.4792]]"
     }
   },
   {

@@ -27,17 +27,14 @@
       "bloom_level": "Apply",
       "marks": 5,
       "marks_breakdown": null,
-      "topic_id": "SDF2_04",
-      "topic_name": "Polymorphism (C++)",
+      "topic_id": "SDF2_03",
+      "topic_name": "Inheritance (C++)",
       "needs_review": false,
-      "review_reason": null,
+      "review_reason": "manual: topic set to SDF2_03 after reading the question (multiple inheritance: student, cricketer/footballer, star performer)",
+      "tag_method": "manual",
       "bloom_level_raw": "Applying",
       "bloom_rank": 3,
-      "topic_id_from_co": null,
-      "tag_method": "co+content",
-      "topic_confidence": 0.0212,
-      "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF2_02\", 0.4129], [\"SDF2_04\", 0.3862], [\"SDF2_06\", 0.365]]"
+      "topic_id_from_co": null
     }
   },
   {
@@ -66,7 +63,7 @@
       "tag_method": "co-only",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF2_01\", 0.2322], [\"SDF2_03\", 0.221], [\"SDF2_02\", 0.217]]"
+      "topic_scores": "[[\"SDF2_01\", 0.2892], [\"SDF2_06\", 0.2306], [\"SDF2_04\", 0.2282]]"
     }
   },
   {
@@ -93,9 +90,9 @@
       "bloom_rank": 6,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.0266,
+      "topic_confidence": 0.0227,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF2_06\", 0.3384], [\"SDF2_04\", 0.3118], [\"SDF2_02\", 0.2873]]"
+      "topic_scores": "[[\"SDF2_06\", 0.3356], [\"SDF2_01\", 0.313], [\"SDF2_04\", 0.3129]]"
     }
   },
   {
@@ -143,7 +140,7 @@
       "tag_method": "co+content",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF2_02\", 0.6471], [\"SDF2_04\", 0.6411], [\"SDF2_06\", 0.6013]]"
+      "topic_scores": "[[\"SDF2_02\", 0.6599], [\"SDF2_04\", 0.6586], [\"SDF2_06\", 0.6214]]"
     }
   }
 ]

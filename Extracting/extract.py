@@ -1,12 +1,26 @@
 import fitz
 import json
+import math
 import os
 from pathlib import Path
 import re
 from dataclasses import asdict, dataclass
 
-TARGET_CHUNK_WORDS = 350
-MIN_CHUNK_WORDS = 60
+# The embedding model (all-MiniLM-L6-v2) reads only the first 256 tokens of a
+# chunk and ignores the rest, so a chunk must fit in that window or its second
+# half can never be found by search. 2 of the 256 are the model's own markers.
+EMBED_MAX_TOKENS = 256
+MAX_CHUNK_TOKENS = EMBED_MAX_TOKENS - 2
+MIN_CHUNK_TOKENS = 80          # a shorter last chunk is evened out with the one before
+
+# Tokens are not words: every punctuation mark is one token and a long or rare
+# word is several, so code is far "longer" than its word count
+# ("for(i=0;i<n;i++)" is 1 word but 14 tokens). Counting pieces -- a word, a
+# number, or one punctuation mark -- follows the real tokenizer closely on all
+# four books (real tokens per piece: median 1.05, 95% of the time under 1.2)
+# and needs no model to be loaded here.
+_PIECE_RE = re.compile(r"[A-Za-z]+|\d+|[^\sA-Za-z\d]")
+TOKENS_PER_PIECE = 1.2
 
 @dataclass
 class Chunk:
@@ -83,29 +97,66 @@ def get_heading_sections_by_font(doc):
 def extract_section_text(doc, start_page, end_page):
      return "\n".join(doc[p].get_text() for p in range(start_page, end_page + 1))
 
-def split_into_chunks(text, target_words = TARGET_CHUNK_WORDS):         
-    """Split a section's text into sub-chunks along paragraph breaks,
-    respecting a target word count per chunk."""
+def estimate_tokens(text):
+    """About how many tokens the embedding model will make of this text
+    (deliberately a little high, so a chunk that passes really fits)."""
+    return math.ceil(len(_PIECE_RE.findall(text)) * TOKENS_PER_PIECE)
 
-    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
-    chunks,current,current_len = [],[],0
+def split_into_units(text, max_tokens):
+    """The pieces chunks are built from: the text's lines. A line that is too
+    long on its own (a table row, a listing with no line breaks) is cut
+    between words."""
+    units = []
+    for line in text.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        if estimate_tokens(line) <= max_tokens:
+            units.append(line)
+            continue
+        run = []
+        for word in line.split():
+            if run and estimate_tokens(" ".join(run + [word])) > max_tokens:
+                units.append(" ".join(run))
+                run = []
+            run.append(word)
+        units.append(" ".join(run))
+    return units
 
-    for para in paragraphs:
-        para_len = len(para.split())
-        if current_len + para_len > target_words and current:
-            chunks.append(" ".join(current))
-            current,current_len = [],0
-        current.append(para)
-        current_len += para_len
-         
+def split_into_chunks(text, max_tokens = MAX_CHUNK_TOKENS):
+    """Split a section's text into chunks the embedding model can read in
+    full. Lines are packed one after another until the next would not fit, so
+    a cut only ever falls between two lines.
+
+    (This used to cut at blank lines and aim for 350 words. In three of the
+    four books a blank line only appears between PAGES, so a chunk was a whole
+    page -- two to three times what the model reads -- and a chapter's title
+    page, being short, became a chunk of its own that matched every search
+    for that chapter's topic.)"""
+
+    units = [(unit, estimate_tokens(unit)) for unit in split_into_units(text, max_tokens)]
+    size = lambda group: sum(tokens for _, tokens in group)
+
+    groups,current = [],[]
+    for unit in units:
+        if current and size(current) + unit[1] > max_tokens:
+            groups.append(current)
+            current = []
+        current.append(unit)
     if current:
-         chunks.append(" ".join(current))
+        groups.append(current)
 
-    if len(chunks) > 1 and len(chunks[-1].split()) < MIN_CHUNK_WORDS:
-         chunks[-2] += " " + chunks[-1]
-         chunks.pop()
+    # A short last chunk (it only exists because it did not fit into the one
+    # before): share the lines of the last two chunks out evenly instead.
+    if len(groups) > 1 and size(groups[-1]) < MIN_CHUNK_TOKENS:
+        both = groups[-2] + groups[-1]
+        cut = 1
+        while size(both[:cut + 1]) <= size(both) / 2:
+            cut += 1
+        if size(both[cut:]) <= max_tokens:
+            groups[-2:] = [both[:cut], both[cut:]]
 
-    return chunks
+    return ["\n".join(unit for unit, _ in group) for group in groups]
 
 def process_pdf(path , subject):
     doc = fitz.open(path)

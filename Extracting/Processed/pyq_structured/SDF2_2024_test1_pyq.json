@@ -29,7 +29,7 @@
       "marks_breakdown": null,
       "topic_id": "SDF2_02",
       "topic_name": "OOP Concepts using C++ (Classes, Objects, Constructors)",
-      "needs_review": true,
+      "needs_review": false,
       "review_reason": "topic set manually from content (non-member/friend access to two classes); paper tags CO2 but SDF2_02 is a CO1 topic in the graph",
       "bloom_level_raw": "Apply",
       "bloom_rank": 3,
@@ -82,14 +82,11 @@
       "topic_id": "SDF2_02",
       "topic_name": "OOP Concepts using C++ (Classes, Objects, Constructors)",
       "needs_review": false,
-      "review_reason": null,
+      "review_reason": "manual: topic set to SDF2_02 after reading the question (class with a parameterized constructor)",
+      "tag_method": "manual",
       "bloom_level_raw": "Understand",
       "bloom_rank": 2,
-      "topic_id_from_co": "SDF2_02",
-      "tag_method": "co+content",
-      "topic_confidence": 0.0469,
-      "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF2_06\", 0.4484], [\"SDF2_04\", 0.4444], [\"SDF2_02\", 0.4109]]"
+      "topic_id_from_co": "SDF2_02"
     }
   },
   {
@@ -116,9 +113,9 @@
       "bloom_rank": 2,
       "topic_id_from_co": "SDF2_02",
       "tag_method": "co+content",
-      "topic_confidence": 0.1027,
+      "topic_confidence": 0.0468,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF2_02\", 0.637], [\"SDF2_04\", 0.6269], [\"SDF2_06\", 0.6215]]"
+      "topic_scores": "[[\"SDF2_04\", 0.6243], [\"SDF2_02\", 0.6225], [\"SDF2_06\", 0.618]]"
     }
   }
 ]
