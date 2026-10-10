@@ -82,7 +82,9 @@ def fetch_all(coll):
 
 
 # ------------------------------------------------------------------ report
-def check_collection(client, name, expected, script, group_key="subject"):
+def check_collection(client, name, expected, script, group_key="subject", stale_fix=None):
+    """stale_fix: the command that removes leftover vectors, when it is not
+    simply `script` (the book / tutorial embed scripts clean up on a re-run)."""
     print(f"\n=== {name} ===")
     if name not in collection_names(client):
         print(f"  NOT FOUND in Chroma.  ->  run: python {script}")
@@ -105,9 +107,9 @@ def check_collection(client, name, expected, script, group_key="subject"):
         print(f"  STATUS            : INCOMPLETE - {len(missing)} expected vector(s) missing "
               f"(e.g. {sorted(missing)[:3]})  ->  re-run: python {script}")
     if extra:
-        print(f"  NOTE              : {len(extra)} vector(s) in Chroma that are NOT in the files "
-              f"anymore (e.g. {sorted(extra)[:3]}). Stale leftovers from an older run; "
-              f"retrieval skips them only if they are tagged NONE / needs_review.")
+        print(f"  STATUS            : STALE - {len(extra)} vector(s) in Chroma that are NOT in the "
+              f"files anymore (e.g. {sorted(extra)[:3]}). Retrieval still serves them unless "
+              f"they are tagged NONE / needs_review  ->  re-run: python {stale_fix or script}")
 
     no_topic = sum(1 for m in metas if m.get("topic_id") in (None, "NONE"))
     print(f"  topic_id = NONE   : {no_topic} of {len(metas)}")
@@ -160,8 +162,9 @@ def main():
                             "Embedding/embed_chunks.py")
     tut = check_collection(client, "tut_content", expected_tutorial_ids(),
                            "Embedding/embed_tutorial_chunks.py")
+    # embed_pyqs.py only upserts; its --reset rebuilds the collection from the files
     check_collection(client, "pyq_bank", expected_pyq_ids(),
-                     "Embedding/embed_pyqs.py")
+                     "Embedding/embed_pyqs.py", stale_fix="Embedding/embed_pyqs.py --reset")
     topic_coverage(book, tut)
 
 

@@ -119,7 +119,8 @@ docker compose up -d
 #    add --reset after removing/renaming anything in a YAML (clears old nodes/edges first)
 docker compose --profile tools run --rm loader --reset
 
-# 3. embed everything into Chroma (safe to re-run, it upserts)
+# 3. embed everything into Chroma (safe to re-run: it upserts, and the book /
+#    tutorial scripts also delete vectors whose chunk is no longer in the files)
 python Embedding/embed_chunks.py                  # books     -> book_content
 python Embedding/embed_tutorial_chunks.py         # tutorials -> tut_content
 python Embedding/embed_pyqs.py                   # PYQs      -> pyq_bank
@@ -184,7 +185,8 @@ Question_Paper_Generator/
 ├── Embedding/
 │   ├── embed_chunks.py          -> Chroma "book_content"
 │   ├── embed_tutorial_chunks.py -> Chroma "tut_content"
-│   └── embed_pyqs.py            -> Chroma "pyq_bank"
+│   ├── embed_pyqs.py            -> Chroma "pyq_bank"
+│   └── stale_vectors.py         deletes vectors whose chunk is gone (books + tutorials)
 │
 ├── prerequisite_graph/
 │   ├── subjects/*.yaml          topics, COs, prerequisites (single source of truth)

@@ -27,6 +27,11 @@ Writes into its OWN Chroma collection, "tut_content" (books live in
 searches BOTH collections and merges the results, so a topic_id gets book
 and tutorial grounding text together.
 
+Safe to re-run: rows are upserted by id, and rows whose chunk (or whose
+topic_id on that chunk) is no longer in the files are deleted, so
+"tut_content" always matches the *_tutorial_chunks.jsonl files. With
+--subject, only that subject's rows are cleaned (see stale_vectors.py).
+
 USAGE
     python embed_tutorial_chunks.py                  # process every subject
     python embed_tutorial_chunks.py --subject APS     # just one subject
@@ -37,6 +42,8 @@ import json
 from pathlib import Path
 
 import yaml
+
+from stale_vectors import remove_stale_vectors
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -193,6 +200,13 @@ def main():
             documents=texts,
             metadatas=[{k: v for k, v in r.items() if k not in ("id", "text")} for r in batch],
         )
+
+    # --subject embeds one subject only, so only that subject's rows may be cleaned
+    stale = remove_stale_vectors(collection, [r["id"] for r in rows],
+                                 where={"subject": args.subject} if args.subject else None)
+    if stale:
+        print(f"\nRemoved {len(stale)} stale vector(s) whose chunk / topic_id is no longer "
+              f"in the files (e.g. {stale[:3]}).")
 
     print(f"\nDone. Collection '{COLLECTION_NAME}' now has {collection.count()} vectors.")
 

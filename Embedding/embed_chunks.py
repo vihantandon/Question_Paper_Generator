@@ -4,12 +4,18 @@ Requires:
  
 Run this AFTER docker compose up -d (the Chroma server must be running
 on localhost:8000).
+
+Safe to re-run: chunks are upserted by chunk_id, and vectors whose chunk is
+no longer in the chunk files are deleted, so "book_content" always matches
+Extracting/Processed/*_chunks.jsonl (see stale_vectors.py).
 """
 import json
 from pathlib import Path
 import chromadb
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
+
+from stale_vectors import remove_stale_vectors
 
 CHROMA_HOST = "localhost"
 CHROMA_PORT = 8000
@@ -75,6 +81,11 @@ def main():
                 "needs_review": c.get("needs_review", False),
             }for c in batch],
         )
+
+    stale = remove_stale_vectors(collection, [c["chunk_id"] for c in chunks])
+    if stale:
+        print(f"Removed {len(stale)} stale vector(s) whose chunk is no longer in the "
+              f"chunk files (e.g. {stale[:3]}).")
     print(f"Done. Collection '{COLLECTION_NAME}' now has "
     f"{collection.count()} vectors.")
 
