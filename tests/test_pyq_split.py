@@ -33,6 +33,10 @@ def quiet(fn, *args, **kwargs):
     return result, printed.getvalue()
 
 
+def letters(text):
+    return "".join(ch for ch in text.lower() if ch.isalnum())
+
+
 def numbers(text):
     """The question number each block starts with."""
     return [int(S.QUESTION_START_RE.match(b).group(1)) for b in S.split_into_questions(text)[1]]
@@ -265,6 +269,8 @@ class TestRealPapers(unittest.TestCase):
             new = quiet(S.process_pages_file, pages_file, YAMLS)[0]
             committed = json.loads(done[S.paper_source(pages_file)].read_text(encoding="utf-8"))
             self.assertEqual([r["id"] for r in new], [r["id"] for r in committed], pages_file.name)
+            for a, b in zip(new, committed):          # same words, whatever the spacing and markdown
+                self.assertEqual(letters(a["document"]), letters(b["document"]), a["id"])
             for a, b in zip(new[1:], committed[1:]):
                 self.assertEqual(a["metadata"]["marks"], b["metadata"]["marks"], a["id"])
                 self.assertEqual(R.normalize_bloom(a["metadata"]["bloom_level"]),

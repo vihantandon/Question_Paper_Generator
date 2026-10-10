@@ -8,3 +8,6 @@ chroma_data/
 __pycache__/
 *.pyc
 .venv/
+
+# pages of a PYQ paper that is only partly transcribed (pdf_extract_full.py)
+Extracting/Processed/pyq_pages/*.partial

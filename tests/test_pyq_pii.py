@@ -148,7 +148,7 @@ class TestExtractorRedactsPages(unittest.TestCase):
                 contextlib.redirect_stdout(io.StringIO()):
             sys.modules.pop("pdf_extract_full", None)
             import pdf_extract_full
-            records = pdf_extract_full.process_pdf(str(ROOT / "PYQs" / "T1 Fake.pdf"), "T1")
+            records = pdf_extract_full.process_pdf(str(ROOT / "PYQs" / "T1 Fake.pdf"))
 
         self.assertEqual([r["extraction_method"] for r in records], ["text_layer", "text_layer"])
         self.assertEqual(records[0]["text"], CLEAN)

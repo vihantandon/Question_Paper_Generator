@@ -135,8 +135,8 @@ python Extracting/pyqs_processing/resolve_pyq_labels.py --write
 # 6. run the pipeline for one topic: graph lookup -> retrieve
 python -m pipeline.graph ALGO_06 hard 10
 
-# unit tests (no Docker needed)
-python -m unittest tests.test_phase1
+# unit tests (no Docker, no embedding model, no API key needed)
+python -m unittest discover -s tests -t .
 ```
 
 Neo4j browser: http://localhost:7474 (user `neo4j`, password from `.env`).
@@ -202,7 +202,7 @@ Question_Paper_Generator/
 │   │   └── retrieve.py         grounding text + similar PYQs (Chroma)
 │   └── graph.py                START -> graph_lookup -> retrieve -> END
 │
-├── tests/test_phase1.py        unit tests with fake Neo4j / Chroma
+├── tests/                      unit tests with fake Neo4j / Chroma / models (test_*.py)
 ├── settings.py                 Chroma / Neo4j address for every script: terminal, else .env, else default
 ├── tag_topics.py               adds topic_id to book chunks
 ├── retrieval.py                grounding text (book + tutorial) + similar PYQs

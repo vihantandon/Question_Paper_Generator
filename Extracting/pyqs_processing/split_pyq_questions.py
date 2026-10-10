@@ -57,10 +57,30 @@ QUESTION_START_RE = re.compile(
 # before splitting (see drop_redundant_headings).
 QUESTION_HEADING_ONLY_RE = re.compile(r'(?m)^#{1,6}[ \t]*Q\.?[ \t]*(\d+)[a-zA-Z]?[ \t]*[:.]?[ \t]*$\n?')
 
-# Pages that failed extraction / got flagged rather than transcribed
-# (e.g. "User Safety: safe") -- not real question content, skip them.
-JUNK_PAGE_RE = re.compile(r'^\s*user\s+safety\s*:', re.IGNORECASE)
+# Pages that failed extraction / got flagged or refused rather than
+# transcribed (e.g. "User Safety: safe", "I'm sorry, I can't ...") -- not real
+# question content. pdf_extract_full.py retries such a page instead of
+# storing it; a page stored before that fix is skipped here.
+JUNK_PAGE_RE = re.compile(
+    r"^\s*(?:user\s+safety\s*:|i\s*['’]?\s*a?m\s+sorry\b|i\s+can(?:not|\s*['’]\s*t)\s+"
+    r"(?:assist|help|transcribe|comply|provide)\b)", re.IGNORECASE)
 MIN_PAGE_TEXT_LEN = 30
+
+# What a vision model sometimes adds to a page it was asked only to transcribe:
+#   Here is the complete transcription of the page, preserving ...
+#   ### Handwritten Notes on the Page:
+#   *   On the left of Q3: **DMA**
+#   *   Under Q2: operator overloading
+# Neither is part of the paper, and both used to end up inside the question
+# printed above them (see strip_model_chatter).
+CHATTER_LINE_RE = re.compile(
+    r"^[\s>*_#]*(?:(?:sure|certainly|okay|ok)\b[\s,.!:]*)?(?:here\s+is|here['’]s|below\s+is|this\s+is)\b"
+    r".*\btranscri(?:ption|bed|pt)\b.*$", re.IGNORECASE)
+HANDWRITTEN_HEADING_RE = re.compile(          # a short heading, not a sentence about handwriting
+    r"^[\s>*_#]*hand[\s\-]?written\s+(?:notes?|annotations?|marks?|markings?|comments?)\b.{0,60}$",
+    re.IGNORECASE)
+_LIST_ITEM_RE = re.compile(r"^\s*(?:[*\-+•]|\d+[.)])\s+")
+_RULE_RE = re.compile(r"^\s*(?:-{3,}|\*{3,}|_{3,})\s*$")
 
 # The [CO, Bloom's level, marks] tag printed after a question. The three parts
 # come in any order and the brackets may be round:
@@ -291,6 +311,35 @@ def redact_pii(text: str) -> str:
     return "\n".join(kept)
 
 
+def is_junk_page(text: str) -> bool:
+    """True if a page's "transcription" is a classifier verdict or a refusal."""
+    return bool(JUNK_PAGE_RE.match(text or ""))
+
+
+def strip_model_chatter(page_text: str) -> str:
+    """One page of transcribed text without what the model added of its own:
+    an opening sentence about the transcription, and a list of the notes
+    someone wrote on the paper by hand (the heading and the list under it).
+    Everything printed on the paper is kept."""
+    lines = (page_text or "").split("\n")
+    kept, i = [], 0
+    while i < len(lines):
+        line = lines[i]
+        opening = not any(l.strip() for l in kept) and CHATTER_LINE_RE.match(line)
+        notes = HANDWRITTEN_HEADING_RE.match(line)
+        if not (opening or notes):
+            kept.append(line)
+            i += 1
+            continue
+        i += 1
+        if notes:                                # ... and the list that belongs to the heading
+            while i < len(lines) and (not lines[i].strip() or _LIST_ITEM_RE.match(lines[i])):
+                i += 1
+        while i < len(lines) and (not lines[i].strip() or _RULE_RE.match(lines[i])):
+            i += 1                               # the blank lines / "---" that set it apart
+    return "\n".join(kept)
+
+
 def drop_redundant_headings(text: str) -> str:
     """Remove a heading-only line ("### Q.1") when the next line starts the
     same question again. A heading that is NOT repeated ("### Q2." with the
@@ -472,11 +521,11 @@ def process_pages_file(pages_path: Path, subject_yamls: dict) -> list[dict]:
     good_rows = []
     skipped = 0
     for r in rows:
-        text = r.get("text", "")
-        if len(text.strip()) < MIN_PAGE_TEXT_LEN or JUNK_PAGE_RE.match(text.strip()):
+        text = strip_model_chatter(r.get("text", ""))
+        if len(text.strip()) < MIN_PAGE_TEXT_LEN or is_junk_page(text):
             skipped += 1
             continue
-        good_rows.append(r)
+        good_rows.append({**r, "text": text})
     if skipped:
         print(f"  skipped {skipped} junk/empty page(s) in {pages_path.name}")
     rows = good_rows
