@@ -82,22 +82,37 @@ def _query(collection, query_embedding, topic_id, n):
             for d, m, dist in zip(res["documents"][0], res["metadatas"][0], res["distances"][0])]
 
 
-def _query_all(collections, embed_fn, text, topic_id, n):
-    """Search every collection, merge, keep the n closest overall. Tutorial
-    rows share text across topic_ids, so duplicate texts are dropped."""
+def _query_all(collections, embed_fn, text, topic_id, n, exclude_texts=()):
+    """Search every collection, merge, keep the n closest DISTINCT texts.
+
+    The same text can be stored more than once (a tutorial chunk has one row
+    per topic_id; a book page can sit under several section titles), so
+    copies are dropped. When that leaves fewer than n, more rows are fetched
+    until n distinct texts are found or the collections run out.
+    exclude_texts: texts to skip (e.g. ones already picked for another role).
+    """
     if not isinstance(collections, (list, tuple)):
         collections = [collections]          # old callers passed one collection
     emb = embed_fn(text)
-    hits = []
-    for coll in collections:
-        hits += _query(coll, emb, topic_id, n)
-    hits.sort(key=lambda h: h["distance"])
-    seen, out = set(), []
-    for h in hits:
-        if h["text"] not in seen:
-            seen.add(h["text"])
-            out.append(h)
-    return out[:n]
+    fetch = n
+    while True:
+        hits, unread = [], []       # unread: last distance of each collection that may hold more
+        for coll in collections:
+            got = _query(coll, emb, topic_id, fetch)
+            if len(got) == fetch:
+                unread.append(got[-1]["distance"])
+            hits += got
+        hits.sort(key=lambda h: h["distance"])
+        seen, out = set(exclude_texts), []
+        for h in hits:
+            if h["text"] not in seen:
+                seen.add(h["text"])
+                out.append(h)
+        # Done when every collection is exhausted, or n distinct texts are in
+        # hand and no collection could still hold a closer one.
+        if not unread or (len(out) >= n and min(unread) >= out[n - 1]["distance"]):
+            return out[:n]
+        fetch *= 2
 
 
 def fetch_grounding_chunks(collections, embed_fn: Callable[[str], list],
@@ -113,8 +128,11 @@ def fetch_grounding_chunks(collections, embed_fn: Callable[[str], list],
            for c in _query_all(collections, embed_fn, topic["name"], topic["id"], n_main)]
     if blend_topic:
         q = f'{blend_topic["name"]} (used within {topic["name"]})'
+        # a chunk tagged with BOTH topics is already in as "main": don't send it twice
+        main_texts = {c["text"] for c in out}
         out += [dict(c, role="blend")
-                for c in _query_all(collections, embed_fn, q, blend_topic["id"], n_blend)]
+                for c in _query_all(collections, embed_fn, q, blend_topic["id"], n_blend,
+                                    exclude_texts=main_texts)]
     return out
 
 

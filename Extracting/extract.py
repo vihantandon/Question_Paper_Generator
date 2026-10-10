@@ -31,12 +31,24 @@ def get_toc_sections(doc):
       if not toc:
             return None
 
+      # A page belongs to exactly ONE section. Several TOC entries often start
+      # on the same page (a heading and its sub-headings), and a section used
+      # to run on to the next entry's start page as well -- so one page's text
+      # was stored again under every one of those titles. Now each page that
+      # starts an entry opens one section (named after the first entry on it),
+      # which ends just before the next such page. Going by page rather than
+      # by TOC order also keeps a broken bookmark (DS: "53.3.3 Corner Block
+      # List" points at page 1) from swallowing the rest of the book.
+      first_title = {}
+      for level,title,page in toc:
+            if 1 <= page <= len(doc):
+                  first_title.setdefault(page-1,title.strip())
+
+      starts = sorted(first_title)
       sections = []
-      for i , (level,title,page) in enumerate(toc):
-            start_page = page-1
-            end_page = (toc[i+1][2]-1) if i+1 < len(toc) else len(doc)-1
-            end_page = max(start_page,end_page)
-            sections.append((title.strip(),start_page,end_page))
+      for i , start_page in enumerate(starts):
+            end_page = (starts[i+1]-1) if i+1 < len(starts) else len(doc)-1
+            sections.append((first_title[start_page],start_page,end_page))
 
       return sections
 

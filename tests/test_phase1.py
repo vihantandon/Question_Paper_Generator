@@ -290,6 +290,88 @@ class TestPipeline(unittest.TestCase):
             run_pipeline("NOPE_01", "easy")
 
 
+class CountingCollection(FakeCollection):
+    """A FakeCollection that also remembers how many rows each query asked for."""
+
+    def __init__(self, name, rows):
+        super().__init__(name, rows)
+        self.asked = []
+
+    def query(self, query_embeddings, n_results, where=None, include=None):
+        self.asked.append(n_results)
+        return super().query(query_embeddings, n_results, where, include)
+
+
+TREES = {"id": "DS_03", "name": "Trees"}       # fake_embed("Trees") -> [1.0, 0.0]
+
+
+class TestDuplicateChunks(unittest.TestCase):
+    """The same text can be stored several times (the DS book has pages saved
+    under more than one section title; a tutorial chunk has one row per
+    topic). The model must still get n DIFFERENT chunks."""
+
+    def test_copies_are_replaced_by_the_next_closest_chunks(self):
+        book = CountingCollection("book_content", [
+            chunk("copy1", "DS_03", "tree page saved four times", [1.0, 0.0]),
+            chunk("copy2", "DS_03", "tree page saved four times", [1.0, 0.0]),
+            chunk("copy3", "DS_03", "tree page saved four times", [1.0, 0.0]),
+            chunk("copy4", "DS_03", "tree page saved four times", [1.0, 0.0]),
+            chunk("b", "DS_03", "tree heaps", [0.9, 0.1]),
+            chunk("c", "DS_03", "tree traversal", [0.8, 0.2]),
+            chunk("d", "DS_03", "tree rotations", [0.7, 0.3]),
+            chunk("e", "DS_03", "tree height", [0.6, 0.4]),
+        ])
+        got = retrieval.fetch_grounding_chunks([book], fake_embed, TREES, n_main=4)
+        self.assertEqual([c["text"] for c in got],
+                         ["tree page saved four times", "tree heaps", "tree traversal", "tree rotations"])
+        self.assertEqual(book.asked, [4, 8])          # one extra, larger fetch
+
+    def test_stops_when_there_is_nothing_more_to_fetch(self):
+        book = CountingCollection("book_content", [
+            chunk("copy1", "DS_03", "the only tree page", [1.0, 0.0]),
+            chunk("copy2", "DS_03", "the only tree page", [1.0, 0.0]),
+            chunk("copy3", "DS_03", "the only tree page", [1.0, 0.0]),
+            chunk("b", "DS_03", "tree heaps", [0.9, 0.1]),
+        ])
+        got = retrieval.fetch_grounding_chunks([book], fake_embed, TREES, n_main=4)
+        self.assertEqual([c["text"] for c in got], ["the only tree page", "tree heaps"])
+
+    def test_no_extra_query_when_there_are_no_copies(self):
+        book = CountingCollection("book_content", [
+            chunk(f"b{i}", "DS_03", f"tree fact {i}", [1.0 - i / 10, i / 10]) for i in range(6)])
+        got = retrieval.fetch_grounding_chunks([book], fake_embed, TREES, n_main=4)
+        self.assertEqual([c["text"] for c in got], [f"tree fact {i}" for i in range(4)])
+        self.assertEqual(book.asked, [4])
+
+    def test_closest_chunks_win_across_collections(self):
+        # after dropping the copy, the book's 3rd row is still closer than any tutorial row
+        book = FakeCollection("book_content", [
+            chunk("copy1", "DS_03", "tree page saved twice", [1.0, 0.0]),
+            chunk("copy2", "DS_03", "tree page saved twice", [1.0, 0.0]),
+            chunk("b", "DS_03", "tree heaps", [0.9, 0.1]),
+        ])
+        tut = FakeCollection("tut_content", [
+            chunk("t1", "DS_03", "far tutorial question", [0.5, 0.5]),
+            chunk("t2", "DS_03", "farther tutorial question", [0.4, 0.6]),
+        ])
+        got = retrieval.fetch_grounding_chunks([book, tut], fake_embed, TREES, n_main=2)
+        self.assertEqual([c["text"] for c in got], ["tree page saved twice", "tree heaps"])
+
+    def test_chunk_tagged_with_both_topics_is_sent_once(self):
+        # one tutorial chunk about sorting a linked list = two rows, one per topic
+        shared = "Q1. Sort a singly linked list using merge sort."
+        tut = FakeCollection("tut_content", [
+            chunk("t7__DS_02", "DS_02", shared, [0.0, 1.0]),
+            chunk("t7__DS_01", "DS_01", shared, [0.0, 1.0]),
+            chunk("t3__DS_01", "DS_01", "Q2. Reverse a doubly linked list.", [0.1, 0.9]),
+        ])
+        got = retrieval.fetch_grounding_chunks(
+            [tut], fake_embed, {"id": "DS_02", "name": "Searching and Sorting"},
+            blend_topic={"id": "DS_01", "name": "Linked list"})
+        self.assertEqual([(c["role"], c["text"]) for c in got],
+                         [("main", shared), ("blend", "Q2. Reverse a doubly linked list.")])
+
+
 class TestDotenv(unittest.TestCase):
     def test_reads_file_but_terminal_wins(self):
         import os
