@@ -15,9 +15,11 @@ WHAT IT DOES
 USAGE
     pip install pyyaml chromadb
     python tag_topics.py                 # tag the jsonl files + print report
-    python tag_topics.py --report-only   # print report, change nothing
+    python tag_topics.py --report-only   # print report, change nothing (files or Chroma)
     python tag_topics.py --push          # also update the running Chroma server
- 
+    python tag_topics.py --drop-suspect  # also delete chunks with an impossible page range
+                                         # (add --push to delete their vectors too)
+
 NEW METADATA FIELDS (all Chroma-safe: str / int / bool only)
     topic_id          "DS_03"   the graph node this chunk teaches ("NONE" if none)
     topic_subject     "DS"      which subject owns that topic
@@ -43,7 +45,10 @@ ROOT = Path(__file__).resolve().parent
 PROCESSED = ROOT / "Extracting" / "Processed"
 MAP_FILE = ROOT / "Extracting" / "topic_map.yaml"
 SUBJECTS_DIR = ROOT / "prerequisite_graph" / "subjects"
- 
+
+sys.path.insert(0, str(ROOT / "Embedding"))        # stale_vectors.py
+from stale_vectors import remove_stale_vectors     # noqa: E402
+
 COLLECTION = "book_content"
 NONE = "NONE"
 MAX_PAGE_SPAN = 200      # a real book section never spans more pages than this
@@ -158,8 +163,9 @@ def report(all_chunks, topics, cfg):
         tagged = sum(1 for c in chunks if c["topic_id"] != NONE)
         pre = sum(1 for c in chunks if c["is_prereq_content"])
         rev = sum(1 for c in chunks if c["needs_review"])
+        share = 100 * tagged // len(chunks) if chunks else 0     # a book can have no chunks left
         print(f"{book:6} {len(chunks):5} chunks | with a topic: {tagged:5} "
-              f"({100*tagged//len(chunks)}%) | prerequisite-content: {pre:4} | needs review: {rev}")
+              f"({share}%) | prerequisite-content: {pre:4} | needs review: {rev}")
         print("       methods:", dict(m))
  
     per_topic = defaultdict(lambda: Counter())
@@ -202,9 +208,29 @@ def report(all_chunks, topics, cfg):
  
  
 # -------------------------------------------------------------------- push
+def expected_chunk_ids(all_chunks):
+    """chunk_id of every book chunk that belongs in Chroma after this run: the
+    books tagged here, plus any book chunk file that has no entry in
+    topic_map.yaml (not tagged, but its vectors are in the same collection)."""
+    ids = {c["chunk_id"] for chunks in all_chunks.values() for c in chunks}
+    for f in PROCESSED.glob("*_chunks.jsonl"):
+        book = f.name.replace("_chunks.jsonl", "")
+        if book in all_chunks or f.name.endswith("_tutorial_chunks.jsonl"):
+            continue
+        ids |= {json.loads(l)["chunk_id"] for l in f.read_text(encoding="utf-8").splitlines() if l.strip()}
+    return ids
+
+
 def push_to_chroma(client, all_chunks, batch=500):
     """Patch metadata on existing vectors. Merges with the old metadata first,
-    so it works whether Chroma's update() merges or replaces."""
+    so it works whether Chroma's update() merges or replaces.
+
+    Then delete the vectors whose chunk is no longer in the chunk files:
+    chunks removed by --drop-suspect in an EARLIER run made without --push
+    (this run can no longer name them). That is only done when every chunk
+    in the files is in Chroma. If some are missing, the collection is from an
+    older extraction: embed_chunks.py has to rebuild it, and it removes the
+    leftovers itself."""
     coll = client.get_collection(COLLECTION)
     flat = [c for chunks in all_chunks.values() for c in chunks]
     done = missing = 0
@@ -225,17 +251,28 @@ def push_to_chroma(client, all_chunks, batch=500):
             done += len(ids)
     print(f"\nChroma: updated {done} vectors"
           + (f"  ({missing} chunk_ids not found in the collection - run embed_chunks.py)" if missing else ""))
- 
+    if missing:
+        return
+    stale = remove_stale_vectors(coll, expected_chunk_ids(all_chunks))
+    if stale:
+        print(f"Chroma: deleted {len(stale)} vector(s) whose chunk is no longer in the chunk files")
+
  
 # -------------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--report-only", action="store_true")
-    ap.add_argument("--push", action="store_true")
+    ap.add_argument("--report-only", action="store_true",
+                    help="print the report and change nothing, in the files or in Chroma")
+    ap.add_argument("--push", action="store_true",
+                    help="also update the vectors already in Chroma")
     ap.add_argument("--drop-suspect", action="store_true",
-                    help="delete chunks with an impossible page range (jsonl + Chroma)")
+                    help="delete chunks with an impossible page range from the jsonl files "
+                         "(with --push: from Chroma too)")
     args = ap.parse_args()
- 
+    if args.report_only and args.push:
+        # --push used to run anyway, and with --drop-suspect it deleted vectors
+        ap.error("--report-only changes nothing, so it cannot be used together with --push")
+
     topics = load_topics()
     cfg, subject_sem = load_map(topics)
     kw, min_margin = cfg.get("topic_keywords", {}), cfg.get("min_margin", 2)
@@ -263,16 +300,22 @@ def main():
             all_chunks[book] = keep
  
     report(all_chunks, topics, cfg)
-    if dropped_ids:
+    if dropped_ids and args.report_only:
+        print(f"\n--drop-suspect would remove {len(dropped_ids)} suspect chunks "
+              f"(--report-only: nothing was changed).")
+    elif dropped_ids:
         print(f"\nDropped {len(dropped_ids)} suspect chunks from the run.")
- 
+
     if not args.report_only:
         for book, f in files.items():
             with open(f, "w", encoding="utf-8") as out:
                 for c in all_chunks[book]:
                     out.write(json.dumps(c, ensure_ascii=False) + "\n")
         print("\nWrote topic fields into Extracting/Processed/*_chunks.jsonl")
- 
+        if dropped_ids and not args.push:
+            print(f"The {len(dropped_ids)} dropped chunks still have vectors in Chroma. Remove them with:"
+                  f"\n    python3 tag_topics.py --push")
+
     if args.push:
         import chromadb
         client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
