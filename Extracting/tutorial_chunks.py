@@ -26,6 +26,19 @@ from dotenv import load_dotenv
 MAX_CHUNK_WORDS = 300          # target words per composite chunk (spec)
 MIN_IMAGE_DIMENSION = 80       # px -- filters icons/bullets/logos, keeps diagrams
 INDENT_TOLERANCE = 8.0         # pt -- x-offset above which a line counts as indented
+MARGIN_BAND = 0.10             # top / bottom share of a page where running headers and footers sit
+
+# Question numbering (see choose_question_markers).
+GAP_PENALTY = 0.5              # the numbers jump ahead, e.g. 2 -> 4: a marker was missed
+RESTART_PENALTY = 1.5          # the numbers start again at 1: believed only if 2+ questions follow
+WEAK_MARKER_WEIGHT = 0.9       # a bare "3)" counts a little less than "Q3."
+
+MAX_COOLDOWN_WAIT = 300.0      # s -- a longer rate limit is a daily quota: stop, do not wait
+
+# Image types Gemini accepts, by file extension. Anything else a PDF holds
+# (jpx, tiff, bmp ...) is converted to PNG when it is cut out.
+GEMINI_IMAGE_TYPES = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+                      "webp": "image/webp"}
 
 # Model the spec asks for. Kept as the primary; the client falls back when the
 # API reports it is unavailable for the key in use.
@@ -188,13 +201,28 @@ def body_left_margin(lines: list) -> float:
     return min(line.x0 for line in lines)
 
 
+def in_margin(line: Line, page_height: float) -> bool:
+    """True if the line sits in the top or bottom margin band of its page."""
+    return bool(page_height) and (line.y0 < page_height * MARGIN_BAND
+                                  or line.y1 > page_height * (1 - MARGIN_BAND))
+
+
+def running_key(text: str) -> str:
+    """How a line is compared when looking for running headers: case and
+    spacing do not matter."""
+    return re.sub(r"\s+", " ", text.strip()).casefold()
+
+
 def is_boilerplate_line(line: Line, page_height: float, running: set) -> bool:
     """True if a line is a header, footer, page number, or a line that repeats
-    on every page (running header/footer)."""
+    in the margin of most pages (running header/footer)."""
     text = line.text.strip()
     if not text:
         return True
-    if text in running:
+    # Same key as find_running_lines uses. (The raw text used to be looked up
+    # among lower-cased keys, so a header with a capital letter was never
+    # removed, while lower-case lines of code were.)
+    if running_key(text) in running and in_margin(line, page_height):
         return True
     for pattern in HEADER_LINE_RES:
         if pattern.match(text):
@@ -206,14 +234,20 @@ def is_boilerplate_line(line: Line, page_height: float, running: set) -> bool:
     return False
 
 
-def find_running_lines(lines: list, page_count: int) -> set:
-    """Detect lines that repeat near the top or bottom of most pages (running
-    headers/footers) so they can be stripped wherever they appear."""
-    if page_count < 2:
+def find_running_lines(lines: list, page_count: int, page_height: float = 0.0) -> set:
+    """Detect lines that repeat in the top or bottom margin of most pages
+    (running headers/footers), as running_key() keys.
+
+    Only the margins are looked at. Any line repeated on half the pages used
+    to count, wherever it was, so on a sheet with code "{", "}", "else" and
+    "return 0;" were deleted from every question."""
+    if page_count < 2 or not page_height:
         return set()
     counts: dict = {}
     for line in lines:
-        key = re.sub(r"\s+", " ", line.text.strip()).casefold()
+        if not in_margin(line, page_height):
+            continue
+        key = running_key(line.text)
         if not key:
             continue
         counts.setdefault(key, set()).add(line.page)
@@ -232,30 +266,64 @@ def detect_question_markers(lines: list, body_left: float) -> list:
       * weak    -- a bare "N)" / "N." at the *body left margin* (not indented),
                    used by sheets that number questions without a "Q".
 
-    A monotonic guard rejects out-of-order numbers: a marker is only accepted
-    when its number is greater than the last accepted one. This cleanly drops
-    false positives created by line wrapping, e.g. the continuation
-    "... (Fig. 1 of\nQ1). Write a program ..." whose second line looks like a
-    marker but re-uses an already-seen number.
+    Not every line of that shape starts a question: line wrapping makes some,
+    e.g. the continuation "... (Fig. 1 of\nQ1). Write a program ...". Which
+    ones are real is decided from the numbering as a whole, see
+    choose_question_markers().
     """
-    markers: list = []
-    last_number = 0
+    candidates: list = []                       # (line index, number, weight)
     for idx, line in enumerate(lines):
         text = line.text
         strong = STRONG_MARKER_RE.match(text)
-        number: Optional[int] = None
         if strong:
-            number = int(strong.group(1))
-        else:
-            weak = WEAK_MARKER_RE.match(text)
-            if weak and line.x0 <= body_left + INDENT_TOLERANCE:
-                number = int(weak.group(1))
-        if number is None:
+            candidates.append((idx, int(strong.group(1)), 1.0))
             continue
-        if number > last_number:
-            markers.append(idx)
-            last_number = number
-    return markers
+        weak = WEAK_MARKER_RE.match(text)
+        if weak and line.x0 <= body_left + INDENT_TOLERANCE:
+            candidates.append((idx, int(weak.group(1)), WEAK_MARKER_WEIGHT))
+    return choose_question_markers(candidates)
+
+
+def choose_question_markers(candidates: list) -> list:
+    """Pick, from lines that LOOK like question starts, the ones whose numbers
+    make the most sensible numbering, and return their line indices.
+
+    A numbering is a run of candidates where each number is the previous one
+    plus 1. It may also jump ahead (a marker was missed) or start again at 1
+    (a second section: Tutorial Q1-2, then Assignment Q1-3); both cost a
+    penalty, so they are only believed when enough questions follow. The run
+    with the most markers after penalties wins; candidates left out of it are
+    ordinary text.
+
+    This replaces "accept a number if it is greater than the last accepted
+    one". With that rule a stray "12." in the margin was accepted, and then
+    every real question up to Q12 was rejected and glued into one; and a
+    section that started again at Q1 was glued onto the last question before it.
+    """
+    best: list = []                             # (score of the best run ending here, previous candidate)
+    for j, (_, number, weight) in enumerate(candidates):
+        score, previous = weight, None
+        for i in range(j):
+            step = number - candidates[i][1]
+            if step == 1:
+                penalty = 0.0
+            elif step > 1:
+                penalty = GAP_PENALTY
+            elif number == 1:
+                penalty = RESTART_PENALTY
+            else:
+                continue                        # going back to 2, 3 ...: never a numbering
+            if best[i][0] - penalty + weight > score:
+                score, previous = best[i][0] - penalty + weight, i
+        best.append((score, previous))
+    if not best:
+        return []
+    end = max(range(len(best)), key=lambda k: (best[k][0], -k))
+    chosen: list = []
+    while end is not None:
+        chosen.append(candidates[end][0])
+        end = best[end][1]
+    return chosen[::-1]
 
 
 def build_units(lines: list, markers: list) -> list:
@@ -319,7 +387,15 @@ def extract_images(doc: "pymupdf.Document", subject: str, pdf_stem: str,
                     LOG.warning("  could not extract image xref=%s: %s", xref, exc)
                     continue
                 data = raw["image"]
-                ext = raw.get("ext", "png")
+                ext = raw.get("ext", "png").lower()
+                if ext not in GEMINI_IMAGE_TYPES:
+                    # jpx, tiff, bmp ...: every non-PNG used to be sent to
+                    # Gemini labelled as a JPEG, whatever it really was
+                    try:
+                        data, ext = image_as_png(doc, xref), "png"
+                    except Exception as exc:  # pragma: no cover - defensive
+                        LOG.warning("  could not convert image xref=%s (%s) to PNG: %s", xref, ext, exc)
+                        continue
                 path = image_root / f"{subject}_{pdf_stem}_p{page_index}_x{xref}.{ext}"
                 path.write_bytes(data)
                 sha1 = hashlib.sha1(data).hexdigest()
@@ -330,9 +406,21 @@ def extract_images(doc: "pymupdf.Document", subject: str, pdf_stem: str,
     return refs
 
 
+def image_as_png(doc: "pymupdf.Document", xref: int) -> bytes:
+    """The embedded image re-encoded as PNG (RGB), for formats Gemini cannot read."""
+    pix = pymupdf.Pixmap(doc, xref)
+    if pix.n - pix.alpha > 3:                   # CMYK -> RGB
+        pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
+    return pix.tobytes("png")
+
+
 def associate_images_to_units(units: list, images: list) -> None:
     """Attach each figure to the question it belongs to: the last question that
-    starts at or before the figure's (page, y) position. Mutates ``units``."""
+    starts at or before the figure's (page, y) position. Mutates ``units``.
+
+    A figure ABOVE the first question belongs to no question: it is the
+    sheet's header (a logo, a banner). It used to be given to question 1 and
+    transcribed into its text."""
     if not units or not images:
         return
     ordered = sorted(units, key=lambda u: (u.page, u.y0))
@@ -344,7 +432,8 @@ def associate_images_to_units(units: list, images: list) -> None:
             else:
                 break
         if chosen is None:
-            chosen = ordered[0]
+            LOG.debug("  figure %s is above the first question -> not attached", img.path.name)
+            continue
         chosen.images.append(img)
 
 
@@ -441,6 +530,7 @@ class GeminiClient:
         self._cache_path = cache_path
         self._cache: dict = {}
         self._cooldown: dict = {m: 0.0 for m in self._models}
+        self._disabled: set = set()             # models this API key cannot use at all
         self._request_interval = request_interval
         self._max_attempts = max_attempts
         self._last_call = 0.0
@@ -472,15 +562,29 @@ class GeminiClient:
         return self._client
 
     def _pick_model(self) -> str:
-        """Least-recently-cooled available model (spreads load across models)."""
+        """Least-recently-cooled available model (spreads load across models).
+
+        If every usable model is rate-limited it waits for the first one to
+        come back, but only when that is soon. It raises GeminiError when no
+        model can be used with this key at all, or when the wait would be
+        longer than MAX_COOLDOWN_WAIT. (An unavailable model used to be
+        "cooled" for 24 hours, and with all of them unavailable this slept
+        90 s at a time for those 24 hours instead of failing.)"""
+        usable = [m for m in self._models if m not in self._disabled]
+        if not usable:
+            raise GeminiError("no Gemini model is available for this API key "
+                              f"(tried: {', '.join(self._models)})")
         now = time.time()
-        available = [m for m in self._models if self._cooldown.get(m, 0.0) <= now]
+        available = [m for m in usable if self._cooldown.get(m, 0.0) <= now]
         if not available:
-            wait = min(self._cooldown.values()) - now
-            wait = max(0.5, min(wait, 90.0))
+            soonest = min(usable, key=lambda m: self._cooldown.get(m, 0.0))
+            wait = self._cooldown[soonest] - now
+            if wait > MAX_COOLDOWN_WAIT:
+                raise GeminiError(f"every Gemini model is rate-limited for at least {wait:.0f}s more "
+                                  "(daily quota used up?); run again later")
             LOG.info("  all models rate-limited; waiting %.0fs", wait)
-            time.sleep(wait)
-            return self._pick_model()
+            time.sleep(max(0.5, wait))
+            return soonest
         available.sort(key=lambda m: self._cooldown.get(m, 0.0))
         return available[0]
 
@@ -508,7 +612,7 @@ class GeminiClient:
                 last_err = exc
                 if _is_unavailable(exc):
                     LOG.warning("  model '%s' unavailable; disabling it", model)
-                    self._cooldown[model] = time.time() + 86400
+                    self._disabled.add(model)
                     continue
                 if _is_quota(exc):
                     delay = _retry_delay(exc) or 60.0
@@ -531,8 +635,11 @@ class GeminiClient:
         if key in self._cache:
             return self._cache[key]
 
+        mime = GEMINI_IMAGE_TYPES.get(image_path.suffix.lower().lstrip("."))
+        if mime is None:
+            raise GeminiError(f"{image_path.name}: Gemini cannot read this image type")
+
         from google.genai import types
-        mime = "image/png" if image_path.suffix.lower() == ".png" else "image/jpeg"
         contents = [
             types.Part.from_bytes(data=data, mime_type=mime),
             DIAGRAM_TRANSCRIPTION_PROMPT,
@@ -626,15 +733,25 @@ def keyword_classify(chunk_text: str, topics: list) -> list:
 # --------------------------------------------------------------------------- #
 # Chunk description assembly (inline diagram insertion)
 # --------------------------------------------------------------------------- #
-def build_description(chunk_units: list, transcriber) -> str:
+def build_description(chunk_units: list, transcriber, failed: Optional[list] = None) -> str:
     """Join the questions of a chunk, inserting each figure's description
     inline -- immediately after the question it belongs to -- wrapped in the
-    ``[Diagram Context / Description: ...]`` marker."""
+    ``[Diagram Context / Description: ...]`` marker.
+
+    A figure that cannot be transcribed gets a note in its place and its file
+    name is added to ``failed``; the questions are still written. (One failed
+    figure used to stop the whole run before any file was written.)"""
     parts = []
     for unit in chunk_units:
         parts.append(unit.text)
         for image in unit.images:
-            description = transcriber(image.path)
+            try:
+                description = transcriber(image.path)
+            except Exception as exc:  # noqa: BLE001 - one figure must not stop the run
+                LOG.warning("  figure %s could not be transcribed: %s", image.path.name, exc)
+                if failed is not None:
+                    failed.append(image.path.name)
+                description = f"figure {image.path.name} could not be transcribed"
             parts.append(f"[Diagram Context / Description: {description}]")
     return "\n".join(parts).strip()
 
@@ -661,7 +778,7 @@ def process_pdf(pdf_path: Path, subject: str, tutorials_root: Path,
             LOG.warning("  %s: no text layer (scanned PDF?) -- skipping", pdf_path.name)
             return []
 
-        running = find_running_lines(lines, len(doc))
+        running = find_running_lines(lines, len(doc), page_height)
         if running:
             LOG.debug("  running header/footer lines: %s", sorted(running))
 
@@ -687,63 +804,45 @@ def process_pdf(pdf_path: Path, subject: str, tutorials_root: Path,
 # --------------------------------------------------------------------------- #
 # Topic-map loading
 # --------------------------------------------------------------------------- #
-# Built-in fallback catalog, used when topic_map.yaml has no `subjects:` block,
-# so the pipeline still runs against the standard curriculum. Keep the ids in
-# sync with prerequisite_graph/subjects/{ds,algo}.yaml.
-FALLBACK_SUBJECT_CATALOG = {
-    "DS": {
-        "yaml_subject": "DS",
-        "subject_name": "Data Structures",
-        "topics": [
-            {"id": "DS_01", "name": "Linear Data Structures (Array, Linked List, Stack, Queue)"},
-            {"id": "DS_02", "name": "Searching and Sorting"},
-            {"id": "DS_03", "name": "Non-Linear DS: Multi List, Tree, Priority Queue (Heaps)"},
-            {"id": "DS_04", "name": "Non-Linear DS: BST, AVL, RB Tree, B/B+ Tree"},
-            {"id": "DS_05", "name": "Non-Linear DS: Graphs"},
-            {"id": "DS_06", "name": "Advanced DS: Segment/Interval Tree, Suffix Tree/Array, Tries"},
-            {"id": "DS_07", "name": "Hashing (Hash Tables, Collision Resolution)"},
-        ],
-    },
-    "APS": {
-        "yaml_subject": "ALGO",
-        "subject_name": "Algorithms and Problem Solving",
-        "topics": [
-            {"id": "ALGO_01", "name": "Introduction: Asymptotic Analysis, Sorting/Searching Review"},
-            {"id": "ALGO_02", "name": "Search Trees & Priority Queue (Segment/Interval/RB Tree, Binomial/Fibonacci Heap)"},
-            {"id": "ALGO_03", "name": "Divide and Conquer"},
-            {"id": "ALGO_04", "name": "Greedy Algorithms"},
-            {"id": "ALGO_05", "name": "Backtracking Algorithms"},
-            {"id": "ALGO_06", "name": "Dynamic Programming"},
-            {"id": "ALGO_07", "name": "String Algorithms"},
-            {"id": "ALGO_08", "name": "Problem Spaces and Search (BFS/DFS/A*)"},
-            {"id": "ALGO_09", "name": "Tractable and Non-Tractable Problems (P, NP, NP-Complete)"},
-        ],
-    },
-}
-
-
 def load_topic_catalog(topic_map_path: Path, subjects_dir: Optional[Path]) -> dict:
-    """Return ``{subject_folder: {"name": ..., "topics": [{"id","name"}, ...]}}``
-    from the ``subjects:`` block of ``topic_map.yaml``. Cross-checks each
-    subject's topic_ids against ``prerequisite_graph/subjects/*.yaml`` and warns
-    on drift (the graph is the source of truth downstream)."""
+    """Return ``{subject_folder: {"name", "yaml_subject", "topics": [{"id","name"}, ...]}}``.
+
+    The topics are read from ``prerequisite_graph/subjects/*.yaml`` -- the
+    files the graph itself is loaded from -- so every subject is covered and a
+    topic renamed there is what the tagger sees. (A copy of the DS and APS
+    topics used to be written into this script, so SDF tutorials were skipped
+    and a renamed topic never arrived.)
+
+    A tutorial folder is matched to a subject by the ``books:`` block of
+    ``topic_map.yaml`` (``APS`` -> ``ALGO``, ``SDF-1`` -> ``SDF1``) or by the
+    subject code itself (``Tutorials/SDF1``). An optional ``subjects:`` block
+    in ``topic_map.yaml`` still overrides this for the folders it names; its
+    topic ids are cross-checked against the graph."""
     config = yaml.safe_load(topic_map_path.read_text(encoding="utf-8")) or {}
-    subjects_block = config.get("subjects")
-    if not subjects_block:
-        LOG.warning(
-            "'%s' has no 'subjects:' block -- falling back to the built-in catalog "
-            "(DS + APS). Add a 'subjects:' block to customise subject/topic mapping.",
-            topic_map_path,
-        )
-        subjects_block = FALLBACK_SUBJECT_CATALOG
 
     graph_ids: dict = {}
+    by_subject: dict = {}
     if subjects_dir and subjects_dir.exists():
         for yml in sorted(subjects_dir.glob("*.y*ml")):
             data = yaml.safe_load(yml.read_text(encoding="utf-8")) or {}
-            graph_ids[data.get("subject")] = {t["id"] for t in data.get("topics", [])}
+            subject = data.get("subject")
+            graph_ids[subject] = {t["id"] for t in data.get("topics", [])}
+            by_subject[subject] = {
+                "name": data.get("subject_name", subject),
+                "yaml_subject": subject,
+                "topics": [{"id": t["id"], "name": t["name"]} for t in data.get("topics", [])],
+            }
 
-    catalog: dict = {}
+    folder_subject = {subject: subject for subject in by_subject}
+    for book, block in (config.get("books") or {}).items():
+        if (block or {}).get("yaml_subject") in by_subject:
+            folder_subject[book] = block["yaml_subject"]
+    catalog: dict = {folder: dict(by_subject[subject]) for folder, subject in folder_subject.items()}
+
+    subjects_block = config.get("subjects") or {}
+    if not catalog and not subjects_block:
+        LOG.warning("no subject found in %s and no 'subjects:' block in '%s' -- "
+                    "every tutorial will be skipped", subjects_dir, topic_map_path)
     for folder, block in subjects_block.items():
         topics = [{"id": t["id"], "name": t["name"]} for t in block.get("topics", [])]
         catalog[folder] = {"name": block.get("subject_name", folder),
@@ -891,7 +990,9 @@ def find_api_key(env_paths: Iterable[Path]) -> Optional[str]:
 
 
 def write_subject_jsonl(subject: str, chunks: list, out_root: Path) -> Path:
-    slug = re.sub(r"[^A-Za-z0-9]+", "_", subject).strip("_")
+    # a hyphen stays ("SDF-1_tutorial_chunks.jsonl"), like the book chunk files:
+    # embed_tutorial_chunks.py reads the subject back from this file name
+    slug = re.sub(r"[^A-Za-z0-9\-]+", "_", subject).strip("_")
     out_path = out_root / f"{slug}_tutorial_chunks.jsonl"
     with open(out_path, "w", encoding="utf-8") as handle:
         for chunk in chunks:
@@ -1147,6 +1248,7 @@ def run(args: argparse.Namespace) -> int:
     # --- process each PDF; chunk within the PDF so a chunk never mixes two
     #     different tutorial sheets (they are separate weeks/topics) -------- #
     chunks_by_subject: dict = {}
+    failed_figures: list = []
     for pdf_path in pdf_files:
         subject = resolve_subject(pdf_path, tutorials_root)
         if subject not in catalog:
@@ -1174,7 +1276,7 @@ def run(args: argparse.Namespace) -> int:
         subject_name = catalog[subject]["name"]
         topics = catalog[subject]["topics"]
         for group in pack_units_into_chunks(unique_units):
-            description = build_description(group, transcribe)
+            description = build_description(group, transcribe, failed_figures)
             try:
                 matches = classify(subject_name, description, topics)
             except Exception as exc:  # noqa: BLE001 - fall back to keywords
@@ -1212,6 +1314,10 @@ def run(args: argparse.Namespace) -> int:
 
     LOG.info("Done. %d tutorial chunk(s) across %d subject(s).",
              total, len(chunks_by_subject))
+    if failed_figures:
+        LOG.warning("%d figure(s) could not be transcribed and have a note in their place: %s. "
+                    "Run again to retry them (finished ones are cached).",
+                    len(failed_figures), ", ".join(failed_figures))
     return 0
 
 
@@ -1233,7 +1339,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--subjects-dir", default=str(paths["subjects_dir"]),
                         help="prerequisite_graph/subjects dir -- source of course "
                              "outcomes (COs) and prerequisite edges for each chunk")
-    parser.add_argument("--prereq-depth", type=int, default=1,
+    # Default 0: "cos" says which outcomes the chunk's OWN topics serve. With
+    # the old default of 1 a BST chunk (DS_04, CO4) was also labelled CO1,
+    # only because its prerequisite DS_03 serves CO1.
+    parser.add_argument("--prereq-depth", type=int, default=0,
                         help="How many prerequisite levels to fold into a chunk's COs "
                              "(0 = own topics only, 1 = direct prerequisites, "
                              "-1 = full transitive closure)")
