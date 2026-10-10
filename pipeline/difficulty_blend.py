@@ -9,27 +9,52 @@ prerequisite sits in the graph.
 
 from neo4j import GraphDatabase
 
+DIFFICULTIES = ("easy", "medium", "hard")
+
 
 def get_prerequisites_with_distance(session, topic_id, max_depth=4):
     """
     Returns every prerequisite of topic_id, tagged with its MINIMUM hop
     distance (not just "reachable within N hops" -- the actual shortest
-    distance), plus which semester it's from.
+    distance), which semester it's from, and how strong the link is.
 
     hop=1  -> direct prerequisite (normal difficulty)
     hop=2+ -> prerequisite-of-a-prerequisite (candidate for "tricky")
+
+    strength="hard" -> a shortest route to it uses only hard REQUIRES links
+    strength="soft" -> every shortest route to it goes through a soft link
+
+    Rows come back sorted by hops, then topic id, so the same graph always
+    gives the same list.
     """
     result = session.run(
         """
         MATCH path = (t:Topic {topic_id: $topic_id})-[:REQUIRES*1..%d]->(prereq:Topic)
-        WITH prereq, min(length(path)) AS hops, t.semester AS current_semester
+        WITH prereq, t.semester AS current_semester, length(path) AS hops,
+             all(r IN relationships(path) WHERE r.strength = 'hard') AS all_hard
+        WITH prereq, current_semester, min(hops) AS hops,
+             min(CASE WHEN all_hard THEN hops END) AS hard_hops
         RETURN prereq.topic_id AS id, prereq.name AS name,
-               prereq.semester AS semester, hops, current_semester
-        ORDER BY hops
+               prereq.semester AS semester, hops,
+               CASE WHEN hard_hops = hops THEN 'hard' ELSE 'soft' END AS strength,
+               current_semester
+        ORDER BY hops, id
         """ % max_depth,
         topic_id=topic_id,
     )
     return [dict(r) for r in result]
+
+
+def _pick(candidates):
+    """
+    The one prerequisite to blend out of several that qualify: a hard link
+    before a soft one (a soft link is only used when there is no hard one),
+    then the fewest hops, then the topic id. Nothing is left to the order
+    the rows arrived in, so the same graph always gives the same pick.
+    """
+    if not candidates:
+        return None
+    return min(candidates, key=lambda p: (p.get("strength") == "soft", p["hops"], p["id"]))
 
 
 def select_blend_topic(prereqs, difficulty, current_semester):
@@ -40,41 +65,34 @@ def select_blend_topic(prereqs, difficulty, current_semester):
     easy   -> no blending. Question stays scoped to the topic alone.
     medium -> blend a direct (hop=1) prerequisite. Normal "apply what
               you just learned plus one building block" difficulty.
-    hard   -> blend a hop>=2 prerequisite, preferring one from an
+    hard   -> blend a hop>=2 prerequisite: the NEAREST one from an
               earlier SEMESTER (a genuine callback), not just an earlier
-              module in the same course. Falls back to hop=2 same-semester
-              if no cross-semester candidate exists.
+              module in the same course. Falls back to the nearest hop>=2
+              one in the same semester if no cross-semester candidate
+              exists, and to a direct one if nothing is 2+ hops back.
+
+    Ties are settled by _pick (hard link first, then hops, then topic id).
     """
+    if difficulty not in DIFFICULTIES:
+        raise ValueError(f"Unknown difficulty: {difficulty!r} (expected one of: {', '.join(DIFFICULTIES)})")
+
     if difficulty == "easy" or not prereqs:
         return None
 
+    direct = [p for p in prereqs if p["hops"] == 1]
     if difficulty == "medium":
-        direct = [p for p in prereqs if p["hops"] == 1]
-        return direct[0] if direct else None
+        return _pick(direct)
 
-    if difficulty == "hard":
-        deep = [p for p in prereqs if p["hops"] >= 2]
-        if not deep:
-            # No deep prerequisite exists (topic is close to the "root"
-            # of its own subject) -- fall back to a direct one rather
-            # than blending nothing.
-            direct = [p for p in prereqs if p["hops"] == 1]
-            return direct[0] if direct else None
-
-        cross_semester = [p for p in deep if p["semester"] < current_semester]
-        if cross_semester:
-            # Prefer the one from the EARLIEST semester -- the biggest
-            # real callback -- then shallowest hop among ties, so it's
-            # a genuine reach-back rather than an obscure 4-hop trivia pick.
-            cross_semester.sort(key=lambda p: (p["semester"], p["hops"]))
-            return cross_semester[0]
-
-        # No cross-semester option -- take the shallowest deep prereq
-        # within the same subject instead.
-        deep.sort(key=lambda p: p["hops"])
-        return deep[0]
-
-    raise ValueError(f"Unknown difficulty: {difficulty}")
+    deep = [p for p in prereqs if p["hops"] >= 2]
+    # Nearest first, not earliest semester first: reaching for semester 1
+    # every time made NP-completeness blend "Arrays", 4 hops away, when
+    # "Graphs" (semester 3) is 2 hops back.
+    cross_semester = [p for p in deep if p["semester"] < current_semester]
+    # No cross-semester option -- take the nearest deep prereq within the
+    # same semester instead. No deep prerequisite at all (topic is close to
+    # the "root" of its own subject) -- fall back to a direct one rather
+    # than blending nothing.
+    return _pick(cross_semester or deep or direct)
 
 
 def build_question_prompt(topic, blend_topic, difficulty, marks):

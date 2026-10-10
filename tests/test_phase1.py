@@ -238,8 +238,10 @@ GRAPH = {
     "topics": {"DS_03": {"name": "Trees", "semester": 3},
                "DS_07": {"name": "Topic with no study material", "semester": 3}},
     "prereqs": {"DS_03": [
-        {"id": "DS_01", "name": "Linked list", "semester": 3, "hops": 1, "current_semester": 3},
-        {"id": "SDF1_04", "name": "Pointers", "semester": 1, "hops": 2, "current_semester": 3}]},
+        {"id": "DS_01", "name": "Linked list", "semester": 3, "hops": 1, "strength": "hard",
+         "current_semester": 3},
+        {"id": "SDF1_04", "name": "Pointers", "semester": 1, "hops": 2, "strength": "hard",
+         "current_semester": 3}]},
     "cos": {"DS_03": [{"co_id": "DS:CO4", "short_id": "CO4", "description": "trees"}]},
 }
 
