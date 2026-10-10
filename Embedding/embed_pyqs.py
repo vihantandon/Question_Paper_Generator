@@ -37,20 +37,37 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DIR = ROOT / "Extracting" / "Processed" / "pyq_structured"
 
 
-def sanitize_metadata(meta: dict) -> dict:
-    """Chroma metadata values must be str / int / float / bool.
-    None and lists/dicts are not allowed, so convert them."""
-    clean = {}
+def sanitize_metadata(meta: dict, stored: dict = None) -> dict:
+    """Chroma metadata values must be str / int / float / bool, so lists and
+    dicts are stored as JSON text.
+
+    A key whose value is None is left out, so Chroma holds NO value for it.
+    (None used to be stored as the text "NONE", or -1 for marks. That made
+    topic_confidence a number on some rows and text on others, so a numeric
+    filter skipped rows without saying so, and a missing mark would have
+    reached the question prompt as -1.)
+
+    stored: the metadata Chroma holds for this id now. upsert() and update()
+    only overwrite the keys they are given, so a key Chroma has but the
+    record no longer has (or has as None) is sent as None: that deletes it.
+    """
+    clean = {k: None for k in (stored or {}) if meta.get(k) is None}
     for k, v in meta.items():
         if v is None:
-            clean[k] = -1 if k == "marks" else "NONE"
-        elif isinstance(v, (list, dict)):
+            continue
+        if isinstance(v, (list, dict)):
             clean[k] = json.dumps(v, ensure_ascii=False)   # e.g. marks_breakdown
         elif isinstance(v, (str, int, float, bool)):
             clean[k] = v
         else:
             clean[k] = str(v)
     return clean
+
+
+def stored_metadata(collection, ids) -> dict:
+    """{id: metadata} of the rows Chroma already has (for sanitize_metadata)."""
+    got = collection.get(ids=list(ids), include=["metadatas"])
+    return dict(zip(got["ids"], got["metadatas"]))
 
 
 def load_records(folder: Path):
@@ -125,11 +142,12 @@ def main():
         batch = records[i:i + BATCH_SIZE]
         docs = [r["document"] for r in batch]
         embeddings = model.encode(docs, show_progress_bar=False).tolist()
+        stored = stored_metadata(collection, [r["id"] for r in batch])
         collection.upsert(
             ids=[r["id"] for r in batch],
             embeddings=embeddings,
             documents=docs,
-            metadatas=[sanitize_metadata(r["metadata"]) for r in batch],
+            metadatas=[sanitize_metadata(r["metadata"], stored.get(r["id"])) for r in batch],
         )
 
     print(f"Done. '{COLLECTION_NAME}' now has {collection.count()} vectors.")

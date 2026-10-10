@@ -25,7 +25,8 @@ HOW THE TOPIC IS CHOSEN
       checks whether the YAML's CO -> topic mapping is missing a link.
     - If the winner beats the runner-up by less than LOW_CONFIDENCE_MARGIN,
       keep the choice but set needs_review.
-    - Topics fixed by hand (review_reason mentions "manual") are never touched.
+    - Topics fixed by hand ("tag_method": "manual") are never changed, and
+      such a record is no longer flagged for a topic review.
 
 WHY IT RUNS AFTER EMBEDDING
     It reuses the question vectors already stored in pyq_bank, so it needs
@@ -53,8 +54,10 @@ SUBJECTS_DIR = ROOT / "prerequisite_graph" / "subjects"
 
 sys.path.insert(0, str(HERE))                      # split_pyq_questions.py
 sys.path.insert(0, str(ROOT / "Embedding"))        # embed_pyqs.py
+sys.path.insert(0, str(ROOT))                      # retrieval.py
 from split_pyq_questions import normalize_code      # noqa: E402  one OCR rule, one place
 from embed_pyqs import sanitize_metadata            # noqa: E402  same metadata rules as embedding
+from retrieval import closest_chunks                # noqa: E402  same de-duplication as retrieval
 
 CHROMA_HOST, CHROMA_PORT = "localhost", 8000
 PYQ_COLLECTION = "pyq_bank"
@@ -167,11 +170,22 @@ def resolve_record(meta, subject, scores):
         reasons.append(f"CO code '{meta['raw_co_code']}' still unresolved")
 
     # 3. Topic
-    new.setdefault("topic_id_from_co", meta.get("topic_id"))   # what the splitter chose
     manual = meta.get("tag_method") == "manual" or "manual" in (meta.get("review_reason") or "").lower()
     if manual:
+        # A human decided the topic: keep it, and stop asking for a review of
+        # it (the flag used to stay set from before the human looked). Only a
+        # Bloom / CO problem found above still needs someone. The human's
+        # note in review_reason is kept; a problem is added to it once.
         new["tag_method"] = "manual"
-        return new                                  # a human decided: keep everything
+        note = [part for part in (meta.get("review_reason") or "").split("; ")
+                if part and part not in reasons]
+        new["needs_review"] = bool(reasons)
+        new["review_reason"] = "; ".join(note + reasons) or None
+        return new
+
+    # What the splitter chose from the CO alone. Not filled in for a manual
+    # record above: its topic_id is already the human's choice, not the splitter's.
+    new.setdefault("topic_id_from_co", meta.get("topic_id"))
 
     if scores is None:
         reasons.append("no vector in pyq_bank yet (run Embedding/embed_pyqs.py)")
@@ -210,18 +224,15 @@ def load_subjects(subjects_dir=SUBJECTS_DIR):
 def topic_scores(question_vec, topic_ids, collections, k=TOP_K):
     """{topic_id: mean similarity of its k closest chunks}. Chroma returns
     squared L2 distance; for the unit-length MiniLM vectors that means
-    cosine similarity = 1 - distance / 2."""
+    cosine similarity = 1 - distance / 2.
+
+    A text stored more than once counts once (closest_chunks), so a page that
+    was saved several times cannot take all k places and lift its topic."""
     scores = {}
     for t in topic_ids:
-        dists = []
-        for coll in collections:
-            res = coll.query(query_embeddings=[question_vec], n_results=k,
-                             where={"$and": [{"topic_id": t}, {"needs_review": False}]},
-                             include=["distances"])
-            dists += res["distances"][0]
+        dists = [c["distance"] for c in closest_chunks(collections, question_vec, t, k)]
         if dists:
-            best = sorted(dists)[:k]
-            scores[t] = sum(1 - d / 2 for d in best) / len(best)
+            scores[t] = sum(1 - d / 2 for d in dists) / len(dists)
     return scores
 
 
@@ -265,8 +276,9 @@ def main():
 
     # one round-trip for all question vectors
     q_ids = [r["id"] for recs in files.values() for r in recs if r["metadata"]["type"] == "question"]
-    got = pyq_coll.get(ids=q_ids, include=["embeddings"])
+    got = pyq_coll.get(ids=q_ids, include=["embeddings", "metadatas"])
     vectors = dict(zip(got["ids"], got["embeddings"]))
+    stored = dict(zip(got["ids"], got["metadatas"]))
 
     updated, counts = [], {}
     before_review = after_review = 0
@@ -312,7 +324,7 @@ def main():
     for path, recs in files.items():
         path.write_text(json.dumps(recs, indent=2, ensure_ascii=False), encoding="utf-8")
     pyq_coll.update(ids=[i for i, _ in updated],
-                    metadatas=[sanitize_metadata(m) for _, m in updated])
+                    metadatas=[sanitize_metadata(m, stored.get(i)) for i, m in updated])
     print(f"\nSaved {len(files)} JSON file(s) and updated metadata of {len(updated)} vector(s) in {PYQ_COLLECTION}.")
 
 

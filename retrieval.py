@@ -115,6 +115,13 @@ def _query_all(collections, embed_fn, text, topic_id, n, exclude_texts=()):
         fetch *= 2
 
 
+def closest_chunks(collections, query_embedding, topic_id, n):
+    """The n closest DISTINCT grounding texts of a topic to a vector that is
+    already in hand (resolve_pyq_labels.py scores each past question with the
+    vector stored in pyq_bank, so it needs no embedding model)."""
+    return _query_all(collections, lambda _text: query_embedding, "", topic_id, n)
+
+
 def fetch_grounding_chunks(collections, embed_fn: Callable[[str], list],
                            topic: dict, blend_topic: Optional[dict] = None,
                            n_main: int = 4, n_blend: int = 2):
