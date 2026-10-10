@@ -68,10 +68,21 @@ def connect(embed_fn=None) -> Resources:
     except ServiceUnavailable:
         driver.close()
         raise SystemExit(f"Cannot reach Neo4j at {NEO4J_URI}. Is it running?  ->  docker compose up -d")
-    client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
-    return Resources(
-        driver=driver,
-        grounding_collections=get_grounding_collections(client),
-        pyq_collection=get_pyq_collection(client),
-        embed_fn=embed_fn or make_embed_fn(),
-    )
+    # From here on the Neo4j driver is open. If anything below fails, nothing
+    # is returned that could close it later, so it is closed here.
+    try:
+        try:
+            client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
+            client.heartbeat()
+        except Exception as e:
+            raise SystemExit(f"Cannot reach Chroma at {CHROMA_HOST}:{CHROMA_PORT} ({e}).\n"
+                             f"Is it running?  ->  docker compose up -d") from None
+        return Resources(
+            driver=driver,
+            grounding_collections=get_grounding_collections(client),
+            pyq_collection=get_pyq_collection(client),
+            embed_fn=embed_fn or make_embed_fn(),
+        )
+    except BaseException:
+        driver.close()
+        raise

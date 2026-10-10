@@ -158,6 +158,16 @@ def split_into_chunks(text, max_tokens = MAX_CHUNK_TOKENS):
 
     return ["\n".join(unit for unit, _ in group) for group in groups]
 
+def display_path(path):
+    """The book's path as stored in the chunk files: relative to the repo
+    root with forward slashes ("Books/DS.pdf"), so the files do not carry
+    the full folder path of whoever ran the extraction."""
+    resolved = Path(path).resolve()
+    try:
+        return resolved.relative_to(ROOT).as_posix()
+    except ValueError:                      # a PDF outside the repo: its name is enough
+        return resolved.name
+
 def process_pdf(path , subject):
     doc = fitz.open(path)
 
@@ -177,7 +187,7 @@ def process_pdf(path , subject):
             all_chunks.append(Chunk(
                 chunk_id = f"{subject}_{idx:03d}_{j:02d}",
                 subject = subject,
-                source_file = path,
+                source_file = display_path(path),
                 section_title = title,
                 page_start = start_page+1,
                 page_end = end_page+1,

@@ -21,7 +21,8 @@ Requires: pip install neo4j pyyaml
     node (and their edges) first, then rebuilds from the YAMLs -- the YAMLs
     are the single source of truth. The graph is tiny, so this takes a
     second. Validation runs BEFORE the reset, so a broken YAML never wipes
-    the graph.
+    the graph, and the delete and the reload are one transaction, so a load
+    that fails half-way leaves the old graph as it was.
 
     Docker: docker compose --profile tools run --rm loader --reset
 
@@ -114,8 +115,35 @@ def load_subject_files(subjects_dir):
     return all_topics, all_prereqs, all_cos, all_topic_co_links
 
 
+def find_prerequisite_loops(all_prereqs):
+    """Every way the prerequisites lead from a topic back to itself, each as
+    a list like ["A", "B", "A"] (or ["A", "A"] for a topic that requires
+    itself). A topic cannot be needed before itself, and in the graph a loop
+    makes a topic show up as its own prerequisite."""
+    requires = {}
+    for p in all_prereqs:
+        requires.setdefault(p["topic"], []).append(p["requires"])
+
+    loops, finished = [], set()
+
+    def visit(topic, path):
+        if topic in path:
+            loops.append(path[path.index(topic):] + [topic])
+            return
+        if topic in finished:
+            return
+        for prereq in sorted(requires.get(topic, [])):
+            visit(prereq, path + [topic])
+        finished.add(topic)
+
+    for topic in sorted(requires):
+        visit(topic, [])
+    return loops
+
+
 def validate(all_topics, all_prereqs, all_cos, all_topic_co_links):
-    """Catch typos: prereqs and CO links must reference things that exist."""
+    """Catch typos: prereqs and CO links must reference things that exist,
+    and prerequisites must not go in a circle."""
     known_topic_ids = {t["id"] for t in all_topics}
     known_co_ids = {c["co_id"] for c in all_cos}
     problems = []
@@ -137,6 +165,9 @@ def validate(all_topics, all_prereqs, all_cos, all_topic_co_links):
     dupes = {t["id"] for t in all_topics if topic_id_list.count(t["id"]) > 1}
     if dupes:
         problems.append(f"  duplicate topic ids across files: {sorted(dupes)}")
+
+    for loop in find_prerequisite_loops(all_prereqs):
+        problems.append(f"  prerequisites go in a circle: {' -> '.join(loop)}")
 
     # Warn (don't fail) on topics with no CO -- useful during the
     # transition while COs are still being filled in.
@@ -248,6 +279,30 @@ def report_stale(session, all_topics, all_prereqs, all_cos, all_topic_co_links):
         print("Re-run with --reset to remove them.", file=sys.stderr)
 
 
+def load_everything(tx, all_topics, all_prereqs, all_cos, all_topic_co_links, reset):
+    """The whole load in ONE transaction. If any step fails, Neo4j undoes all
+    of it -- so a --reset load that breaks half-way leaves the old graph in
+    place, not an empty or half-built one. (The delete and every single
+    node / edge used to be transactions of their own.)
+
+    Returns how many old nodes --reset deleted (None without --reset)."""
+    deleted = reset_graph(tx) if reset else None
+
+    # Pass 1: create every node (topics + COs) from every file first.
+    for t in all_topics:
+        add_topic(tx, t["id"], t["name"], t["subject"], t["semester"])
+    for c in all_cos:
+        add_co(tx, c["co_id"], c["short_id"], c["subject"], c["description"])
+
+    # Pass 2: now that all nodes exist, edges can cross subject files
+    # in any order (e.g. ALGO's file can reference DS's topic ids).
+    for p in all_prereqs:
+        add_prerequisite(tx, p["topic"], p["requires"], p["strength"])
+    for link in all_topic_co_links:
+        add_topic_co_link(tx, link["topic_id"], link["co_id"])
+    return deleted
+
+
 def build_graph(subjects_dir, reset=False):
     all_topics, all_prereqs, all_cos, all_topic_co_links = load_subject_files(subjects_dir)
     validate(all_topics, all_prereqs, all_cos, all_topic_co_links)
@@ -255,22 +310,10 @@ def build_graph(subjects_dir, reset=False):
     driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
     try:
         with driver.session() as session:
+            deleted = session.execute_write(load_everything, all_topics, all_prereqs,
+                                            all_cos, all_topic_co_links, reset)
             if reset:
-                deleted = session.execute_write(reset_graph)
                 print(f"\n--reset: deleted {deleted} old Topic/CO node(s) and their edges.")
-
-            # Pass 1: create every node (topics + COs) from every file first.
-            for t in all_topics:
-                session.execute_write(add_topic, t["id"], t["name"], t["subject"], t["semester"])
-            for c in all_cos:
-                session.execute_write(add_co, c["co_id"], c["short_id"], c["subject"], c["description"])
-
-            # Pass 2: now that all nodes exist, edges can cross subject files
-            # in any order (e.g. ALGO's file can reference DS's topic ids).
-            for p in all_prereqs:
-                session.execute_write(add_prerequisite, p["topic"], p["requires"], p["strength"])
-            for link in all_topic_co_links:
-                session.execute_write(add_topic_co_link, link["topic_id"], link["co_id"])
 
             if not reset:
                 report_stale(session, all_topics, all_prereqs, all_cos, all_topic_co_links)

@@ -5,9 +5,10 @@ Given a target topic and a desired difficulty, picks which prerequisite
 topic(s) (if any) should be blended into the LLM prompt to create a
 "tricky" cross-topic question, based on how many hops back that
 prerequisite sits in the graph.
-"""
 
-from neo4j import GraphDatabase
+The LangGraph node that calls these is pipeline/nodes/graph_lookup.py; to
+try it on the live graph:  python3 -m pipeline.graph ALGO_06 hard
+"""
 
 DIFFICULTIES = ("easy", "medium", "hard")
 
@@ -121,45 +122,3 @@ def build_question_prompt(topic, blend_topic, difficulty, marks):
         f"callback, not a random detour -- the connection must be real and "
         f"answerable, not forced."
     )
-
-
-# ---------------------------------------------------------------------------
-# Example: wiring this into the LangGraph node from your pipeline
-# ---------------------------------------------------------------------------
-def graph_lookup_node(state, driver):
-    """
-    Replaces the plain 'allowed_prior_topics' lookup with a
-    difficulty-aware blend decision for the current topic being drafted.
-    """
-    topic_id = state["current_topic_id"]
-    difficulty = state["target_difficulty"]  # "easy" | "medium" | "hard"
-
-    with driver.session() as session:
-        prereqs = get_prerequisites_with_distance(session, topic_id)
-        # also fetch the topic's own record for its name/semester
-        topic_record = session.run(
-            "MATCH (t:Topic {topic_id: $id}) RETURN t.name AS name, t.semester AS semester",
-            id=topic_id,
-        ).single()
-
-    topic = {"name": topic_record["name"], "semester": topic_record["semester"]}
-    blend = select_blend_topic(prereqs, difficulty, topic["semester"])
-
-    state["allowed_prior_topics"] = prereqs
-    state["blend_topic"] = blend
-    state["prompt_instruction"] = build_question_prompt(
-        topic, blend, difficulty, state["target_marks"]
-    )
-    return state
-
-
-if __name__ == "__main__":
-    # Quick manual check against a live Neo4j instance
-    driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "yourpassword"))
-    with driver.session() as session:
-        prereqs = get_prerequisites_with_distance(session, "ALGO_06")  # Dynamic Programming
-        for p in prereqs:
-            print(p)
-        blend = select_blend_topic(prereqs, "hard", current_semester=4)
-        print("\nChosen blend topic for HARD difficulty:", blend)
-    driver.close()

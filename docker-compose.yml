@@ -3,14 +3,19 @@
 #   docker compose --profile tools run --rm loader          # load subject YAMLs into Neo4j
 #   docker compose --profile tools run --rm loader --reset  # wipe Topic/CO nodes, then reload
 #                                                           # (use after removing/renaming anything in a YAML)
+#
+# Every port is published on 127.0.0.1 only: the databases can be reached
+# from this machine, not from the rest of the network. Chroma and Redis have
+# no password and Neo4j's default one is public, so before removing a
+# "127.0.0.1:" prefix, set real passwords.
 
 services:
   neo4j:
     image: neo4j:5
     container_name: neo4j_server
     ports:
-      - "7474:7474"   # browser UI
-      - "7687:7687"   # bolt protocol (Python driver connects here)
+      - "127.0.0.1:7474:7474"   # browser UI
+      - "127.0.0.1:7687:7687"   # bolt protocol (Python driver connects here)
     environment:
       - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-yourpassword}
     volumes:
@@ -24,10 +29,13 @@ services:
     restart: unless-stopped
 
   chroma:
-    image: chromadb/chroma:latest
+    # Pinned: ":latest" can move to a release that the installed Python client
+    # or the data in ./chroma_data does not match. Upgrade on purpose, and
+    # keep the major version (1.x) the same as chromadb in requirements.txt.
+    image: chromadb/chroma:1.5.9
     container_name: chromadb_server
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./chroma_data:/data
     restart: unless-stopped
@@ -36,7 +44,7 @@ services:
     image: redis:7
     container_name: redis_cache
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped

@@ -416,7 +416,8 @@ def process_pages_file(pages_path: Path, subject_yamls: dict) -> list[dict]:
 
     full_text = "\n".join(r["text"] for r in rows)
     full_text = REDUNDANT_QUESTION_HEADING_RE.sub("", full_text)
-    source_file = rows[0]["source_file"]
+    # pages extracted on Windows hold "PYQs\T1 APS.pdf"; store one spelling
+    source_file = rows[0]["source_file"].replace("\\", "/")
 
     header_block, question_blocks = split_into_questions(full_text)
     subject_code = detect_subject(header_block, subject_yamls, filename=pages_path.stem)

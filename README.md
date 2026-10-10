@@ -174,7 +174,7 @@ Question_Paper_Generator/
 │   │   ├── pdf_extract_full.py      PYQ PDF -> page text
 │   │   ├── split_pyq_questions.py   page text -> one record per question
 │   │   ├── resolve_pyq_labels.py    cleans Bloom / CO / topic labels
-│   │   ├── test_pyq_embed.py        sample PYQ search
+│   │   ├── sample_pyq_search.py     sample PYQ search
 │   │   └── model_search.py          lists Groq models
 │   └── Processed/              every processed data file lives here
 │       ├── <book>_chunks.jsonl

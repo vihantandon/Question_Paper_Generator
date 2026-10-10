@@ -9,6 +9,16 @@ Safe to re-run: chunks are upserted by chunk_id, and vectors whose chunk is
 no longer in the chunk files are deleted, so "book_content" always matches
 Extracting/Processed/*_chunks.jsonl (see stale_vectors.py).
 """
+# --- MUST come before any sentence_transformers / transformers import ------
+# transformers tries to import TensorFlow if it is installed, and a clashing
+# TF + protobuf install then breaks the import. We only need PyTorch, so tell
+# it to skip TF (the other embed scripts do the same).
+import os
+os.environ["USE_TF"] = "0"
+os.environ["TRANSFORMERS_NO_TF"] = "1"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+# ---------------------------------------------------------------------------
+
 import json
 import sys
 from pathlib import Path
