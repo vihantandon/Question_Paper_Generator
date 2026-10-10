@@ -203,6 +203,7 @@ Question_Paper_Generator/
 │   └── graph.py                START -> graph_lookup -> retrieve -> END
 │
 ├── tests/test_phase1.py        unit tests with fake Neo4j / Chroma
+├── settings.py                 Chroma / Neo4j address for every script: terminal, else .env, else default
 ├── tag_topics.py               adds topic_id to book chunks
 ├── retrieval.py                grounding text (book + tutorial) + similar PYQs
 ├── check_chroma.py             verifies all Chroma collections

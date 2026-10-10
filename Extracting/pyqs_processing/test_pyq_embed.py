@@ -1,10 +1,15 @@
 import os
+import sys
+from pathlib import Path
 os.environ["USE_TF"] = "0"
 import chromadb
 from sentence_transformers import SentenceTransformer
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))   # repo root: settings.py
+from settings import CHROMA_HOST, CHROMA_PORT
+
 model = SentenceTransformer("all-MiniLM-L6-v2")
-coll = chromadb.HttpClient(host="localhost", port=8000).get_collection("pyq_bank")
+coll = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT).get_collection("pyq_bank")
 
 res = coll.query(
     query_embeddings=[model.encode("minimum spanning tree of a weighted graph").tolist()],

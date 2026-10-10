@@ -13,12 +13,14 @@ runs in a few seconds.
 
 USAGE (run from the repo root, after `docker compose up -d`)
     python check_chroma.py
-    python check_chroma.py --port 8000 --host localhost
+    python check_chroma.py --port 8000 --host localhost   # default: settings.py (.env)
 """
 import argparse
 import json
 from collections import Counter, defaultdict
 from pathlib import Path
+
+from settings import CHROMA_HOST, CHROMA_PORT
 
 ROOT = Path(__file__).resolve().parent
 PROCESSED = ROOT / "Extracting" / "Processed"
@@ -144,8 +146,8 @@ def topic_coverage(book_metas, tut_metas):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--host", default="localhost")
-    ap.add_argument("--port", type=int, default=8000)
+    ap.add_argument("--host", default=CHROMA_HOST)
+    ap.add_argument("--port", type=int, default=CHROMA_PORT)
     args = ap.parse_args()
 
     import chromadb

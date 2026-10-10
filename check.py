@@ -1,6 +1,8 @@
 import chromadb
 
-client = chromadb.HttpClient(host="localhost", port=8000)
+from settings import CHROMA_HOST, CHROMA_PORT
+
+client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
 collection = []
 collection.append(client.get_collection("book_content"))
 collection.append(client.get_collection("tut_content"))

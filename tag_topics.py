@@ -36,13 +36,15 @@ from collections import Counter, defaultdict
 from pathlib import Path
  
 import yaml
- 
+
+from settings import CHROMA_HOST, CHROMA_PORT      # .env / terminal / default, see settings.py
+
 ROOT = Path(__file__).resolve().parent
 PROCESSED = ROOT / "Extracting" / "Processed"
 MAP_FILE = ROOT / "Extracting" / "topic_map.yaml"
 SUBJECTS_DIR = ROOT / "prerequisite_graph" / "subjects"
  
-CHROMA_HOST, CHROMA_PORT, COLLECTION = "localhost", 8000, "book_content"
+COLLECTION = "book_content"
 NONE = "NONE"
 MAX_PAGE_SPAN = 200      # a real book section never spans more pages than this
  

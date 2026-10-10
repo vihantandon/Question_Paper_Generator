@@ -374,25 +374,5 @@ class TestDuplicateChunks(unittest.TestCase):
                          [("main", shared), ("blend", "Q2. Reverse a doubly linked list.")])
 
 
-class TestDotenv(unittest.TestCase):
-    def test_reads_file_but_terminal_wins(self):
-        import os
-        import tempfile
-        from pipeline.resources import load_dotenv_file
-        with tempfile.TemporaryDirectory() as d:
-            env = Path(d) / ".env"
-            env.write_text('# comment\nQPG_TEST_A=from_file\nexport QPG_TEST_B="quoted"\n'
-                           'QPG_TEST_C=from_file\nbad line\n', encoding="utf-8")
-            os.environ["QPG_TEST_C"] = "from_terminal"
-            try:
-                load_dotenv_file(env)
-                self.assertEqual(os.environ["QPG_TEST_A"], "from_file")
-                self.assertEqual(os.environ["QPG_TEST_B"], "quoted")
-                self.assertEqual(os.environ["QPG_TEST_C"], "from_terminal")
-            finally:
-                for k in ("QPG_TEST_A", "QPG_TEST_B", "QPG_TEST_C"):
-                    os.environ.pop(k, None)
-
-
 if __name__ == "__main__":
     unittest.main()

@@ -8,8 +8,8 @@ will double-process the other's files.
 Requires:
     pip install chromadb sentence-transformers pyyaml tqdm
 
-Run this AFTER docker compose up -d (the Chroma server must be running
-on localhost:8000).
+Run this AFTER docker compose up -d (the Chroma server must be running;
+its address comes from settings.py: .env, else localhost:8000).
 
 WHY MULTI-TOPIC CHUNKS ARE SPLIT
     A tutorial chunk's "topic_ids" is a LIST (one chunk can cover more than
@@ -39,6 +39,7 @@ USAGE
 """
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import yaml
@@ -46,9 +47,9 @@ import yaml
 from stale_vectors import remove_stale_vectors
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))                      # settings.py
+from settings import CHROMA_HOST, CHROMA_PORT      # noqa: E402
 
-CHROMA_HOST = "localhost"
-CHROMA_PORT = 8000
 COLLECTION_NAME = "tut_content"
 PROCESSED_DIR = ROOT / "Extracting" / "Processed"
 TOPIC_MAP_FILE = ROOT / "Extracting" / "topic_map.yaml"

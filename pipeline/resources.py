@@ -12,36 +12,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Optional
 
+# the repo's .env is read by settings.py, once, for every script
+from settings import CHROMA_HOST, CHROMA_PORT, NEO4J_PASSWORD, NEO4J_URI, NEO4J_USER
+
 ROOT = Path(__file__).resolve().parent.parent
-
-
-def load_dotenv_file(path=ROOT / ".env"):
-    """Read KEY=VALUE lines from the repo's .env into os.environ.
-
-    Docker Compose reads .env by itself, but Python does not -- without
-    this, the pipeline would use the default password below instead of
-    the one in .env. A variable already set in the terminal (export ...)
-    wins over the file.
-    """
-    path = Path(path)
-    if not path.exists():
-        return
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        key = key.strip().removeprefix("export ").strip()
-        value = value.strip().strip('"').strip("'")
-        if key:
-            os.environ.setdefault(key, value)
-
-
-load_dotenv_file()      # must run before the settings below are read
-
-NEO4J_URI = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
-NEO4J_USER = os.environ.get("NEO4J_USER", "neo4j")
-NEO4J_PASSWORD = os.environ.get("NEO4J_PASSWORD", "yourpassword")
 EMBED_MODEL = "all-MiniLM-L6-v2"      # must match the model used to embed the collections
 
 
@@ -77,8 +51,7 @@ def connect(embed_fn=None) -> Resources:
     """Open Neo4j + Chroma and load the embedding model."""
     import chromadb
     from neo4j import GraphDatabase
-    from retrieval import (CHROMA_HOST, CHROMA_PORT,
-                           get_grounding_collections, get_pyq_collection)
+    from retrieval import get_grounding_collections, get_pyq_collection
 
     from neo4j.exceptions import AuthError, ServiceUnavailable
 

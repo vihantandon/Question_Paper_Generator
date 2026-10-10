@@ -58,8 +58,8 @@ sys.path.insert(0, str(ROOT))                      # retrieval.py
 from split_pyq_questions import normalize_code      # noqa: E402  one OCR rule, one place
 from embed_pyqs import sanitize_metadata            # noqa: E402  same metadata rules as embedding
 from retrieval import closest_chunks                # noqa: E402  same de-duplication as retrieval
+from settings import CHROMA_HOST, CHROMA_PORT       # noqa: E402  .env / terminal / default
 
-CHROMA_HOST, CHROMA_PORT = "localhost", 8000
 PYQ_COLLECTION = "pyq_bank"
 GROUNDING_COLLECTIONS = ("book_content", "tut_content")
 

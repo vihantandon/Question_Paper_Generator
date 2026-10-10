@@ -10,7 +10,7 @@ topic with no book text (e.g. ALGO_05 Backtracking) still gets grounded in
 its tutorial questions.
 
     from retrieval import get_grounding_collections, fetch_grounding_chunks
-    collections = get_grounding_collections(chromadb.HttpClient(host="localhost", port=8000))
+    collections = get_grounding_collections(chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT))
     chunks = fetch_grounding_chunks(collections, embed_fn,
                                     topic={"id": "ALGO_06", "name": "Dynamic Programming"},
                                     blend_topic={"id": "SDF1_04", "name": "Pointers"})
@@ -30,11 +30,10 @@ book's name ("APS", "SDF-1") while pyq_bank uses the graph's name ("ALGO",
 "SDF1"). topic_id is the one key every collection shares.
 """
 
-import os
 from typing import Callable, Optional
 
-CHROMA_HOST = os.environ.get("CHROMA_HOST", "localhost")
-CHROMA_PORT = int(os.environ.get("CHROMA_PORT", "8000"))   # docker-compose exposes 8000
+from settings import CHROMA_HOST, CHROMA_PORT      # .env / terminal / default, see settings.py
+
 GROUNDING_COLLECTIONS = ("book_content", "tut_content")
 PYQ_COLLECTION = "pyq_bank"
 

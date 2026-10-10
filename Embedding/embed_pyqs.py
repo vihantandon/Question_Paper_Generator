@@ -1,7 +1,8 @@
 """
 embed_pyqs.py -- embeds the structured PYQ records (one atomic record per
 question) into their OWN Chroma collection, "pyq_bank", on the docker
-Chroma server (localhost:8000), same as the book/tutorial pipelines.
+Chroma server, same as the book/tutorial pipelines. The server's address
+comes from settings.py (.env, else localhost:8000).
 
 Requires:
     pip install chromadb sentence-transformers tqdm
@@ -25,15 +26,18 @@ os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
-CHROMA_HOST, CHROMA_PORT = "localhost", 8000
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))                      # settings.py
+from settings import CHROMA_HOST, CHROMA_PORT      # noqa: E402
+
 COLLECTION_NAME = "pyq_bank"
 EMBED_MODEL = "all-MiniLM-L6-v2"      # same model as book_content / tut_content
 BATCH_SIZE = 64
 MIN_DOC_CHARS = 60                    # shorter than this = extraction junk
 
-ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DIR = ROOT / "Extracting" / "Processed" / "pyq_structured"
 
 
