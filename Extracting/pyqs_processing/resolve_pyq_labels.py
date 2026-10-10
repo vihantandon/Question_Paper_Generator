@@ -168,6 +168,9 @@ def resolve_record(meta, subject, scores):
     co = new.get("course_outcome")
     if meta.get("raw_co_code") and not co:
         reasons.append(f"CO code '{meta['raw_co_code']}' still unresolved")
+    if "marks" in meta and meta["marks"] is None:
+        # the splitter found no marks tag, or one that says "... marks each"
+        reasons.append("no marks: fill them in by hand")
 
     # 3. Topic
     manual = meta.get("tag_method") == "manual" or "manual" in (meta.get("review_reason") or "").lower()
