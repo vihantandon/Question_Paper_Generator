@@ -147,7 +147,7 @@ Neo4j browser: http://localhost:7474 (user `neo4j`, password from `.env`).
 |---|---|---|
 | Books → chunks | `python Extracting/extract.py` | `Extracting/Processed/<book>_chunks.jsonl` |
 | Tag chunks with graph topics | `python tag_topics.py` | adds `topic_id` to the chunk files |
-| Tutorials → chunks (Gemini) | `python Extracting/tutorial_chunks.py` | `Extracting/Processed/<subj>_tutorial_chunks.jsonl` |
+| Tutorials → chunks (Gemini) | `python Extracting/tutorial_chunks.py` (check: `--verify`) | `Extracting/Processed/<subj>_tutorial_chunks.jsonl` |
 | PYQ PDFs → page text (OpenRouter) | `python Extracting/pyqs_processing/pdf_extract_full.py` | `Extracting/Processed/pyq_pages/` |
 | Page text → one record per question | `python Extracting/pyqs_processing/split_pyq_questions.py` | `Extracting/Processed/pyq_structured/` |
 | Embed the questions | `python Embedding/embed_pyqs.py` | Chroma `pyq_bank` |
@@ -167,7 +167,8 @@ Question_Paper_Generator/
 │
 ├── Extracting/                 PDFs -> text
 │   ├── extract.py              books -> section-aware chunks
-│   ├── tutorial_chunks.py      tutorials -> chunks (+ diagram transcription)
+│   ├── tutorial_chunks.py      tutorials -> one chunk per question (+ diagram transcription)
+│   ├── token_budget.py         chunk size rule for both: fit the model's 256-token window
 │   ├── topic_map.yaml          book chapter -> graph topic_id
 │   ├── tutorial_images/        figures cut out of tutorial sheets
 │   ├── pyqs_processing/

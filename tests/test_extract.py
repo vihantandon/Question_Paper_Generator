@@ -137,6 +137,13 @@ def size(chunk):
 
 
 class TestChunksFitTheEmbeddingModel(unittest.TestCase):
+    def test_books_and_tutorials_follow_the_same_size_rule(self):
+        # the rule lives in token_budget.py; the tutorial extractor uses it too
+        import token_budget
+        self.assertIs(extract.split_into_chunks, token_budget.split_into_chunks)
+        self.assertIs(extract.estimate_tokens, token_budget.estimate_tokens)
+        self.assertEqual(extract.MAX_CHUNK_TOKENS, 254)
+
     def assert_all_fit(self, chunks):
         for c in chunks:
             self.assertLessEqual(extract.estimate_tokens(c), extract.MAX_CHUNK_TOKENS, c[:60])

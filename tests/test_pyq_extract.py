@@ -119,6 +119,22 @@ class TestModelChatter(unittest.TestCase):
             self.assertFalse(S.is_junk_page(answer), answer)
 
 
+# ---------------------------------------------------------------- loading the file
+class TestLoadsOnEveryPythonVersion(unittest.TestCase):
+    """The tests below replace PIL with a stand-in whose Image is None. On
+    Python 3.10-3.13 the hint "-> Image.Image" used to be read while the file
+    loaded, so every test that loads the extractor crashed with
+    "'NoneType' object has no attribute 'Image'" (Python 3.14 did not)."""
+
+    def test_the_extractor_loads_with_a_stand_in_for_pil(self):
+        X = load_extractor()
+        self.assertTrue(callable(X.transcribe_with_vision))
+
+    def test_type_hints_are_not_read_when_the_file_loads(self):
+        path = ROOT / "Extracting" / "pyqs_processing" / "pdf_extract_full.py"
+        self.assertIn("from __future__ import annotations", path.read_text(encoding="utf-8"))
+
+
 # ---------------------------------------------------------------- one page
 class TestTranscribeOnePage(unittest.TestCase):
     def setUp(self):

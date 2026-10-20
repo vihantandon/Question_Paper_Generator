@@ -20,10 +20,13 @@ import pymupdf  # PyMuPDF
 import yaml
 from dotenv import load_dotenv
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))        # token_budget.py
+# The same size rule as the book chunks: the embedding model reads 256 tokens.
+from token_budget import MAX_CHUNK_TOKENS, estimate_tokens, split_into_chunks  # noqa: E402
+
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
-MAX_CHUNK_WORDS = 300          # target words per composite chunk (spec)
 MIN_IMAGE_DIMENSION = 80       # px -- filters icons/bullets/logos, keeps diagrams
 INDENT_TOLERANCE = 8.0         # pt -- x-offset above which a line counts as indented
 MARGIN_BAND = 0.10             # top / bottom share of a page where running headers and footers sit
@@ -438,39 +441,69 @@ def associate_images_to_units(units: list, images: list) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Chunking (atomic questions, look-ahead word guard)
+# Chunking: one question per chunk, cut only when it is too long to embed
 # --------------------------------------------------------------------------- #
-def pack_units_into_chunks(units: list) -> list:
-    """Greedily pack atomic question units into composite chunks.
+# Several questions used to be packed into one chunk of up to 300 WORDS, and a
+# longer question became a chunk of its own whatever its size. The embedding
+# model reads only 256 TOKENS (code and diagram text make many more tokens than
+# words), so 16 of the 19 committed chunks ran past that window, and the part
+# after it could never be found by search. DS_tut_chunk_010 and 011 were about
+# 1,200 tokens: the model saw the first fifth of them.
+#
+# Now every question is its own chunk, the way past papers are stored one
+# question per record. A question with its figure descriptions that is still
+# too long is cut between lines (the book rule, token_budget.py), and every
+# piece after the first says which question it continues.
 
-    Rules (per spec):
-      * the running word count is checked *before* adding the next question;
-      * if adding it would exceed ``MAX_CHUNK_WORDS`` the current chunk is
-        closed and the whole question moves to a fresh chunk;
-      * a question is never split (so a code block inside it never splits);
-      * a single question already over the cap becomes its own standalone chunk.
-    """
-    chunks: list = []
-    current: list = []
-    current_words = 0
+def question_label(text: str) -> str:
+    """ "Q5" for a question that starts "Q5." / "Q.5" / "5)", else ""."""
+    first = text.lstrip().split("\n", 1)[0]
+    marker = STRONG_MARKER_RE.match(first) or WEAK_MARKER_RE.match(first)
+    return f"Q{int(marker.group(1))}" if marker else ""
 
-    def flush() -> None:
-        nonlocal current, current_words
-        if current:
-            chunks.append(current)
-        current, current_words = [], 0
 
+def split_question(description: str, max_tokens: int = MAX_CHUNK_TOKENS) -> list:
+    """The pieces one question is stored as: the question itself when it fits
+    the embedding model, else pieces cut between lines that each fit. Pieces
+    after the first start with "(Q5 continued)", so a piece found on its own
+    by search still says which question it belongs to. Nothing is left out
+    or repeated (blank lines and the spaces at the ends of lines aside)."""
+    if estimate_tokens(description) <= max_tokens:
+        return [description]
+    label = question_label(description)
+    note = f"({label} continued)" if label else "(continued)"
+    pieces = split_into_chunks(description, max_tokens - estimate_tokens(note))
+    return pieces[:1] + [f"{note}\n{piece}" for piece in pieces[1:]]
+
+
+def chunks_for_questions(units: list, subject_name: str, topics: list, transcribe,
+                         classify, cos_for, failed: Optional[list] = None) -> list:
+    """Turn one sheet's questions into Chunks (chunk_id is filled in later).
+
+    The topics are chosen ONCE per question, from the whole question, and
+    every piece of a long question gets them: a piece alone may not show what
+    the question is about. ``classify(subject_name, text, topics)`` gives the
+    topics (Gemini, or keywords with --no-llm); if it fails the keyword
+    tagger is used. ``cos_for(topic_ids)`` gives (cos, co_details)."""
+    chunks = []
     for unit in units:
-        if unit.word_count > MAX_CHUNK_WORDS:
-            flush()
-            chunks.append([unit])          # soft-cap exception
-            continue
-        if current and current_words + unit.word_count > MAX_CHUNK_WORDS:
-            flush()
-        current.append(unit)
-        current_words += unit.word_count
-
-    flush()
+        description = build_description([unit], transcribe, failed)
+        try:
+            matches = classify(subject_name, description, topics)
+        except Exception as exc:  # noqa: BLE001 - fall back to keywords
+            LOG.warning("  topic classification failed (%s); keyword fallback", exc)
+            matches = keyword_classify(description, topics)
+        topic_ids = [m["topic_id"] for m in matches]
+        cos, co_details = cos_for(topic_ids)
+        for piece in split_question(description):
+            chunks.append(Chunk(
+                chunk_id="",  # assigned per subject in run()
+                description=piece,
+                topics=[m["topic"] for m in matches],
+                topic_ids=list(topic_ids),
+                cos=list(cos),
+                co_details=[dict(d) for d in co_details],
+            ))
     return chunks
 
 
@@ -1035,6 +1068,7 @@ def verify_outputs(out_dir: str) -> int:
         no_topic = 0
         no_co = 0
         diagram_chunks = 0
+        too_long = []
         ids = set()
         co_ids = set()
         for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
@@ -1065,6 +1099,9 @@ def verify_outputs(out_dir: str) -> int:
             if not obj.get("chunk_id", "").startswith(path.name.split("_")[0]):
                 print(f"  {path.name}:{lineno} chunk_id prefix mismatch: {obj.get('chunk_id')}")
                 problems += 1
+            # the embedding model would not read the end of a longer chunk
+            if estimate_tokens(obj.get("description", "")) > MAX_CHUNK_TOKENS:
+                too_long.append(obj.get("chunk_id"))
             n += 1
             words += len(obj.get("description", "").split())
             if "[Diagram Context / Description:" in obj.get("description", ""):
@@ -1080,6 +1117,10 @@ def verify_outputs(out_dir: str) -> int:
         print(f"{path.name}: {n} chunks | avg {avg} words | {diagram_chunks} with diagrams "
               f"| {no_topic} untagged | {no_co} without COs "
               f"| topic_ids={sorted(ids)} | cos={sorted(co_ids)}")
+        if too_long:
+            print(f"  {path.name}: {len(too_long)} chunk(s) over the embedding model's "
+                  f"{MAX_CHUNK_TOKENS} tokens (e.g. {too_long[:3]}) -> re-run tutorial_chunks.py")
+            problems += len(too_long)
 
     print(f"\nTotal: {grand_chunks} chunks across {len(files)} file(s); "
           f"{problems} problem(s).")
@@ -1273,28 +1314,15 @@ def run(args: argparse.Namespace) -> int:
                 seen.add(norm)
                 unique_units.append(unit)
 
-        subject_name = catalog[subject]["name"]
-        topics = catalog[subject]["topics"]
-        for group in pack_units_into_chunks(unique_units):
-            description = build_description(group, transcribe, failed_figures)
-            try:
-                matches = classify(subject_name, description, topics)
-            except Exception as exc:  # noqa: BLE001 - fall back to keywords
-                LOG.warning("  topic classification failed (%s); keyword fallback", exc)
-                matches = keyword_classify(description, topics)
-            topic_ids = [m["topic_id"] for m in matches]
-            own_subject = catalog[subject].get("yaml_subject", subject)
-            cos, co_details = collect_cos(topic_ids, graph, args.prereq_depth,
-                                          own_subject=own_subject,
-                                          include_cross_subject=(args.co_scope == "all"))
-            chunks_by_subject.setdefault(subject, []).append(Chunk(
-                chunk_id="",  # assigned per subject below
-                description=description,
-                topics=[m["topic"] for m in matches],
-                topic_ids=topic_ids,
-                cos=cos,
-                co_details=co_details,
-            ))
+        own_subject = catalog[subject].get("yaml_subject", subject)
+
+        def cos_for(topic_ids: list, own_subject: str = own_subject):
+            return collect_cos(topic_ids, graph, args.prereq_depth, own_subject=own_subject,
+                               include_cross_subject=(args.co_scope == "all"))
+
+        chunks_by_subject.setdefault(subject, []).extend(chunks_for_questions(
+            unique_units, catalog[subject]["name"], catalog[subject]["topics"],
+            transcribe, classify, cos_for, failed_figures))
 
     # --- write one JSONL per subject, renumbering chunk ids ------------- #
     total = 0
@@ -1303,10 +1331,11 @@ def run(args: argparse.Namespace) -> int:
         for index, chunk in enumerate(chunks, start=1):
             chunk.chunk_id = f"{subject}_tut_chunk_{index:03d}"
         out_path = write_subject_jsonl(subject, chunks, out_root)
-        words = [len(c.description.split()) for c in chunks]
-        LOG.info("Wrote %d chunk(s) for '%s' -> %s (avg %d words/chunk)",
+        tokens = [estimate_tokens(c.description) for c in chunks]
+        LOG.info("Wrote %d chunk(s) for '%s' -> %s (avg %d, longest %d tokens; limit %d)",
                  len(chunks), subject, out_path,
-                 (sum(words) // len(words)) if words else 0)
+                 (sum(tokens) // len(tokens)) if tokens else 0, max(tokens, default=0),
+                 MAX_CHUNK_TOKENS)
         total += len(chunks)
 
     if client is not None:

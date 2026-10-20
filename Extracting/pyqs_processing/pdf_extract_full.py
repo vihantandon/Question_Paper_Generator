@@ -18,6 +18,12 @@ appears once every page of the paper is done, so the splitter never sees
 half a paper.
 Next step: split_pyq_questions.py
 """
+# Type hints such as "-> Image.Image" are read only when something asks for
+# them, not when the file is loaded. Without this line, Python 3.10-3.13 read
+# them at load time, so the unit tests (which put a stand-in in place of PIL)
+# crashed while importing this file. Python 3.14 already works this way.
+from __future__ import annotations
+
 import argparse
 import fitz  # PyMuPDF
 import json

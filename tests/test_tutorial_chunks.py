@@ -6,6 +6,7 @@ Tutorial sheets -> question chunks (Extracting/tutorial_chunks.py).
 The script itself is never run and Gemini is never called: its functions are
 given made-up lines, a made-up PDF object and a stand-in Gemini client.
 """
+import io
 import json
 import logging
 import sys
@@ -280,6 +281,140 @@ class TestOneFailedFigureDoesNotStopTheRun(unittest.TestCase):
         self.assertEqual(failed, ["bad.png"])
 
 
+# ---------------------------------------------------------------- chunk size
+# The embedding model reads only 256 tokens of a chunk. Several questions used
+# to be packed into chunks of up to 300 WORDS (and a longer question was kept
+# whole), so 16 of the 19 committed tutorial chunks ran past that window.
+# T.estimate_tokens is the measure, the same one the book chunks are held to.
+def long_question(number=7, code_lines=60):
+    """A question with a long program and a figure description: far more
+    than one chunk's worth of tokens."""
+    code = "\n".join(f"for (int i{k} = 0; i{k} < n; i{k}++) a[i{k}] = b[i{k}] + c[i{k}];"
+                     for k in range(code_lines))
+    return (f"Q{number}. Predict the output of the program below and explain each line.\n"
+            f"{code}\n[Diagram Context / Description: A -> B, B -> C, C -> A]")
+
+
+def lines_without_notes(pieces):
+    """Every non-blank line of the pieces, minus the "(Q7 continued)" notes."""
+    lines = [ln.strip() for piece in pieces for ln in piece.split("\n")]
+    return [ln for ln in lines if ln and not (ln.startswith("(") and ln.endswith("continued)"))]
+
+
+def keyword_tagger(subject_name, text, topics):
+    return T.keyword_classify(text, topics)
+
+
+def no_cos(topic_ids):
+    return [], []
+
+
+class TestChunksFitTheEmbeddingModel(unittest.TestCase):
+    def assert_all_fit(self, pieces):
+        for piece in pieces:
+            self.assertLessEqual(T.estimate_tokens(piece), T.MAX_CHUNK_TOKENS, piece[:60])
+
+    def test_a_question_that_fits_is_one_chunk_exactly_as_written(self):
+        text = "Q2. Construct a Min Binary Heap using 10, 22, 30, 40.\n[Diagram Context / Description: A -> B]"
+        self.assertEqual(T.split_question(text), [text])
+
+    def test_a_long_question_is_cut_into_pieces_that_fit(self):
+        text = long_question()
+        self.assertGreater(T.estimate_tokens(text), 3 * T.MAX_CHUNK_TOKENS)
+        pieces = T.split_question(text)
+        self.assertGreater(len(pieces), 3)
+        self.assert_all_fit(pieces)
+
+    def test_no_line_is_lost_repeated_or_reordered(self):
+        text = long_question()
+        self.assertEqual(lines_without_notes(T.split_question(text)), text.split("\n"))
+
+    def test_every_later_piece_says_which_question_it_continues(self):
+        pieces = T.split_question(long_question(number=7))
+        self.assertTrue(pieces[0].startswith("Q7. Predict the output"))
+        for piece in pieces[1:]:
+            self.assertTrue(piece.startswith("(Q7 continued)\n"), piece[:40])
+
+    def test_question_label(self):
+        for text, label in (("Q5. Sort it.", "Q5"), ("Q.12) Sort it.", "Q12"), ("Question 3: Sort", "Q3"),
+                            ("3) Sort it.", "Q3"), ("  Q1 . Sort", "Q1"), ("Sort the array.", "")):
+            self.assertEqual(T.question_label(text), label, text)
+        pieces = T.split_question(long_question().replace("Q7. ", "", 1))
+        self.assertTrue(all(p.startswith("(continued)\n") for p in pieces[1:]))
+
+    def test_every_question_is_its_own_chunk(self):
+        units = [T.Unit(f"Q{n}. Question {n} about stacks.", True, page=0, y0=100.0 * n) for n in (1, 2, 3)]
+        chunks = T.chunks_for_questions(units, "Data Structures", [], lambda p: "", keyword_tagger, no_cos)
+        self.assertEqual([c.description for c in chunks],
+                         ["Q1. Question 1 about stacks.", "Q2. Question 2 about stacks.",
+                          "Q3. Question 3 about stacks."])
+
+    def test_topics_are_chosen_once_per_question_and_every_piece_gets_them(self):
+        units = [T.Unit(long_question(number=1), True, page=0, y0=100.0),
+                 T.Unit("Q2. Insert 5 into the heap.", True, page=1, y0=100.0)]
+        asked = []
+
+        def classify(subject_name, text, topics):
+            asked.append(text)
+            tid = "DS_01" if text.startswith("Q1.") else "DS_03"
+            return [{"topic": f"topic {tid}", "topic_id": tid}]
+
+        def cos_for(topic_ids):
+            return ([f"CO-{t}" for t in topic_ids],
+                    [{"id": f"CO-{t}", "label": f"CO-{t}"} for t in topic_ids])
+
+        chunks = T.chunks_for_questions(units, "Data Structures", [], lambda p: "", classify, cos_for)
+        self.assertEqual(asked, [units[0].text, units[1].text])      # whole questions, once each
+        self.assertGreater(len(chunks), 2)
+        *first, last = chunks
+        for c in first:
+            self.assertEqual((c.topic_ids, c.topics, c.cos), (["DS_01"], ["topic DS_01"], ["CO-DS_01"]))
+        self.assertEqual((last.description, last.topic_ids), ("Q2. Insert 5 into the heap.", ["DS_03"]))
+        self.assert_all_fit(c.description for c in chunks)
+
+    def test_a_failed_classification_falls_back_to_keywords(self):
+        def broken(subject_name, text, topics):
+            raise T.GeminiError("all models failed")
+
+        topics = [{"id": "DS_07", "name": "Hashing (Hash Tables, Collision Resolution)"}]
+        units = [T.Unit("Q1. Insert the keys into a hash table using linear probing.", True, page=0, y0=1.0)]
+        chunks = T.chunks_for_questions(units, "Data Structures", topics, lambda p: "", broken, no_cos)
+        self.assertEqual(chunks[0].topic_ids, ["DS_07"])
+
+    def test_figures_are_described_inside_their_own_question(self):
+        units = [T.Unit("Q1. Traverse the graph.", True, page=0, y0=100.0, images=[figure(0, 150.0, "g.png")]),
+                 T.Unit("Q2. Insert 5.", True, page=0, y0=300.0)]
+        chunks = T.chunks_for_questions(units, "Data Structures", [], lambda p: "A -> B", keyword_tagger, no_cos)
+        self.assertEqual([c.description for c in chunks],
+                         ["Q1. Traverse the graph.\n[Diagram Context / Description: A -> B]", "Q2. Insert 5."])
+
+    def test_verify_reports_a_chunk_that_is_too_long(self):
+        def row(chunk_id, text):
+            return {"chunk_id": chunk_id, "description": text, "topics": ["Hashing"],
+                    "topic_ids": ["DS_07"], "cos": ["CO5"], "co_details": [{"id": "CO5", "label": "CO5"}]}
+
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "DS_tutorial_chunks.jsonl"
+            path.write_text(json.dumps(row("DS_tut_chunk_001", "Q1. Short.")) + "\n", encoding="utf-8")
+            with mock.patch("sys.stdout", new=io.StringIO()):
+                self.assertEqual(T.verify_outputs(d), 0)
+            path.write_text(path.read_text() + json.dumps(row("DS_tut_chunk_002", long_question())) + "\n",
+                            encoding="utf-8")
+            with mock.patch("sys.stdout", new=io.StringIO()) as out:
+                self.assertEqual(T.verify_outputs(d), 1)
+            self.assertIn("DS_tut_chunk_002", out.getvalue())
+
+    def test_committed_tutorial_chunks_fit_the_embedding_model(self):
+        # Fails until the tutorials are extracted again with this version:
+        #   python Extracting/tutorial_chunks.py
+        files = sorted((ROOT / "Extracting" / "Processed").glob("*_tutorial_chunks.jsonl"))
+        self.assertTrue(files)
+        too_long = [row["chunk_id"] for path in files
+                    for row in map(json.loads, filter(str.strip, path.read_text(encoding="utf-8").splitlines()))
+                    if T.estimate_tokens(row["description"]) > T.MAX_CHUNK_TOKENS]
+        self.assertEqual(too_long, [], "re-run: python Extracting/tutorial_chunks.py")
+
+
 # ---------------------------------------------------------------- subjects and COs
 class TestTopicCatalog(unittest.TestCase):
     def test_every_subject_of_the_graph_has_a_catalog(self):
@@ -342,6 +477,30 @@ class TestRealSheet(unittest.TestCase):
         self.assertEqual(len(units), 4)
         for code in ("int main()", "using namespace std;", "return 0;"):
             self.assertIn(code, text)                       # all three used to be missing
+
+    def test_every_real_sheet_gives_chunks_that_fit_and_keep_every_line(self):
+        pdfs = sorted((ROOT / "Tutorials").rglob("*.pdf"))
+        if not pdfs or not hasattr(T.pymupdf, "open"):
+            self.skipTest("needs PyMuPDF and the PDFs in Tutorials/")
+        # figure descriptions from Gemini's saved answers, so no call is made
+        cache_file = ROOT / "Extracting" / ".cache" / "gemini_cache.json"
+        cache = json.loads(cache_file.read_text(encoding="utf-8")) if cache_file.exists() else {}
+
+        def transcribe(path):
+            import hashlib
+            key = T.GeminiClient._key("diagram", hashlib.sha1(path.read_bytes()).hexdigest())
+            return cache.get(key, "A -> B")
+
+        with tempfile.TemporaryDirectory() as d:            # figures go here, not into the repo
+            for pdf in pdfs:
+                units = T.process_pdf(pdf, pdf.parent.name, ROOT / "Tutorials", Path(d), False)
+                chunks = T.chunks_for_questions(units, "", [], transcribe, keyword_tagger, no_cos)
+                for c in chunks:
+                    self.assertLessEqual(T.estimate_tokens(c.description), T.MAX_CHUNK_TOKENS,
+                                         f"{pdf.name}: {c.description[:60]}")
+                whole = [ln.strip() for u in units
+                         for ln in T.build_description([u], transcribe).split("\n") if ln.strip()]
+                self.assertEqual(lines_without_notes(c.description for c in chunks), whole, pdf.name)
 
 
 if __name__ == "__main__":
