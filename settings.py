@@ -1,7 +1,9 @@
 """
-settings.py -- where the databases are. ONE place, read by every script.
+settings.py -- where the databases and the language model are. ONE place,
+read by every script.
 
     from settings import CHROMA_HOST, CHROMA_PORT
+    from settings import LLM_BASE_URL, LLM_MODEL, LLM_API_KEY
 
 Each value is taken from the first of these that has it:
     1. a variable set in the terminal      export CHROMA_PORT=9000
@@ -70,3 +72,16 @@ CHROMA_PORT = int(_setting("CHROMA_PORT", "8000"))     # docker-compose exposes 
 NEO4J_URI = _setting("NEO4J_URI", "bolt://localhost:7687")
 NEO4J_USER = _setting("NEO4J_USER", "neo4j")
 NEO4J_PASSWORD = _setting("NEO4J_PASSWORD", "yourpassword")
+
+# --- the language model that drafts questions (pipeline/llm.py) -------------
+# Any service that speaks the OpenAI chat API works: OpenRouter, Groq, a local
+# Ollama ... Only these three values change. Model ids on free tiers come and
+# go (Groq shut down qwen/qwen3-32b in July 2026), so the model is a setting,
+# not something written into the code.
+LLM_BASE_URL = _setting("LLM_BASE_URL", "https://openrouter.ai/api/v1")
+LLM_MODEL = _setting("LLM_MODEL", "qwen/qwen3.8-27b:free")
+# With OpenRouter, the OPENROUTER_API_KEY the PYQ extractor already uses is
+# enough; LLM_API_KEY is only needed for another service (or another key).
+LLM_API_KEY = _setting("LLM_API_KEY", "") or (
+    _setting("OPENROUTER_API_KEY", "") if "openrouter.ai" in LLM_BASE_URL else "")
+LLM_TIMEOUT = float(_setting("LLM_TIMEOUT", "180"))     # seconds; free models can be slow

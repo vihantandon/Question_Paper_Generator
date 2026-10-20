@@ -28,3 +28,12 @@ class GraphState(TypedDict, total=False):
     relevant_chunks: list          # grounding text, each tagged role "main" | "blend"
     style_examples: list           # similar past exam questions (PYQs)
     grounding_warning: Optional[str]   # set when there is nothing to ground in
+
+    # --- filled by draft (the language model) ---
+    draft: Optional[dict]          # {"question", "parts", "marks", "answer_outline",
+                                   #  "sources_used", "source_ids", "blend_used", "model"}
+    draft_error: Optional[str]     # why there is no draft (no grounding text, or the model gave up)
+    draft_attempts: int            # how many times draft has run for this question
+
+    # --- filled by quality_check (next step), read by draft ---
+    revision_feedback: Optional[str]   # why the last draft was rejected; the next draft fixes it

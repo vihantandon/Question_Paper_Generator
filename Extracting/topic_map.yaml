@@ -95,6 +95,11 @@ books:
       28: [DS_06]              # Tries
       29: [DS_06]              # Suffix trees / arrays
       30: [ALGO_07]            # String searching (semester-4 topic)
+    # Research-level chapters on a syllabus topic. Their chunks get advanced: true,
+    # and easy / medium questions are grounded only in the other (core) text --
+    # e.g. for DS_03 Heaps: handbook ch 3 + CLRS ch 6 Heapsort, not interval heaps.
+    # Hard questions may still use them. (A chapter not listed here is core.)
+    advanced_chapters: [5, 6, 8]   # leftist trees, skew heaps, double-ended priority queues
   APS:
     yaml_subject: ALGO
     chapter_regex: '^(\d+)\s'

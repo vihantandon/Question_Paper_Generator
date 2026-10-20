@@ -347,6 +347,7 @@ class TestDuplicateChunks(unittest.TestCase):
 
     def test_closest_chunks_win_across_collections(self):
         # after dropping the copy, the book's 3rd row is still closer than any tutorial row
+        # (min_tutorial=0: no places kept for tutorial questions, see tests/test_draft.py)
         book = FakeCollection("book_content", [
             chunk("copy1", "DS_03", "tree page saved twice", [1.0, 0.0]),
             chunk("copy2", "DS_03", "tree page saved twice", [1.0, 0.0]),
@@ -356,7 +357,7 @@ class TestDuplicateChunks(unittest.TestCase):
             chunk("t1", "DS_03", "far tutorial question", [0.5, 0.5]),
             chunk("t2", "DS_03", "farther tutorial question", [0.4, 0.6]),
         ])
-        got = retrieval.fetch_grounding_chunks([book, tut], fake_embed, TREES, n_main=2)
+        got = retrieval.fetch_grounding_chunks([book, tut], fake_embed, TREES, n_main=2, min_tutorial=0)
         self.assertEqual([c["text"] for c in got], ["tree page saved twice", "tree heaps"])
 
     def test_chunk_tagged_with_both_topics_is_sent_once(self):

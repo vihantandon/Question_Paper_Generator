@@ -29,6 +29,8 @@ NEW METADATA FIELDS (all Chroma-safe: str / int / bool only)
     tag_method        chapter-rule | section-rule | keyword-split | keyword-lowconf | unlisted-chapter
                       | front-back-matter | suspect-page-range
     needs_review      True      a human should glance at this one
+    advanced          True      chapter is in the book's advanced_chapters (topic_map.yaml):
+                                easy / medium questions are not grounded in it
 """
 import argparse
 import json
@@ -54,7 +56,7 @@ NONE = "NONE"
 MAX_PAGE_SPAN = 200      # a real book section never spans more pages than this
  
 TAG_FIELDS = ["topic_id", "topic_subject", "topic_semester",
-              "is_prereq_content", "chapter", "tag_method", "needs_review"]
+              "is_prereq_content", "chapter", "tag_method", "needs_review", "advanced"]
  
  
 # ----------------------------------------------------------------- loading
@@ -151,6 +153,7 @@ def tag_book(chunks, book, bcfg, topics, subject_sem, kw, min_margin):
             "chapter": current if current is not None else -1,
             "tag_method": method,
             "needs_review": review,
+            "advanced": current is not None and current in bcfg.get("advanced_chapters", []),
         })
     return chunks
  

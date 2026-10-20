@@ -91,6 +91,7 @@ def main():
                 "chapter": c.get("chapter", -1),
                 "tag_method": c.get("tag_method", "untagged"),
                 "needs_review": c.get("needs_review", False),
+                "advanced": c.get("advanced", False),     # see topic_map.yaml advanced_chapters
             }for c in batch],
         )
 

@@ -37,7 +37,7 @@
       "tag_method": "co-only",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_02\", 0.3075], [\"SDF1_06\", 0.2973], [\"SDF1_03\", 0.2287]]"
+      "topic_scores": "[[\"SDF1_02\", 0.3116], [\"SDF1_06\", 0.2513], [\"SDF1_03\", 0.2254]]"
     }
   },
   {
@@ -66,7 +66,7 @@
       "tag_method": "co-only",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_02\", 0.1769], [\"SDF1_06\", 0.161], [\"SDF1_07\", 0.1489]]"
+      "topic_scores": "[[\"SDF1_02\", 0.1694], [\"SDF1_06\", 0.1627], [\"SDF1_07\", 0.1489]]"
     }
   },
   {
@@ -93,9 +93,9 @@
       "bloom_rank": 3,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.0707,
+      "topic_confidence": 0.0736,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_02\", 0.5429], [\"SDF1_04\", 0.5147], [\"SDF1_05\", 0.4722]]"
+      "topic_scores": "[[\"SDF1_02\", 0.5456], [\"SDF1_04\", 0.4959], [\"SDF1_05\", 0.472]]"
     }
   },
   {
@@ -124,7 +124,7 @@
       "tag_method": "co+content",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_02\", 0.5595], [\"SDF1_03\", 0.5062], [\"SDF1_06\", 0.4531]]"
+      "topic_scores": "[[\"SDF1_02\", 0.5419], [\"SDF1_03\", 0.475], [\"SDF1_06\", 0.4497]]"
     }
   },
   {
@@ -153,7 +153,7 @@
       "tag_method": "co-only",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_02\", 0.4124], [\"SDF1_03\", 0.295], [\"SDF1_06\", 0.2905]]"
+      "topic_scores": "[[\"SDF1_02\", 0.4124], [\"SDF1_06\", 0.2823], [\"SDF1_07\", 0.2745]]"
     }
   },
   {
@@ -180,9 +180,9 @@
       "bloom_rank": 3,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.0767,
+      "topic_confidence": 0.0555,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_02\", 0.5341], [\"SDF1_05\", 0.4574], [\"SDF1_03\", 0.445]]"
+      "topic_scores": "[[\"SDF1_02\", 0.5341], [\"SDF1_05\", 0.4786], [\"SDF1_03\", 0.4468]]"
     }
   }
 ]

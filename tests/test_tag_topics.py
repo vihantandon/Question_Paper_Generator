@@ -185,5 +185,34 @@ class TestBookWithNoChunks(TagTopicsCase):
         self.assertIn("BOOK       0 chunks", self.run_script())
 
 
+
+class TestAdvancedChapters(unittest.TestCase):
+    """topic_map.yaml advanced_chapters: easy / medium questions are not
+    grounded in these chapters (DS handbook ch 5, 6, 8 for Heaps)."""
+
+    def tag(self, chapter_titles, bcfg_extra):
+        bcfg = {"yaml_subject": "X", "chapter_regex": r"^(\d+)\s", "chapters": {5: ["X_01"], 3: ["X_01"]}}
+        bcfg.update(bcfg_extra)
+        chunks = [{"chunk_id": f"c{i}", "section_title": t, "text": "", "page_start": 1, "page_end": 2}
+                  for i, t in enumerate(chapter_titles)]
+        topics = {"X_01": {"subject": "X", "semester": 2}}
+        return tag_topics.tag_book(chunks, "BOOK", bcfg, topics, {"X": 2}, {}, 2)
+
+    def test_chunks_of_an_advanced_chapter_are_flagged(self):
+        got = self.tag(["Preface", "3 Trees", "5 Leftist Trees"], {"advanced_chapters": [5]})
+        self.assertEqual([c["advanced"] for c in got], [False, False, True])
+        self.assertEqual([c["topic_id"] for c in got], ["NONE", "X_01", "X_01"])   # topic is unchanged
+
+    def test_without_the_setting_nothing_is_advanced(self):
+        self.assertEqual([c["advanced"] for c in self.tag(["5 Leftist Trees"], {})], [False])
+
+    def test_the_flag_is_pushed_to_chroma_with_the_other_tags(self):
+        self.assertIn("advanced", tag_topics.TAG_FIELDS)
+
+    def test_the_ds_handbooks_research_chapters_are_advanced(self):
+        import yaml
+        cfg = yaml.safe_load((ROOT / "Extracting" / "topic_map.yaml").read_text(encoding="utf-8"))
+        self.assertEqual(cfg["books"]["DS"]["advanced_chapters"], [5, 6, 8])
+
 if __name__ == "__main__":
     unittest.main()

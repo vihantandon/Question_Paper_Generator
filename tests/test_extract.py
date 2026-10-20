@@ -21,14 +21,7 @@ except ImportError:                 # PyMuPDF only opens real PDFs; these tests 
     sys.modules["fitz"] = types.ModuleType("fitz")
 
 import extract  # noqa: E402
-
-
-class FakePage:
-    def __init__(self, text):
-        self.text = text
-
-    def get_text(self, *args):
-        return self.text
+from tests.fake_pdf import FakePage  # noqa: E402  (plain text + the "dict" view text_cleanup reads)
 
 
 class FakeDoc:

@@ -10,23 +10,27 @@ and sets grounding_warning when there is nothing to ground in (for example
 SDF1_01 has no book or tutorial text). A later step can then skip that
 topic instead of letting the LLM invent facts.
 
-Reads:  current_topic, blend_topic
+Reads:  current_topic, blend_topic, target_difficulty (easy / medium: no
+        advanced-chapter text), target_marks (past questions of about
+        that many marks are preferred as style examples)
 Writes: relevant_chunks, style_examples, grounding_warning
 """
 from retrieval import fetch_grounding_chunks, fetch_similar_pyqs
 
 
 def make_retrieve_node(grounding_collections, pyq_collection, embed_fn,
-                       n_main=4, n_blend=2, n_examples=3):
+                       n_main=5, n_blend=2, n_examples=3):
 
     def retrieve_node(state):
         topic = state["current_topic"]
         blend = state.get("blend_topic")
 
+        # easy / medium: syllabus-level text only (topic_map.yaml advanced_chapters)
+        core_only = state.get("target_difficulty") in ("easy", "medium")
         chunks = fetch_grounding_chunks(grounding_collections, embed_fn, topic, blend,
-                                        n_main=n_main, n_blend=n_blend)
+                                        n_main=n_main, n_blend=n_blend, core_only=core_only)
         examples = fetch_similar_pyqs(pyq_collection, embed_fn, topic["name"], topic["id"],
-                                      n=n_examples)
+                                      n=n_examples, marks=state.get("target_marks"))
 
         warning = None
         if not any(c["role"] == "main" for c in chunks):

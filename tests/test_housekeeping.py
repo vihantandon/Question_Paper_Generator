@@ -233,7 +233,8 @@ class OnePageBook:
         return 1
 
     def __getitem__(self, page):
-        return types.SimpleNamespace(get_text=lambda *a: "a line of the book\n" * 40)
+        from tests.fake_pdf import FakePage       # plain text + the "dict" view text_cleanup reads
+        return FakePage("a line of the book\n" * 40)
 
 
 PAPER = ("Jaypee Institute of Information Technology, Noida\nTest-1 Examination, ODD 2024\n"

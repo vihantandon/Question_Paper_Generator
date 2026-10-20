@@ -132,8 +132,11 @@ python check_chroma.py
 python Extracting/pyqs_processing/resolve_pyq_labels.py
 python Extracting/pyqs_processing/resolve_pyq_labels.py --write
 
-# 6. run the pipeline for one topic: graph lookup -> retrieve
+# 6. write one question: graph lookup -> retrieve -> draft
+#    needs OPENROUTER_API_KEY (or the LLM_* settings) in .env, see .env.example
 python -m pipeline.graph ALGO_06 hard 10
+python -m pipeline.graph DS_03 medium 5 --show-prompt        # also print what the model was sent
+python -m pipeline.graph DS_03 medium 5 --no-llm --show-prompt   # stop before the model: no key, no cost
 
 # unit tests (no Docker, no embedding model, no API key needed)
 python -m unittest discover -s tests -t .
@@ -141,12 +144,13 @@ python -m unittest discover -s tests -t .
 
 Neo4j browser: http://localhost:7474 (user `neo4j`, password from `.env`).
 
-### Re-extracting source material (only when the PDFs change)
+### Re-extracting source material (when the PDFs or the extraction code change)
 
 | Step | Command | Output |
 |---|---|---|
-| Books → chunks | `python Extracting/extract.py` | `Extracting/Processed/<book>_chunks.jsonl` |
+| Books → chunks (no API key, ~30 s) | `python Extracting/extract.py` | `Extracting/Processed/<book>_chunks.jsonl` |
 | Tag chunks with graph topics | `python tag_topics.py` | adds `topic_id` to the chunk files |
+| Embed the book chunks | `python Embedding/embed_chunks.py` | Chroma `book_content` (old vectors removed) |
 | Tutorials → chunks (Gemini) | `python Extracting/tutorial_chunks.py` (check: `--verify`) | `Extracting/Processed/<subj>_tutorial_chunks.jsonl` |
 | PYQ PDFs → page text (OpenRouter) | `python Extracting/pyqs_processing/pdf_extract_full.py` | `Extracting/Processed/pyq_pages/` |
 | Page text → one record per question | `python Extracting/pyqs_processing/split_pyq_questions.py` | `Extracting/Processed/pyq_structured/` |
@@ -167,6 +171,8 @@ Question_Paper_Generator/
 │
 ├── Extracting/                 PDFs -> text
 │   ├── extract.py              books -> section-aware chunks
+│   ├── text_cleanup.py         book text before chunking: ligatures, maths-font symbols,
+│   │                           running headers, figure labels, reference lists
 │   ├── tutorial_chunks.py      tutorials -> one chunk per question (+ diagram transcription)
 │   ├── token_budget.py         chunk size rule for both: fit the model's 256-token window
 │   ├── topic_map.yaml          book chapter -> graph topic_id
@@ -196,12 +202,14 @@ Question_Paper_Generator/
 │
 ├── pipeline/                   the LangGraph question pipeline
 │   ├── state.py                what flows between the steps
-│   ├── resources.py            Neo4j / Chroma / embedding model, opened once
+│   ├── resources.py            Neo4j / Chroma / embedding model / LLM, opened once
+│   ├── llm.py                  the language model client: JSON replies, retries, clear errors
 │   ├── difficulty_blend.py     blend rules (easy / medium / hard)
 │   ├── nodes/
 │   │   ├── graph_lookup.py     topic, COs, prerequisite to blend (Neo4j)
-│   │   └── retrieve.py         grounding text + similar PYQs (Chroma)
-│   └── graph.py                START -> graph_lookup -> retrieve -> END
+│   │   ├── retrieve.py         grounding text + similar PYQs (Chroma)
+│   │   └── draft.py            the model writes the question from the numbered sources
+│   └── graph.py                START -> graph_lookup -> retrieve -> draft -> END
 │
 ├── tests/                      unit tests with fake Neo4j / Chroma / models (test_*.py)
 ├── settings.py                 Chroma / Neo4j address for every script: terminal, else .env, else default

@@ -64,8 +64,10 @@ class TestDotenvFile(unittest.TestCase):
 # ---------------------------------------------------------------- settings.py itself
 def run_python(code, folder, **variables):
     """Run `code` in a new Python process inside `folder`, with no CHROMA_* /
-    NEO4J_* variable set except the ones given. Returns what it printed."""
-    env = {k: v for k, v in os.environ.items() if not k.startswith(("CHROMA_", "NEO4J_"))}
+    NEO4J_* / LLM_* / OPENROUTER_* variable set except the ones given.
+    Returns what it printed."""
+    env = {k: v for k, v in os.environ.items()
+           if not k.startswith(("CHROMA_", "NEO4J_", "LLM_", "OPENROUTER_"))}
     env.update(variables, PYTHONDONTWRITEBYTECODE="1")
     done = subprocess.run([sys.executable, "-c", code], cwd=folder, env=env,
                           capture_output=True, text=True)
@@ -107,6 +109,41 @@ class TestSettingsModule(unittest.TestCase):
     def test_an_empty_value_means_the_default(self):
         (self.folder / ".env").write_text("CHROMA_PORT=\nCHROMA_HOST=   # fill me in\n", encoding="utf-8")
         self.assertEqual(run_python(SHOW, self.folder)[:2], ["localhost", "8000"])
+
+
+SHOW_LLM = "import settings as s; print(s.LLM_BASE_URL, s.LLM_MODEL, s.LLM_API_KEY or '-', s.LLM_TIMEOUT)"
+GROQ = "https://api.groq.com/openai/v1"
+
+
+class TestLanguageModelSettings(unittest.TestCase):
+    """Which service, model and key draft the questions (pipeline/llm.py)."""
+
+    def setUp(self):
+        self.dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.dir.cleanup)
+        self.folder = Path(self.dir.name)
+        shutil.copy(ROOT / "settings.py", self.folder)
+
+    def show(self, dotenv=None, **variables):
+        if dotenv is not None:
+            (self.folder / ".env").write_text(dotenv, encoding="utf-8")
+        return run_python(SHOW_LLM, self.folder, **variables)
+
+    def test_defaults(self):
+        self.assertEqual(self.show(), ["https://openrouter.ai/api/v1", "qwen/qwen3.8-27b:free", "-", "180.0"])
+
+    def test_the_openrouter_key_of_the_pyq_extractor_is_enough(self):
+        self.assertEqual(self.show("OPENROUTER_API_KEY=sk-or-123\nLLM_API_KEY=\n")[2], "sk-or-123")
+
+    def test_the_openrouter_key_is_not_sent_to_another_service(self):
+        self.assertEqual(self.show(f"LLM_BASE_URL={GROQ}\nOPENROUTER_API_KEY=sk-or-123\n")[:3],
+                         [GROQ, "qwen/qwen3.8-27b:free", "-"])
+
+    def test_llm_settings_win(self):
+        got = self.show(f"LLM_BASE_URL={GROQ}\nLLM_MODEL=qwen/qwen3.8-27b\nLLM_API_KEY=gsk-456\n"
+                        "OPENROUTER_API_KEY=sk-or-123\nLLM_TIMEOUT=60\n")
+        self.assertEqual(got, [GROQ, "qwen/qwen3.8-27b", "gsk-456", "60.0"])
+        self.assertEqual(self.show(LLM_MODEL="from/terminal")[1], "from/terminal")
 
 
 class TestImportOrder(unittest.TestCase):

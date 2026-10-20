@@ -61,9 +61,9 @@
       "bloom_rank": 3,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.0989,
+      "topic_confidence": 0.1147,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"ALGO_06\", 0.5179], [\"ALGO_09\", 0.5157], [\"ALGO_04\", 0.5118]]"
+      "topic_scores": "[[\"ALGO_09\", 0.5495], [\"ALGO_06\", 0.5314], [\"ALGO_04\", 0.5114]]"
     }
   },
   {
@@ -116,9 +116,9 @@
       "bloom_rank": 3,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.2383,
+      "topic_confidence": 0.1515,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"ALGO_07\", 0.624], [\"ALGO_06\", 0.4423], [\"ALGO_04\", 0.3857]]"
+      "topic_scores": "[[\"ALGO_07\", 0.5771], [\"ALGO_04\", 0.4256], [\"ALGO_06\", 0.4225]]"
     }
   }
 ]

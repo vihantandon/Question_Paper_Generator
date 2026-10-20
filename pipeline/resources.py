@@ -25,6 +25,7 @@ class Resources:
     grounding_collections: list        # [book_content, tut_content]
     pyq_collection: Optional[Any]      # pyq_bank, or None if not embedded
     embed_fn: Callable[[str], list]    # text -> vector
+    llm: Optional[Any] = None          # pipeline.llm.LLMClient, or None: stop after retrieve
 
     def close(self):
         if self.driver is not None:
@@ -47,8 +48,11 @@ def make_embed_fn(model_name=EMBED_MODEL):
     return embed
 
 
-def connect(embed_fn=None) -> Resources:
-    """Open Neo4j + Chroma and load the embedding model."""
+def connect(embed_fn=None, llm=None) -> Resources:
+    """Open Neo4j + Chroma and load the embedding model. `llm` (from
+    pipeline.llm.make_llm) is passed through as it is: make it BEFORE
+    calling this, so a missing API key stops the run before the slow
+    embedding model is loaded."""
     import chromadb
     from neo4j import GraphDatabase
     from retrieval import get_grounding_collections, get_pyq_collection
@@ -82,6 +86,7 @@ def connect(embed_fn=None) -> Resources:
             grounding_collections=get_grounding_collections(client),
             pyq_collection=get_pyq_collection(client),
             embed_fn=embed_fn or make_embed_fn(),
+            llm=llm,
         )
     except BaseException:
         driver.close()

@@ -11,6 +11,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from token_budget import (  # noqa: E402,F401  (re-exported: extract.estimate_tokens etc.)
     EMBED_MAX_TOKENS, MAX_CHUNK_TOKENS, MIN_CHUNK_TOKENS, TOKENS_PER_PIECE,
     estimate_tokens, split_into_chunks, split_into_units)
+# Ligatures, the maths fonts' real symbols, running headers, figure labels and
+# reference lists are dealt with before chunking: see text_cleanup.py.
+from text_cleanup import clean_book_pages, clean_text, cut_back_matter  # noqa: E402
 
 @dataclass
 class Chunk:
@@ -84,8 +87,10 @@ def get_heading_sections_by_font(doc):
     sections.append((current_title, current_start, len(doc) - 1))
     return sections[1:] if len(sections) > 1 else sections  # drop the placeholder "Untitled" head
 
-def extract_section_text(doc, start_page, end_page):
-     return "\n".join(doc[p].get_text() for p in range(start_page, end_page + 1))
+def extract_section_text(pages, start_page, end_page):
+    """The section's clean text (pages from clean_book_pages), without the
+    reference list / acknowledgments / chapter notes that end a chapter."""
+    return cut_back_matter("\n".join(pages[start_page:end_page + 1]))
 
 def display_path(path):
     """The book's path as stored in the chunk files: relative to the repo
@@ -105,19 +110,20 @@ def process_pdf(path , subject):
         "Use the vision-LLM transcription approach instead of this script.")
 
     sections = get_toc_sections(doc) or get_heading_sections_by_font(doc)
+    pages = clean_book_pages(doc)
 
     all_chunks = []
     for idx, (title, start_page, end_page) in enumerate(sections):
-        section_text = extract_section_text(doc,start_page,end_page)
+        section_text = extract_section_text(pages,start_page,end_page)
         if len(section_text.strip()) < 20:
-            continue 
+            continue
 
         for j,chunk_text in enumerate(split_into_chunks(section_text)):
             all_chunks.append(Chunk(
                 chunk_id = f"{subject}_{idx:03d}_{j:02d}",
                 subject = subject,
                 source_file = display_path(path),
-                section_title = title,
+                section_title = clean_text(title),
                 page_start = start_page+1,
                 page_end = end_page+1,
                 text = chunk_text,
@@ -159,7 +165,7 @@ def process_all_books(books_dir = ROOT / "Books", output_dir = HERE / "Processed
 
             with open(output_file, "w", encoding="utf-8") as f:
                 for c in chunks:
-                    f.write(json.dumps(asdict(c)) + "\n")
+                    f.write(json.dumps(asdict(c), ensure_ascii=False) + "\n")
 
             unique_sections = len(set(c.section_title for c in chunks))
             print(

@@ -37,7 +37,7 @@
       "tag_method": "co+content",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"ALGO_01\", 0.5759], [\"ALGO_03\", 0.5392], [\"ALGO_06\", 0.507]]"
+      "topic_scores": "[[\"ALGO_01\", 0.6132], [\"ALGO_03\", 0.5962], [\"ALGO_06\", 0.5424]]"
     }
   },
   {
@@ -92,7 +92,7 @@
       "tag_method": "co+content",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"ALGO_01\", 0.6268], [\"ALGO_03\", 0.575], [\"ALGO_06\", 0.4792]]"
+      "topic_scores": "[[\"ALGO_01\", 0.609], [\"ALGO_03\", 0.5599], [\"ALGO_06\", 0.5176]]"
     }
   },
   {

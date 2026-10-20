@@ -113,9 +113,9 @@
       "bloom_rank": 2,
       "topic_id_from_co": "SDF2_02",
       "tag_method": "co+content",
-      "topic_confidence": 0.0468,
+      "topic_confidence": 0.0971,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF2_04\", 0.6243], [\"SDF2_02\", 0.6225], [\"SDF2_06\", 0.618]]"
+      "topic_scores": "[[\"SDF2_02\", 0.6544], [\"SDF2_06\", 0.624], [\"SDF2_04\", 0.6115]]"
     }
   }
 ]

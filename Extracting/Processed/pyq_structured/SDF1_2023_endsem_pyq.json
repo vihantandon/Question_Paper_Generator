@@ -37,7 +37,7 @@
       "tag_method": "co-only",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_02\", 0.3378], [\"SDF1_05\", 0.2192], [\"SDF1_03\", 0.2058]]"
+      "topic_scores": "[[\"SDF1_02\", 0.3375], [\"SDF1_05\", 0.2225], [\"SDF1_03\", 0.2066]]"
     }
   },
   {
@@ -116,9 +116,9 @@
       "bloom_rank": 3,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.0475,
+      "topic_confidence": 0.0246,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_05\", 0.5337], [\"SDF1_02\", 0.4862], [\"SDF1_03\", 0.3885]]"
+      "topic_scores": "[[\"SDF1_05\", 0.5101], [\"SDF1_02\", 0.4855], [\"SDF1_03\", 0.425]]"
     }
   },
   {
@@ -145,9 +145,9 @@
       "bloom_rank": 3,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.0252,
+      "topic_confidence": 0.0343,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF1_03\", 0.5473], [\"SDF1_07\", 0.5221], [\"SDF1_06\", 0.5055]]"
+      "topic_scores": "[[\"SDF1_03\", 0.5564], [\"SDF1_07\", 0.5221], [\"SDF1_06\", 0.5055]]"
     }
   },
   {

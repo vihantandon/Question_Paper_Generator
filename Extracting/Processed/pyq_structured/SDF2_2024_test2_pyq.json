@@ -63,7 +63,7 @@
       "tag_method": "co-only",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF2_01\", 0.2892], [\"SDF2_06\", 0.2306], [\"SDF2_04\", 0.2282]]"
+      "topic_scores": "[[\"SDF2_01\", 0.2744], [\"SDF2_02\", 0.2439], [\"SDF2_06\", 0.2068]]"
     }
   },
   {
@@ -84,15 +84,15 @@
       "marks_breakdown": null,
       "topic_id": "SDF2_06",
       "topic_name": "Exceptions, Templates, STL",
-      "needs_review": false,
-      "review_reason": null,
+      "needs_review": true,
+      "review_reason": "low confidence: SDF2_06 beats the runner-up by only 0.002",
       "bloom_level_raw": "Creating",
       "bloom_rank": 6,
       "topic_id_from_co": null,
       "tag_method": "co+content",
-      "topic_confidence": 0.0227,
+      "topic_confidence": 0.0021,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF2_06\", 0.3356], [\"SDF2_01\", 0.313], [\"SDF2_04\", 0.3129]]"
+      "topic_scores": "[[\"SDF2_06\", 0.3203], [\"SDF2_04\", 0.3182], [\"SDF2_02\", 0.2928]]"
     }
   },
   {
@@ -140,7 +140,7 @@
       "tag_method": "co+content",
       "topic_confidence": null,
       "co_topic_mismatch": false,
-      "topic_scores": "[[\"SDF2_02\", 0.6599], [\"SDF2_04\", 0.6586], [\"SDF2_06\", 0.6214]]"
+      "topic_scores": "[[\"SDF2_02\", 0.6681], [\"SDF2_04\", 0.6339], [\"SDF2_06\", 0.6275]]"
     }
   }
 ]
