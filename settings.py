@@ -85,3 +85,13 @@ LLM_MODEL = _setting("LLM_MODEL", "qwen/qwen3.8-27b:free")
 LLM_API_KEY = _setting("LLM_API_KEY", "") or (
     _setting("OPENROUTER_API_KEY", "") if "openrouter.ai" in LLM_BASE_URL else "")
 LLM_TIMEOUT = float(_setting("LLM_TIMEOUT", "180"))     # seconds; free models can be slow
+# The model that checks drafts (pipeline/nodes/quality_check.py). Empty = the
+# drafting model. A different model is better at finding faults in a draft;
+# it uses the same service and key.
+LLM_CHECK_MODEL = _setting("LLM_CHECK_MODEL", "")
+# How strictly a question must stick to the retrieved sources
+# (pipeline/nodes/quality_check.py):
+#   balanced -- the question's facts must be correct (from a source, or standard
+#               for the course); the answer outline is only checked for mistakes
+#   strict   -- every fact in the question AND its answer quoted from a source
+GROUNDING = _setting("GROUNDING", "balanced").strip().lower()

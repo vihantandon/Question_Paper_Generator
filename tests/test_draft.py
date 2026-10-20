@@ -253,7 +253,14 @@ class TestPrompt(unittest.TestCase):
     def test_sources_are_numbered_and_say_what_they_are_about(self):
         system, user = D.build_messages(state())
         self.assertEqual((system["role"], user["role"]), ("system", "user"))
-        self.assertIn("Use ONLY facts from the numbered SOURCES", system["content"])
+        # balanced (the default): built on the sources, standard course facts allowed
+        self.assertIn("Build the question on the numbered SOURCES: its central idea must come from a "
+                      "source about the main topic", system["content"])
+        self.assertIn("SOURCES -- build the question on these", user["content"])
+        strict_system, strict_user = D.build_messages(state(), grounding="strict")
+        self.assertIn("Use ONLY facts from the numbered SOURCES", strict_system["content"])
+        self.assertIn("SOURCES -- the only facts you may use", strict_user["content"])
+        self.assertEqual(strict_system["content"], D.SYSTEM_PROMPT)
         text = user["content"]
         self.assertIn('[S1] main topic "Trees" -- book, section "sec"\n'
                       'A binary tree node has left and right children.', text)
@@ -367,6 +374,38 @@ class TestParseDraft(unittest.TestCase):
         self.assertEqual(d["sources_used"], ["S1"])
 
 
+class TestDraftFormat(unittest.TestCase):
+    """Format problems from the ALGO_06 drafts of 20 Oct."""
+
+    def check(self, **changes):
+        return check(reply(**changes), blend=None)
+
+    def test_parts_written_out_again_in_the_question_are_sent_back(self):
+        question = ("You are given arrays A and P.\n\n(a) Rearrange the prices by length using counting sort."
+                    "\n\n(b) Design a DP algorithm for the maximum revenue.")
+        with self.assertRaisesRegex(ValueError, r'"question" also writes out the parts \(a\), \(b\)'):
+            self.check(question=question)
+
+    def test_labels_inside_a_sentence_are_not_parts(self):
+        d = self.check(question="Analyse a binary heap created using (a) an array and (b) a complete tree.")
+        self.assertEqual(len(d["parts"]), 2)
+
+    def test_a_single_part_worth_all_the_marks_becomes_part_of_the_question(self):
+        d = self.check(question="Sort the prices, then find the maximum revenue.",
+                       parts=[{"label": "a", "text": "Give complete pseudocode.", "marks": 5}])
+        self.assertEqual((d["question"], d["parts"]),
+                         ("Sort the prices, then find the maximum revenue.\nGive complete pseudocode.", []))
+
+    def test_backslash_n_written_as_text_becomes_a_line_break(self):
+        d = self.check(question="The arrays are not ordered by length.\\n\\nSort them first.", parts=[])
+        self.assertEqual(d["question"], "The arrays are not ordered by length.\n\nSort them first.")
+
+    def test_backslash_n_in_c_code_is_left_alone(self):
+        for question in ('Predict the output of printf("%d\\n", x); for x = 5.',     # inside quotes
+                         'Trace the code:\nint x = 5;\nprintf("%d\\n", x);'):       # real line breaks too
+            self.assertEqual(self.check(question=question, parts=[])["question"], question)
+
+
 # ---------------------------------------------------------------- the node
 class TestDraftNode(unittest.TestCase):
     def test_a_topic_without_grounding_text_is_not_sent_to_the_model(self):
@@ -404,10 +443,11 @@ class TestDraftNode(unittest.TestCase):
 
 # ---------------------------------------------------------------- the whole graph
 def run(topic_id, difficulty, marks, llm):
+    """Draft only (check=False): the check and its loop are in tests/test_quality_check.py."""
     res = Resources(driver=P.FakeDriver(P.GRAPH), grounding_collections=[P.BOOK],
                     pyq_collection=P.PYQS, embed_fn=P.fake_embed, llm=llm)
-    return build_graph(res).invoke({"current_topic_id": topic_id, "target_difficulty": difficulty,
-                                    "target_marks": marks})
+    return build_graph(res, check=False).invoke({"current_topic_id": topic_id, "target_difficulty": difficulty,
+                                                 "target_marks": marks})
 
 
 class TestPipelineWithDraft(unittest.TestCase):

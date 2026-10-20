@@ -26,6 +26,7 @@ class Resources:
     pyq_collection: Optional[Any]      # pyq_bank, or None if not embedded
     embed_fn: Callable[[str], list]    # text -> vector
     llm: Optional[Any] = None          # pipeline.llm.LLMClient, or None: stop after retrieve
+    checker: Optional[Any] = None      # model for quality_check; None = the same as llm
 
     def close(self):
         if self.driver is not None:
@@ -48,7 +49,7 @@ def make_embed_fn(model_name=EMBED_MODEL):
     return embed
 
 
-def connect(embed_fn=None, llm=None) -> Resources:
+def connect(embed_fn=None, llm=None, checker=None) -> Resources:
     """Open Neo4j + Chroma and load the embedding model. `llm` (from
     pipeline.llm.make_llm) is passed through as it is: make it BEFORE
     calling this, so a missing API key stops the run before the slow
@@ -87,6 +88,7 @@ def connect(embed_fn=None, llm=None) -> Resources:
             pyq_collection=get_pyq_collection(client),
             embed_fn=embed_fn or make_embed_fn(),
             llm=llm,
+            checker=checker,
         )
     except BaseException:
         driver.close()

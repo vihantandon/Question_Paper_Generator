@@ -145,6 +145,25 @@ class TestLanguageModelSettings(unittest.TestCase):
         self.assertEqual(got, [GROQ, "qwen/qwen3.8-27b", "gsk-456", "60.0"])
         self.assertEqual(self.show(LLM_MODEL="from/terminal")[1], "from/terminal")
 
+    def test_grounding_is_balanced_unless_set(self):
+        show = "import settings as s; print(s.GROUNDING)"
+        self.assertEqual(run_python(show, self.folder), ["balanced"])
+        (self.folder / ".env").write_text("GROUNDING=Strict   # every fact quoted\n", encoding="utf-8")
+        self.assertEqual(run_python(show, self.folder), ["strict"])
+
+    def test_an_unknown_grounding_stops_the_run_with_a_clear_message(self):
+        from unittest import mock
+        from pipeline import graph
+        with mock.patch.object(settings, "GROUNDING", "loose"), self.assertRaises(SystemExit) as stop:
+            graph.grounding_from_settings()
+        self.assertIn("must be one of balanced, strict", str(stop.exception))
+
+    def test_the_checking_model_is_the_drafting_model_unless_set(self):
+        show = "import settings as s; print(s.LLM_CHECK_MODEL or '-')"
+        self.assertEqual(run_python(show, self.folder), ["-"])
+        (self.folder / ".env").write_text("LLM_CHECK_MODEL=other/checker-model\n", encoding="utf-8")
+        self.assertEqual(run_python(show, self.folder), ["other/checker-model"])
+
 
 class TestImportOrder(unittest.TestCase):
     def test_pipeline_uses_the_env_file_whichever_module_is_imported_first(self):

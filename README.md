@@ -132,11 +132,15 @@ python check_chroma.py
 python Extracting/pyqs_processing/resolve_pyq_labels.py
 python Extracting/pyqs_processing/resolve_pyq_labels.py --write
 
-# 6. write one question: graph lookup -> retrieve -> draft
+# 6. write one question: graph lookup -> retrieve -> draft -> quality check
+#    (a draft that fails the check is rewritten with the feedback, up to 3 drafts)
+#    GROUNDING in .env: balanced (default: the question must be correct and built on the
+#    sources; standard course facts allowed, the answer is a draft key) or strict
 #    needs OPENROUTER_API_KEY (or the LLM_* settings) in .env, see .env.example
 python -m pipeline.graph ALGO_06 hard 10
 python -m pipeline.graph DS_03 medium 5 --show-prompt        # also print what the model was sent
 python -m pipeline.graph DS_03 medium 5 --no-llm --show-prompt   # stop before the model: no key, no cost
+python -m pipeline.graph DS_03 medium 5 --no-check           # draft only, no quality check
 
 # unit tests (no Docker, no embedding model, no API key needed)
 python -m unittest discover -s tests -t .
@@ -208,8 +212,9 @@ Question_Paper_Generator/
 │   ├── nodes/
 │   │   ├── graph_lookup.py     topic, COs, prerequisite to blend (Neo4j)
 │   │   ├── retrieve.py         grounding text + similar PYQs (Chroma)
-│   │   └── draft.py            the model writes the question from the numbered sources
-│   └── graph.py                START -> graph_lookup -> retrieve -> draft -> END
+│   │   ├── draft.py            the model writes the question from the numbered sources
+│   │   └── quality_check.py    every fact must be quoted from a source; else back to draft
+│   └── graph.py                START -> graph_lookup -> retrieve -> draft <-> quality_check -> END
 │
 ├── tests/                      unit tests with fake Neo4j / Chroma / models (test_*.py)
 ├── settings.py                 Chroma / Neo4j address for every script: terminal, else .env, else default

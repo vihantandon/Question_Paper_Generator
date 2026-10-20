@@ -27,7 +27,7 @@ made up. draft stays None and draft_error says why.
 Reads:  current_topic, blend_topic, topic_cos, target_marks, target_difficulty,
         prompt_instruction, relevant_chunks, style_examples, grounding_warning,
         revision_feedback (+ the previous draft, when there is feedback)
-Writes: draft, draft_error, draft_attempts
+Writes: draft, draft_error, draft_attempts, drafts (every draft so far)
 """
 import re
 
@@ -42,16 +42,32 @@ You set exam questions for a B.Tech computer science course at an Indian univers
 Rules:
 1. Use ONLY facts from the numbered SOURCES. Every definition, rule, number, piece of code \
 or behaviour the question or its answer depends on must be stated or directly shown in a \
-source you cite. Do not add anything the sources do not support.
-2. The question must have one correct answer and only one reasonable reading.
-3. The PAST EXAM QUESTIONS show this university's style, wording and depth. Copy the style; \
+source you cite. Do not add anything the sources do not support. This holds for every line \
+of the answer outline too, including any advantage, reason or comparison it gives. Steps the \
+student works out (a design, a computation, a trace, a derivation) are fine when they follow \
+from facts in the sources.
+2. The question must have one reasonable reading, and each part one answer that two examiners \
+would mark the same way. Avoid open parts such as "how could X be adapted" or "discuss".
+3. Do not state in the question what a part asks the student to explain, derive or find.
+4. The PAST EXAM QUESTIONS show this university's style, wording and depth. Copy the style; \
 never copy their content, data, code or wording.
-4. Marks set the depth: a 2-mark question needs a few lines; a 6- or 10-mark question needs \
+5. Marks set the depth: a 2-mark question needs a few lines; a 6- or 10-mark question needs \
 working, a trace, code or a derivation.
-5. If the question has parts (a), (b), ..., the parts' marks must add up to the total.
-6. Do not number the question ("Q1.") and do not write marks, CO or Bloom labels inside it; \
+6. If the question has parts (a), (b), ..., the parts' marks must add up to the total.
+7. Do not number the question ("Q1.") and do not write marks, CO or Bloom labels inside it; \
 they are added when the paper is put together.
-7. Reply with ONE JSON object and nothing else."""
+8. Reply with ONE JSON object and nothing else."""
+
+# GROUNDING=balanced (the default): the question must be built on the sources,
+# but may also use correct, standard facts of the course that they do not state.
+_STRICT_RULE_1 = SYSTEM_PROMPT[SYSTEM_PROMPT.index("1. "):SYSTEM_PROMPT.index("2. ")]
+BALANCED_SYSTEM_PROMPT = SYSTEM_PROMPT.replace(_STRICT_RULE_1, """\
+1. Build the question on the numbered SOURCES: its central idea must come from a source about \
+the main topic, and you must cite it. You may also use correct, standard facts that a course at \
+this level teaches, even when no source states them -- never a fact you are unsure of, and \
+nothing beyond the course level. Steps the student works out (a design, a computation, a trace, \
+a derivation) must follow correctly from these facts.
+""")
 
 
 def number_sources(chunks):
@@ -112,7 +128,7 @@ def reply_format(marks, blend):
     ])
 
 
-def build_messages(state):
+def build_messages(state, grounding="balanced"):
     """The two messages sent to the model: the fixed rules (system) and this
     question's task, sources and examples (user)."""
     topic, blend = state["current_topic"], state.get("blend_topic")
@@ -130,7 +146,8 @@ def build_messages(state):
                       f'A correct answer must genuinely need it. Use a source about it, and say '
                       f'where it is needed in "blend_used".']
 
-    lines += ["", "SOURCES -- the only facts you may use"]
+    lines += ["", "SOURCES -- build the question on these" if grounding == "balanced"
+              else "SOURCES -- the only facts you may use"]
     for label, chunk in number_sources(state.get("relevant_chunks") or []).items():
         lines += ["", f"[{label}] {describe_source(chunk, topic, blend)}", chunk["text"].strip()]
 
@@ -150,13 +167,33 @@ def build_messages(state):
         lines += ["Write a new question that fixes this."]
 
     lines += ["", reply_format(marks, blend)]
-    return [{"role": "system", "content": SYSTEM_PROMPT},
+    return [{"role": "system", "content": BALANCED_SYSTEM_PROMPT if grounding == "balanced" else SYSTEM_PROMPT},
             {"role": "user", "content": "\n".join(lines)}]
 
 
 # ---------------------------------------------------------------- checking the reply
 def _text(value):
     return value.strip() if isinstance(value, str) else ""
+
+
+def _real_line_breaks(text):
+    """A model sometimes writes "\\n" (backslash, n) where it means a new line:
+    "...by length.\\n\\n(a) Sort..." came out with the backslashes showing.
+    Only in text with no real line break, and never inside "double quotes",
+    where it may be C code: printf("%d\\n", x)."""
+    if "\n" in text or "\\n" not in text:
+        return text
+    pieces = text.split('"')
+    pieces[::2] = [p.replace("\\n", "\n") for p in pieces[::2]]
+    return '"'.join(pieces)
+
+
+def _repeats_parts(question, parts):
+    """Does the question text also write out every part, each on a line of
+    its own starting "(a)" ...? ("... created using (a) array and (b) tree"
+    inside a sentence does not count.)"""
+    return bool(parts) and all(
+        re.search(rf"(?m)^\s*\(?{re.escape(p['label'])}[).]\s", question) for p in parts)
 
 
 def _whole_number(value):
@@ -187,7 +224,7 @@ def parse_draft(obj, *, marks, sources, blend=None):
          "source_ids": [chunk ids], "blend_used"}
 
     Raises ValueError, with a reason written for the model, when a check fails."""
-    question = _text(obj.get("question"))
+    question = _real_line_breaks(_text(obj.get("question")))
     if not question:
         raise ValueError('"question" is empty')
 
@@ -207,9 +244,16 @@ def parse_draft(obj, *, marks, sources, blend=None):
             raise ValueError(f'part {i + 1} needs whole-number "marks" above 0')
         label = _text(part.get("label")).strip("().").lower()
         parts.append({"label": label or PART_LABELS[i % len(PART_LABELS)],
-                      "text": _text(part["text"]), "marks": part_marks})
+                      "text": _real_line_breaks(_text(part["text"])), "marks": part_marks})
     if parts and sum(p["marks"] for p in parts) != marks:
         raise ValueError(f"the parts add up to {sum(p['marks'] for p in parts)} marks, not {marks}")
+    if _repeats_parts(question, parts):
+        labels = ", ".join(f"({p['label']})" for p in parts)
+        raise ValueError(f'"question" also writes out the parts {labels}: put only the common text '
+                         f'before the parts in "question", and each part only in "parts"')
+    if len(parts) == 1:
+        # one part worth all the marks is not a part: "(a) Perform ... [10]"
+        question, parts = f"{question}\n{parts[0]['text']}", []
 
     outline = obj.get("answer_outline")
     outline = [outline] if isinstance(outline, str) else outline if isinstance(outline, list) else []
@@ -247,7 +291,7 @@ def parse_draft(obj, *, marks, sources, blend=None):
 
 
 # ---------------------------------------------------------------- the node
-def make_draft_node(llm, temperature=0.7):
+def make_draft_node(llm, temperature=0.7, grounding="balanced"):
     """Build the node. `llm` is a pipeline.llm.LLMClient (or anything with the
     same complete_json method)."""
 
@@ -265,13 +309,15 @@ def make_draft_node(llm, temperature=0.7):
                                blend=state.get("blend_topic"))
 
         try:
-            draft = llm.complete_json(build_messages(state), temperature=temperature, validate=check)
+            draft = llm.complete_json(build_messages(state, grounding), temperature=temperature,
+                                      validate=check)
         except LLMFatalError:
             raise                       # wrong settings / no credit: stop, every question would fail
         except LLMError as exc:
             return {"draft": None, "draft_error": str(exc), "draft_attempts": attempt}
 
         draft["model"] = getattr(llm, "model", "?")
-        return {"draft": draft, "draft_error": None, "draft_attempts": attempt}
+        return {"draft": draft, "draft_error": None, "draft_attempts": attempt,
+                "drafts": (state.get("drafts") or []) + [draft]}
 
     return draft_node

@@ -34,6 +34,11 @@ class GraphState(TypedDict, total=False):
                                    #  "sources_used", "source_ids", "blend_used", "model"}
     draft_error: Optional[str]     # why there is no draft (no grounding text, or the model gave up)
     draft_attempts: int            # how many times draft has run for this question
+    drafts: list                   # every draft made for this question, oldest first
 
-    # --- filled by quality_check (next step), read by draft ---
+    # --- filled by quality_check, read by draft ---
     revision_feedback: Optional[str]   # why the last draft was rejected; the next draft fixes it
+    quality: Optional[dict]        # the last check: claims (with quotes), answerable,
+                                   # single_reading, marks_fit, blend_needed, problems, passed
+    quality_passed: bool           # the current draft passed the check
+    quality_reports: list          # every check made for this question, oldest first
