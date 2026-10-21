@@ -11,7 +11,20 @@ returns for it). It deals with what goes wrong with a language model:
   * the JSON comes wrapped in ```json fences, with a sentence before it, or
     after a reasoning model's <think> ... </think> notes  -> cleaned off
   * the reply is not JSON, or `validate` rejects it (raises ValueError)
-        -> the model is told why and asked again, up to max_attempts times
+        -> the model is told why and asked again, up to max_attempts times.
+           Only the LAST rejected reply goes back with the reason, and only
+           when it is short: a checker's long report sent back twice made the
+           third request too large for Groq's free per-minute limit (413).
+  * the reply was cut off (the model used up its output tokens -- a
+    reasoning model can spend them all thinking), or the service could not
+    make valid JSON of it (Groq's json_validate_failed)  -> asked again, and
+    the reason is shown. json_validate_failed used to be taken for "this
+    model has no JSON mode", which turned JSON mode off and left gpt-oss
+    giving empty replies.
+  * reasoning_effort ("low" by default, LLM_REASONING_EFFORT in .env) is sent
+    to models that think before they answer (gpt-oss, Gemini): fewer tokens
+    spent thinking, so the free daily token budget lasts longer. A service
+    or model that does not know the setting -> sent again without it.
   * the service is busy (429 / 5xx)  -> wait, then send again
   * no connection or a time-out  -> two more tries, then LLMFatalError
   * the key, model id or account is wrong (401 / 402 / 403 / 404), or the
@@ -38,6 +51,14 @@ FATAL_STATUS = {
     404: "the model id or the base URL is wrong",
 }
 DAILY_LIMIT_RE = re.compile(r"per[- ]day|daily|quota", re.IGNORECASE)
+ECHO_LIMIT = 2000         # characters: a longer rejected reply is not sent back with the reason
+# the service could not make the reply into the JSON it was asked for (Groq: json_validate_failed)
+JSON_FAILED_RE = re.compile(r"json_validate_failed|failed to generate json", re.IGNORECASE)
+# ... versus: this model does not do JSON mode at all
+NO_JSON_MODE_RE = re.compile(r"(response_format|json[ _]?(mode|object)).{0,120}(not supported|unsupported|"
+                             r"does not support|not available)|(not supported|unsupported|does not support)"
+                             r".{0,120}(response_format|json)", re.IGNORECASE | re.DOTALL)
+NO_REASONING_RE = re.compile(r"reasoning", re.IGNORECASE)
 
 # A reasoning model may put its notes before the answer. An unclosed <think>
 # (the reply was cut off while still thinking) leaves nothing usable.
@@ -78,6 +99,11 @@ def parse_json_reply(text):
     raise ValueError("the reply is not a JSON object: " + cleaned[:120].replace("\n", " "))
 
 
+class BadReply(ValueError):
+    """The service answered, but with nothing usable (cut off, empty, or no
+    valid JSON). Counts as one rejected attempt."""
+
+
 def _retry_after(exc):
     """Seconds the service asked us to wait (Retry-After header), if it said."""
     try:
@@ -96,13 +122,15 @@ class LLMClient:
     object shaped like the OpenAI SDK's reply -- the real client's .chat, or a
     stand-in in the tests."""
 
-    def __init__(self, chat, model, *, max_attempts=3, json_mode=True,
+    def __init__(self, chat, model, *, max_attempts=3, json_mode=True, reasoning_effort=None,
                  sleep=time.sleep, log=print):
         self.chat, self.model = chat, model
         self.max_attempts = max_attempts
         self.json_mode = json_mode        # ask the service for JSON-only output (turned off if unsupported)
+        self.reasoning_effort = reasoning_effort or None   # "low" | "medium" | "high"; dropped if unknown
         self.sleep, self.log = sleep, log
         self.requests = 0                 # requests sent so far: what a run cost
+        self.tokens = 0                   # tokens used (prompt + reply), as the service counts them
 
     def complete_json(self, messages, *, temperature=0.7, validate=None):
         """Send `messages` (a list of {"role", "content"}) and return the JSON
@@ -110,21 +138,26 @@ class LLMClient:
         reply that is not JSON, or that validate rejects with ValueError, is
         answered with the reason and the model tries again. Raises LLMError
         when no attempt is usable. `messages` itself is not changed."""
-        messages = list(messages)
+        original = list(messages)
+        messages = original
         problem = None
         for attempt in range(1, self.max_attempts + 1):
-            text = self._send(messages, temperature)
+            text = None
             try:
+                text = self._send(messages, temperature)
                 obj = parse_json_reply(text)
                 return validate(obj) if validate else obj
             except ValueError as exc:
                 problem = str(exc)
                 self.log(f"  [llm] reply {attempt}/{self.max_attempts} not accepted: {problem}")
-                messages += [
-                    {"role": "assistant", "content": text or ""},
-                    {"role": "user", "content": f"Your reply was not accepted: {problem}\n"
-                                                "Reply again with only the corrected JSON object."},
-                ]
+                again = "Reply again with only the corrected JSON object."
+                if text and len(text) > ECHO_LIMIT:
+                    again = "Reply again with the whole JSON object, corrected."
+                    echo = []                     # too long to send back: the reason is enough
+                else:
+                    echo = [{"role": "assistant", "content": text}] if text else []
+                messages = original + echo + [
+                    {"role": "user", "content": f"Your reply was not accepted: {problem}\n{again}"}]
         raise LLMError(f"{self.model} gave no usable reply in {self.max_attempts} attempt(s). "
                        f"Last problem: {problem}")
 
@@ -135,16 +168,30 @@ class LLMClient:
             kwargs = {"model": self.model, "messages": messages, "temperature": temperature}
             if self.json_mode:
                 kwargs["response_format"] = {"type": "json_object"}
+            if self.reasoning_effort:       # extra_body: works with every version of the openai package
+                kwargs["extra_body"] = {"reasoning_effort": self.reasoning_effort}
             self.requests += 1
             try:
                 reply = self.chat.completions.create(**kwargs)
             except Exception as exc:  # noqa: BLE001 - sorted by status below
                 status = getattr(exc, "status_code", None)
                 message = str(exc)
-                if status == 400 and self.json_mode and re.search(r"response_format|json", message, re.I):
+                if status == 400 and JSON_FAILED_RE.search(message):
+                    raise BadReply("the service could not make valid JSON of the reply (it was probably "
+                                   "cut off or not a single JSON object)") from exc
+                if status == 400 and self.json_mode and NO_JSON_MODE_RE.search(message):
                     self.log("  [llm] this model has no JSON mode; asking for JSON in the prompt only")
                     self.json_mode = False
                     continue
+                if status == 400 and self.reasoning_effort and NO_REASONING_RE.search(message):
+                    self.log(f"  [llm] {self.model} does not take reasoning_effort; sending without it")
+                    self.reasoning_effort = None
+                    continue
+                if status == 413:
+                    raise LLMError(
+                        f"the request is too large for {self.model}'s limit (413). A model with a larger "
+                        f"limit (LLM_CHECK_MODEL / LLM_MODEL in .env), or fewer sources, would fit. "
+                        f"Service said: {message}") from exc
                 if status in FATAL_STATUS:
                     raise LLMFatalError(
                         f"{FATAL_STATUS[status]} ({status}). Check LLM_BASE_URL, LLM_MODEL and "
@@ -171,13 +218,23 @@ class LLMClient:
                 self.log(f"  [llm] {status or type(exc).__name__}: waiting {wait:.0f}s, then sending again")
                 self.sleep(wait)
                 continue
+            usage = getattr(reply, "usage", None)
+            self.tokens += getattr(usage, "total_tokens", 0) or 0
             choices = getattr(reply, "choices", None) or []
-            return choices[0].message.content if choices else None
+            if not choices:
+                return None
+            text = choices[0].message.content
+            if getattr(choices[0], "finish_reason", None) == "length":
+                raise BadReply("the reply was cut off: the model used up its output tokens"
+                               + ("" if (text or "").strip() else " while still thinking (set "
+                                  "LLM_REASONING_EFFORT=low in .env, or use another model)")
+                               + ". Keep the JSON short: no explanations outside it")
+            return text
 
 
-def make_llm(base_url=None, model=None, api_key=None, timeout=None):
+def make_llm(base_url=None, model=None, api_key=None, timeout=None, reasoning_effort=None):
     """The real client, set up from settings.py (.env) unless told otherwise."""
-    from settings import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL, LLM_TIMEOUT
+    from settings import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL, LLM_REASONING_EFFORT, LLM_TIMEOUT
     base_url = base_url or LLM_BASE_URL
     model = model or LLM_MODEL
     api_key = api_key or LLM_API_KEY
@@ -194,4 +251,28 @@ def make_llm(base_url=None, model=None, api_key=None, timeout=None):
     client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout or LLM_TIMEOUT,
                     max_retries=0,       # LLMClient does the waiting, and says so
                     default_headers=headers)
-    return LLMClient(client.chat, model)
+    return LLMClient(client.chat, model, reasoning_effort=reasoning_effort or LLM_REASONING_EFFORT)
+
+
+def make_checker():
+    """The model that checks and classifies, when .env names one
+    (LLM_CHECK_MODEL, and -- for another service, with its own daily budget --
+    LLM_CHECK_BASE_URL and LLM_CHECK_API_KEY). None: the drafting model does it."""
+    from settings import LLM_CHECK_API_KEY, LLM_CHECK_BASE_URL, LLM_CHECK_MODEL
+    if not (LLM_CHECK_MODEL or LLM_CHECK_BASE_URL):
+        return None
+    if LLM_CHECK_BASE_URL and not (LLM_CHECK_MODEL and LLM_CHECK_API_KEY):
+        raise SystemExit("LLM_CHECK_BASE_URL is set in .env: set LLM_CHECK_MODEL (a model of that "
+                         "service) and LLM_CHECK_API_KEY (its key) too")
+    return make_llm(base_url=LLM_CHECK_BASE_URL or None, model=LLM_CHECK_MODEL or None,
+                    api_key=LLM_CHECK_API_KEY or None)
+
+
+def usage_line(*clients):
+    """"14 requests, 52,310 tokens to openai/gpt-oss-20b" for each client used."""
+    seen, parts = set(), []
+    for c in clients:
+        if c is not None and id(c) not in seen:
+            seen.add(id(c))
+            parts.append(f"{c.requests} request(s), {c.tokens:,} tokens to {c.model}")
+    return "; ".join(parts)

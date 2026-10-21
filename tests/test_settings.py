@@ -158,6 +158,36 @@ class TestLanguageModelSettings(unittest.TestCase):
             graph.grounding_from_settings()
         self.assertIn("must be one of balanced, strict", str(stop.exception))
 
+    def test_reasoning_effort_is_low_unless_set(self):
+        show = "import settings as s; print(s.LLM_REASONING_EFFORT or '-')"
+        self.assertEqual(run_python(show, self.folder), ["low"])
+        (self.folder / ".env").write_text("LLM_REASONING_EFFORT=Medium\n", encoding="utf-8")
+        self.assertEqual(run_python(show, self.folder), ["medium"])
+        (self.folder / ".env").write_text("LLM_REASONING_EFFORT=\n", encoding="utf-8")
+        self.assertEqual(run_python(show, self.folder), ["low"])        # empty = the default
+        (self.folder / ".env").write_text("LLM_REASONING_EFFORT=default\n", encoding="utf-8")
+        self.assertEqual(run_python(show, self.folder), ["-"])          # not sent at all
+
+    def test_the_checker_can_be_on_another_service_with_its_own_key(self):
+        from unittest import mock
+        from pipeline import llm
+        made = []
+        with mock.patch.object(llm, "make_llm", lambda **kw: made.append(kw) or "client"):
+            with mock.patch.multiple(settings, LLM_CHECK_MODEL="", LLM_CHECK_BASE_URL="", LLM_CHECK_API_KEY=""):
+                self.assertIsNone(llm.make_checker())                   # the drafting model checks
+            with mock.patch.multiple(settings, LLM_CHECK_MODEL="other/model", LLM_CHECK_BASE_URL="",
+                                     LLM_CHECK_API_KEY=""):
+                self.assertEqual(llm.make_checker(), "client")
+            with mock.patch.multiple(settings, LLM_CHECK_MODEL="gemini-x", LLM_CHECK_BASE_URL=GROQ,
+                                     LLM_CHECK_API_KEY="k2"):
+                llm.make_checker()
+            with mock.patch.multiple(settings, LLM_CHECK_MODEL="gemini-x", LLM_CHECK_BASE_URL=GROQ,
+                                     LLM_CHECK_API_KEY=""), self.assertRaises(SystemExit) as stop:
+                llm.make_checker()
+        self.assertEqual(made, [{"base_url": None, "model": "other/model", "api_key": None},
+                                {"base_url": GROQ, "model": "gemini-x", "api_key": "k2"}])
+        self.assertIn("set LLM_CHECK_MODEL", str(stop.exception))
+
     def test_the_checking_model_is_the_drafting_model_unless_set(self):
         show = "import settings as s; print(s.LLM_CHECK_MODEL or '-')"
         self.assertEqual(run_python(show, self.folder), ["-"])

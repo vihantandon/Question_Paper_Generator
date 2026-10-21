@@ -35,6 +35,7 @@ def check_reply(lines, question=(), **flags):
          "answerable": True, "answerable_reason": "", "single_reading": True, "ambiguity": "",
          "gives_away": False, "gives_away_reason": "",
          "marks_fit": True, "marks_reason": "", "blend_needed": True, "blend_reason": "",
+         "complete_answer": True, "complete_reason": "", "data_matters": None, "data_reason": "",
          "feedback": ""}
     r.update(flags)
     return r
@@ -172,6 +173,39 @@ class TestProblems(unittest.TestCase):
              ("Array storage gives better cache locality", None, "")]]), T.POINTERS)
         self.assertEqual(len(found), 1)
         self.assertIn('"Array storage gives better cache locality" (outline line 2: in no source)', found[0])
+
+
+class TestCompleteAnswerAndData(unittest.TestCase):
+    """21 Oct: an answer key that never gave the result, for data where
+    selling the rod uncut was already best."""
+
+    def report(self, **flags):
+        return Q.parse_report(check_reply([[TWO_CHILDREN], [POINTER]], **flags), sources=SOURCES,
+                              blend=T.POINTERS, outline_lines=2)
+
+    def test_an_open_answer_and_data_that_does_not_matter_fail(self):
+        found = Q.problems(self.report(complete_answer=False, complete_reason="R[8] is never computed",
+                                       data_matters=False, data_reason="no cut ever pays: selling whole is best"),
+                           T.POINTERS)
+        self.assertEqual(found, [
+            "The answer outline does not work every part out to its final answer: R[8] is never computed. "
+            "Give the actual values: the outline is the answer key.",
+            "The data does not make the method matter: the answer is obvious without it (no cut ever pays: "
+            "selling whole is best). Choose data where carrying out the method changes the answer."])
+
+    def test_no_data_is_fine_and_the_flags_must_be_given(self):
+        self.assertEqual(Q.problems(self.report(data_matters=None), T.POINTERS), [])
+        self.assertEqual(Q.problems(self.report(data_matters=True), T.POINTERS), [])
+        with self.assertRaisesRegex(ValueError, '"complete_answer" must be true or false'):
+            self.report(complete_answer=None)
+
+    def test_the_checker_is_asked(self):
+        client, chat, _ = T.make_client(GOOD)
+        Q.make_quality_check_node(client)(draft_state())
+        prompt = chat.sent[0]["messages"][1]["content"]
+        self.assertIn("8. complete_answer: does the answer outline work every part out", prompt)
+        self.assertIn("9. data_matters:", prompt)
+        self.assertIn('"complete_answer": true', prompt)
 
 
 # ---------------------------------------------------------------- the node
@@ -446,6 +480,7 @@ class TestBalancedGrounding(unittest.TestCase):
 
 # ---------------------------------------------------------------- the loop
 def run(llm, checker=None, **options):
+    options.setdefault("classify", False)       # tests/test_classify.py runs the loop with classify
     res = Resources(driver=P.FakeDriver(P.GRAPH), grounding_collections=[P.BOOK],
                     pyq_collection=P.PYQS, embed_fn=P.fake_embed, llm=llm, checker=checker)
     return build_graph(res, **options).invoke({"current_topic_id": "DS_03", "target_difficulty": "hard",

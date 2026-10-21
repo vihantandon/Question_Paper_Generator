@@ -10,6 +10,16 @@ course_outcomes:
   CO4: "Analyze the source code for the possible Outcomes, exceptions and to debug the errors."
   CO5: "Design and implement the class diagram for various real-life problems using OOPs."
 
+# Bloom level the college gives each CO. Source: the T1 2024 paper's CO table.
+# Not loaded into Neo4j; pipeline/nodes/classify.py shows it next to the level
+# it reads from the question itself (the papers label a question by its CO's level).
+co_levels:
+  CO1: Understand
+  CO2: Apply
+  CO3: Apply
+  CO4: Analyze
+  CO5: Create
+
 
 topics:
   - id: SDF2_01

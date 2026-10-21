@@ -34,7 +34,7 @@ The system has two independent pipelines: **ingestion** (build the knowledge bas
    - **Grammar/clarity** and **ambiguity** — is there exactly one reasonable interpretation?
    - **Fail** → send back to step 4 with feedback (loop back to drafting, not to cache — a fresh draft is needed).
    - **Pass** → continue to classification, and separately write the validated question + its metadata into the cache for future reuse.
-6. **MCP classifier tool** (server 1) — takes the quality-passed (or cache-hit) question, returns CO, Bloom's level, and difficulty.
+6. **Classifier** — takes the quality-passed (or cache-hit) question, returns CO, Bloom's level, and difficulty. Built as a LangGraph node (`pipeline/nodes/classify.py`) that can later be served as MCP server 1; `pipeline/eval_classify.py` scores it against the labelled PYQs.
 7. **Constraint check** — does the paper so far meet its required CO coverage, difficulty distribution, **and section-wise marks totals from the blueprint**?
    - **No** → back to the cache lookup (step 3) for a better-fitting question — cache first, generate only if nothing fits.
    - **Yes** → proceed.
@@ -132,15 +132,24 @@ python check_chroma.py
 python Extracting/pyqs_processing/resolve_pyq_labels.py
 python Extracting/pyqs_processing/resolve_pyq_labels.py --write
 
-# 6. write one question: graph lookup -> retrieve -> draft -> quality check
-#    (a draft that fails the check is rewritten with the feedback, up to 3 drafts)
+# 6. write one question: graph lookup -> retrieve -> draft -> quality check -> classify
+#    (a draft that fails the check is rewritten with the feedback, up to 3 drafts;
+#    every calculation in it is worked out again in Python; an accepted question
+#    gets its CO and Bloom level; its difficulty is the one asked for)
 #    GROUNDING in .env: balanced (default: the question must be correct and built on the
 #    sources; standard course facts allowed, the answer is a draft key) or strict
 #    needs OPENROUTER_API_KEY (or the LLM_* settings) in .env, see .env.example
 python -m pipeline.graph ALGO_06 hard 10
 python -m pipeline.graph DS_03 medium 5 --show-prompt        # also print what the model was sent
 python -m pipeline.graph DS_03 medium 5 --no-llm --show-prompt   # stop before the model: no key, no cost
-python -m pipeline.graph DS_03 medium 5 --no-check           # draft only, no quality check
+python -m pipeline.graph DS_03 medium 5 --no-check           # no quality check: classify the first draft
+python -m pipeline.graph DS_03 medium 5 --no-classify        # stop after the check
+
+# 7. how often does the classifier agree with the labels on the real papers (53 PYQs)?
+#    answers are saved in eval_results/ as they come: a stopped run goes on next time
+python -m pipeline.eval_classify                    # the model (LLM_CHECK_MODEL, else LLM_MODEL)
+python -m pipeline.eval_classify --baseline         # keyword rules: no model, the score to beat
+python -m pipeline.eval_classify --subject DS       # one subject (a free model's daily limit)
 
 # unit tests (no Docker, no embedding model, no API key needed)
 python -m unittest discover -s tests -t .
@@ -200,7 +209,8 @@ Question_Paper_Generator/
 │   └── stale_vectors.py         deletes vectors whose chunk is gone (books + tutorials)
 │
 ├── prerequisite_graph/
-│   ├── subjects/*.yaml          topics, COs, prerequisites (single source of truth)
+│   ├── subjects/*.yaml          topics, COs, the Bloom level of each CO, prerequisites
+│   │                            (single source of truth)
 │   └── loader/
 │       └── build_prereq_graph.py    YAMLs -> Neo4j (runs in Docker)
 │
@@ -208,14 +218,21 @@ Question_Paper_Generator/
 │   ├── state.py                what flows between the steps
 │   ├── resources.py            Neo4j / Chroma / embedding model / LLM, opened once
 │   ├── llm.py                  the language model client: JSON replies, retries, clear errors
+│   ├── arithmetic.py           works out again every calculation a draft writes down
+│   ├── curriculum.py           the subject YAMLs read from disk: all COs, the level of each CO
 │   ├── difficulty_blend.py     blend rules (easy / medium / hard)
 │   ├── nodes/
 │   │   ├── graph_lookup.py     topic, COs, prerequisite to blend (Neo4j)
 │   │   ├── retrieve.py         grounding text + similar PYQs (Chroma)
 │   │   ├── draft.py            the model writes the question from the numbered sources
-│   │   └── quality_check.py    every fact must be quoted from a source; else back to draft
-│   └── graph.py                START -> graph_lookup -> retrieve -> draft <-> quality_check -> END
+│   │   ├── quality_check.py    correct, built on the sources, one reading, right sums, answer key
+│   │   │                       worked out, data that matters? else back to draft
+│   │   └── classify.py         CO (PYQ examples; the topic's CO wins), Bloom level (the CO's level)
+│   │                           of an accepted question (difficulty: the one asked for)
+│   ├── eval_classify.py        scores classify against the CO / Bloom labels of the PYQs
+│   └── graph.py                START -> graph_lookup -> retrieve -> draft <-> quality_check -> classify -> END
 │
+├── eval_results/               classify_<model>.jsonl: the classifier's answer for every PYQ
 ├── tests/                      unit tests with fake Neo4j / Chroma / models (test_*.py)
 ├── settings.py                 Chroma / Neo4j address for every script: terminal, else .env, else default
 ├── tag_topics.py               adds topic_id to book chunks

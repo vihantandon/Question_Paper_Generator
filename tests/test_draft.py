@@ -46,6 +46,8 @@ class FakeChat:
         reply = self.replies.pop(0)
         if isinstance(reply, BaseException):
             raise reply
+        if isinstance(reply, SimpleNamespace):       # a whole reply object, as the SDK gives it
+            return reply
         if isinstance(reply, dict):
             reply = json.dumps(reply)
         return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=reply))])
@@ -119,6 +121,87 @@ class TestLLMClient(unittest.TestCase):
                                      "content": "I think a good question would be about trees."})
         self.assertIn("not a JSON object", second[3]["content"])
         self.assertEqual(asked, ASK)                          # the caller's list is not changed
+
+    def test_only_the_last_rejected_reply_goes_back(self):
+        # 21 Oct: a checker report rejected twice was sent back twice; the third
+        # request was 8511 tokens, over Groq's free 8000-per-minute limit (413)
+        client, chat, _ = make_client("no 1", "no 2", {"a": 1})
+        client.complete_json(ASK)
+        third = chat.sent[2]["messages"]
+        self.assertEqual(len(third), len(ASK) + 2)
+        self.assertEqual(third[len(ASK)], {"role": "assistant", "content": "no 2"})
+        self.assertNotIn("no 1", str(third))
+
+    def test_a_long_rejected_reply_is_not_sent_back(self):
+        long_reply = '{"report": "' + "x" * (L.ECHO_LIMIT + 10) + '"}'
+        client, chat, _ = make_client(long_reply, {"a": 1})
+
+        def validate(obj):
+            if "a" not in obj:
+                raise ValueError('"outline" must have one entry for each of the 14 answer-outline lines')
+            return obj
+        client.complete_json(ASK, validate=validate)
+        second = chat.sent[1]["messages"]
+        self.assertEqual(len(second), len(ASK) + 1)
+        self.assertIn("14 answer-outline lines", second[-1]["content"])
+        self.assertIn("Reply again with the whole JSON object, corrected.", second[-1]["content"])
+
+    def test_json_the_service_could_not_make_is_a_bad_reply_not_a_missing_json_mode(self):
+        # 21 Oct, gpt-oss-20b on Groq: this 400 turned JSON mode off, then every reply came back empty
+        failed = ApiError(400, "Error code: 400 - {'error': {'message': 'Failed to generate JSON. Please adjust "
+                               "your prompt.', 'code': 'json_validate_failed'}}")
+        client, chat, _ = make_client(failed, {"a": 1})
+        self.assertEqual(client.complete_json(ASK), {"a": 1})
+        self.assertTrue(client.json_mode)
+        self.assertEqual(chat.sent[1]["response_format"], {"type": "json_object"})
+        self.assertIn("could not make valid JSON", chat.sent[1]["messages"][-1]["content"])
+
+    def test_a_model_without_json_mode_is_asked_in_the_prompt_only(self):
+        client, chat, _ = make_client(ApiError(400, "response_format json_object is not supported by this model"),
+                                      {"a": 1})
+        self.assertEqual(client.complete_json(ASK), {"a": 1})
+        self.assertFalse(client.json_mode)
+        self.assertNotIn("response_format", chat.sent[1])
+
+    def test_a_reply_cut_off_while_thinking_says_so_and_is_asked_again(self):
+        cut = SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=""), finish_reason="length")])
+        client, chat, _ = make_client(cut, {"a": 1})
+        logged = []
+        client.log = logged.append
+        self.assertEqual(client.complete_json(ASK), {"a": 1})
+        self.assertIn("cut off: the model used up its output tokens while still thinking", logged[0])
+        self.assertIn("LLM_REASONING_EFFORT=low", logged[0])
+        self.assertEqual(len(chat.sent[1]["messages"]), len(ASK) + 1)     # nothing to send back but the reason
+
+    def test_reasoning_effort_is_sent_and_dropped_when_the_model_does_not_take_it(self):
+        client, chat, _ = make_client(ApiError(400, "`reasoning_effort` is not supported with this model"),
+                                      {"a": 1}, reasoning_effort="low")
+        self.assertEqual(client.complete_json(ASK), {"a": 1})
+        self.assertEqual(chat.sent[0]["extra_body"], {"reasoning_effort": "low"})
+        self.assertNotIn("extra_body", chat.sent[1])
+        self.assertIsNone(client.reasoning_effort)
+        client, chat, _ = make_client({"a": 1})
+        client.complete_json(ASK)
+        self.assertNotIn("extra_body", chat.sent[0])                       # not set: not sent
+
+    def test_tokens_are_counted(self):
+        used = SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='{"a": 1}'),
+                                                        finish_reason="stop")],
+                               usage=SimpleNamespace(total_tokens=1234))
+        client, _, _ = make_client(used, used)
+        client.complete_json(ASK)
+        client.complete_json(ASK)
+        self.assertEqual((client.requests, client.tokens), (2, 2468))
+        other, _, _ = make_client()
+        self.assertEqual(L.usage_line(client, None, client, other),
+                         "2 request(s), 2,468 tokens to fake-model; 0 request(s), 0 tokens to fake-model")
+
+    def test_a_request_too_large_is_explained_and_does_not_stop_the_run(self):
+        client, _, _ = make_client(ApiError(413, "Request too large: tokens per minute (TPM): Limit 8000"))
+        with self.assertRaises(L.LLMError) as stop:
+            client.complete_json(ASK)
+        self.assertNotIsInstance(stop.exception, L.LLMFatalError)
+        self.assertIn("too large for fake-model's limit (413)", str(stop.exception))
 
     def test_validate_can_reject_a_reply_and_what_it_returns_is_used(self):
         def validate(obj):
@@ -317,6 +400,35 @@ def check(obj, blend=POINTERS):
     return D.parse_draft(obj, marks=5, sources=SOURCES, blend=blend)
 
 
+class TestTheAnswerKeyIsWorkedOut(unittest.TestCase):
+    """21 Oct: an accepted rod-cutting answer key said "obtain R[8]=? (maximum revenue)"."""
+
+    def test_a_result_left_open_is_sent_back(self):
+        for step, open_ in (("compute R[1]..R[8] and obtain R[8]=? (maximum revenue)", "=?"),
+                            ("R[8] = ???", "= ???"), ("the final cost is TBD", "TBD"),
+                            ("the order is to be determined by the trace", "to be determined")):
+            with self.assertRaises(ValueError) as e:
+                check(reply(answer_outline=["root 4", step]))
+            self.assertIn(f'answer_outline line 2 leaves its result open ("{open_}")', str(e.exception))
+
+    def test_a_heading_line_joins_the_line_after_it(self):
+        d = check(reply(answer_outline=["Sort the lengths: 1, 2, 3, 4", "DP table computation:",
+                                        "j=1: R[1]=2", "j=2: R[2]=3", "The output is:", "13"]))
+        self.assertEqual(d["answer_outline"], ["Sort the lengths: 1, 2, 3, 4", "DP table computation: j=1: R[1]=2",
+                                               "j=2: R[2]=3", "The output is: 13"])
+
+    def test_question_marks_that_are_not_open_results_are_fine(self):
+        for step in ("R[j] = max(p_i + R[j-i] - (i<j ? c : 0))", "x == y ? 1 : 0", "Is it stable? Yes."):
+            check(reply(answer_outline=[step]))
+
+    def test_the_writer_is_told_to_work_every_part_out(self):
+        for prompt in (D.SYSTEM_PROMPT, D.BALANCED_SYSTEM_PROMPT):
+            self.assertIn("6. The answer outline is the answer key: work every part out to its final answer",
+                          prompt)
+            self.assertIn("choose data where the method matters", prompt)
+            self.assertIn("9. Reply with ONE JSON object", prompt)
+
+
 class TestParseDraft(unittest.TestCase):
     def test_a_good_reply_comes_out_in_one_fixed_shape(self):
         d = check(reply(sources_used=["[S1]", "s3", "Source 2", "S9", "S1"]))
@@ -386,6 +498,16 @@ class TestDraftFormat(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r'"question" also writes out the parts \(a\), \(b\)'):
             self.check(question=question)
 
+    def test_parts_written_out_again_word_for_word_are_cut_off_without_asking_again(self):
+        # 21 Oct: a request was spent only on "question also writes out the parts"
+        parts = [{"label": "a", "text": "Sort the pairs by length.", "marks": 2},
+                 {"label": "b", "text": "Find the maximum revenue.", "marks": 3}]
+        question = ("A rod of length 5 and these prices are given.\n\n(a) Sort the pairs by length. [2]\n"
+                    "(b) Find the maximum revenue. (3 marks)")
+        d = self.check(question=question, parts=parts)
+        self.assertEqual(d["question"], "A rod of length 5 and these prices are given.")
+        self.assertEqual([p["text"] for p in d["parts"]], ["Sort the pairs by length.", "Find the maximum revenue."])
+
     def test_labels_inside_a_sentence_are_not_parts(self):
         d = self.check(question="Analyse a binary heap created using (a) an array and (b) a complete tree.")
         self.assertEqual(len(d["parts"]), 2)
@@ -443,10 +565,11 @@ class TestDraftNode(unittest.TestCase):
 
 # ---------------------------------------------------------------- the whole graph
 def run(topic_id, difficulty, marks, llm):
-    """Draft only (check=False): the check and its loop are in tests/test_quality_check.py."""
+    """Draft only: the check and its loop are in tests/test_quality_check.py, classify in
+    tests/test_classify.py."""
     res = Resources(driver=P.FakeDriver(P.GRAPH), grounding_collections=[P.BOOK],
                     pyq_collection=P.PYQS, embed_fn=P.fake_embed, llm=llm)
-    return build_graph(res, check=False).invoke({"current_topic_id": topic_id, "target_difficulty": difficulty,
+    return build_graph(res, check=False, classify=False).invoke({"current_topic_id": topic_id, "target_difficulty": difficulty,
                                                  "target_marks": marks})
 
 

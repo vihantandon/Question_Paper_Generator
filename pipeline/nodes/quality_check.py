@@ -31,6 +31,15 @@ model -- decides:
     checker could pick which facts to list, it skipped some: an accepted
     draft's outline said "array storage gives better cache locality", which
     no source says and the checker never listed.
+  * every calculation written out in the question or the answer ("R[4] =
+    max(9, 2+8-2) = 11") is worked out again by pipeline/arithmetic.py --
+    in Python, not by the checker. A wrong one fails the draft: the checker
+    passed an answer key with two wrong sums because it never redid them.
+  * the answer outline must work every part out to its final answer ("R[8] =
+    ?" left one open, so the sums could not be checked), and data given to
+    work on must make the method matter (two accepted rod-cutting drafts had
+    prices where selling the rod uncut was best, so the cuts asked for were
+    none).
   * the question must also be answerable from the sources, have one
     reasonable reading and one answer two examiners would mark alike (an
     open "how could X be adapted?" part fails this), not give its own answer
@@ -68,6 +77,7 @@ Writes: quality (the report), quality_passed, revision_feedback,
 """
 import re
 
+from pipeline.arithmetic import check_arithmetic
 from pipeline.llm import LLMError, LLMFatalError
 from pipeline.nodes.draft import number_sources
 
@@ -134,7 +144,8 @@ def build_messages(state, grounding="balanced"):
         "they derive for a variant the question describes. Example: for \"design a way to keep the "
         "best price for each length\", the step \"scan the pieces and keep the larger price in "
         "P[length]\". Give builds_on: the sources whose knowledge it uses, and follows: true only if "
-        "it correctly follows from that knowledge and the question's data.",
+        "it correctly follows from that knowledge and the question's data. For a worked example, "
+        "redo every calculation yourself: a step with a wrong number does not follow.",
         "A fact a student is expected to KNOW is knowledge even when it appears in the answer "
         "outline. When unsure, it is knowledge.",
         *(["The question may use correct, standard facts that no source states (give source null). "
@@ -157,6 +168,12 @@ def build_messages(state, grounding="balanced"):
         "6. marks_fit: is the work asked for right for the marks given?",
         "7. blend_needed: does a correct answer genuinely need the prerequisite? "
         "(null when no prerequisite is given)",
+        "8. complete_answer: does the answer outline work every part out to its final answer -- "
+        "the actual numbers, output, order or plan -- instead of leaving it open ('R[8] = ?', "
+        "'compute the maximum', 'the value')?",
+        "9. data_matters: when the question gives data to work on, does the data make the method "
+        "matter -- is the answer NOT obvious without carrying it out? (false e.g. when doing nothing "
+        "is already the best plan, or every value is the same; null when the question gives no data)",
         "",
         "Reply with ONLY this JSON object:",
         "{",
@@ -167,10 +184,26 @@ def build_messages(state, grounding="balanced"):
         '  "gives_away": false, "gives_away_reason": "",',
         '  "marks_fit": true, "marks_reason": "",',
         '  "blend_needed": true, "blend_reason": "",',
+        '  "complete_answer": true, "complete_reason": "",',
+        '  "data_matters": true, "data_reason": "",',
         '  "feedback": "if anything is wrong: what the writer should change"',
         "}"]
     return [{"role": "system", "content": BALANCED_SYSTEM_PROMPT if balanced else SYSTEM_PROMPT},
             {"role": "user", "content": "\n".join(lines)}]
+
+
+# ---------------------------------------------------------------- the sums
+def arithmetic_check(draft):
+    """Redo every calculation written out in the draft (pipeline/arithmetic.py).
+    Returns {"checked": n, "wrong": [{"where", "text", "note"}]}."""
+    places = [("in the question", draft_as_text(draft))]
+    places += [(f"outline line {n}", line) for n, line in enumerate(draft.get("answer_outline") or [], start=1)]
+    checked, wrong = 0, []
+    for where, text in places:
+        n, bad = check_arithmetic(text)
+        checked += n
+        wrong += [dict(w, where=where) for w in bad]
+    return {"checked": checked, "wrong": wrong}
 
 
 # ---------------------------------------------------------------- checking the checker
@@ -291,9 +324,10 @@ def parse_report(obj, *, sources, outline_lines, blend=None, mode="strict"):
                              f"(for pure working, the rule it applies)")
         claims += _claims(entry["claims"], f"outline line {n}", sources, line=n, mode=mode)
 
-    for key in ("answerable", "single_reading", "marks_fit", "gives_away"):
+    for key in ("answerable", "single_reading", "marks_fit", "gives_away", "complete_answer"):
         if not isinstance(_flag(obj, key), bool):
             raise ValueError(f'"{key}" must be true or false')
+    data_matters = _flag(obj, "data_matters")        # null: the question gives no data
     blend_needed = _flag(obj, "blend_needed") if blend else None
     if blend and not isinstance(blend_needed, bool):
         raise ValueError('"blend_needed" must be true or false: a prerequisite was given')
@@ -315,6 +349,10 @@ def parse_report(obj, *, sources, outline_lines, blend=None, mode="strict"):
         "marks_reason": str(obj.get("marks_reason") or "").strip(),
         "blend_needed": blend_needed,
         "blend_reason": str(obj.get("blend_reason") or "").strip(),
+        "complete_answer": _flag(obj, "complete_answer"),
+        "complete_reason": str(obj.get("complete_reason") or "").strip(),
+        "data_matters": data_matters,
+        "data_reason": str(obj.get("data_reason") or "").strip(),
         "checker_feedback": str(obj.get("feedback") or "").strip(),
     }
 
@@ -359,6 +397,11 @@ def problems(report, blend=None):
             for c in wrong)
         out.append(f"These steps are wrong, or do not follow from the sources: {text}. Fix them, "
                    f"or change the question.")
+    sums = (report.get("arithmetic") or {}).get("wrong") or []
+    if sums:
+        text = "; ".join(f'"{w["text"]}" ({w["where"]}: {w["note"]})' for w in sums)
+        out.append(f"These calculations are wrong: {text}. Work every number out again, and "
+                   f"everything that depends on it.")
     if not report.get("anchored", True):
         main = ", ".join(report.get("main_sources") or []) or "none were given"
         out.append(f"The question is not built on the course material: none of its facts is quoted "
@@ -375,6 +418,14 @@ def problems(report, blend=None):
     if not report["marks_fit"]:
         out.append("The work asked for does not fit the marks" +
                    (f": {report['marks_reason']}" if report["marks_reason"] else "."))
+    if report.get("complete_answer") is False:
+        out.append("The answer outline does not work every part out to its final answer" +
+                   (f": {report['complete_reason']}" if report["complete_reason"] else "") +
+                   ". Give the actual values: the outline is the answer key.")
+    if report.get("data_matters") is False:
+        out.append("The data does not make the method matter: the answer is obvious without it" +
+                   (f" ({report['data_reason']})" if report["data_reason"] else "") +
+                   ". Choose data where carrying out the method changes the answer.")
     if blend and report["blend_needed"] is False:
         out.append(f'A correct answer does not really need "{blend["name"]}"' +
                    (f": {report['blend_reason']}" if report["blend_reason"] else "."))
@@ -412,6 +463,7 @@ def make_quality_check_node(checker, grounding="balanced"):
             return {"quality": report, "quality_passed": False, "revision_feedback": None,
                     "quality_reports": (state.get("quality_reports") or []) + [report]}
 
+        report["arithmetic"] = arithmetic_check(draft)
         found = problems(report, blend)
         report["problems"] = found
         report["passed"] = not found

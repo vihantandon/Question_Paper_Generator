@@ -35,6 +35,9 @@ from pipeline.llm import LLMError, LLMFatalError
 
 MAX_EXAMPLE_CHARS = 1200      # a past question with a long program is cut here in the prompt
 PART_LABELS = "abcdefghij"
+# a result left open in the answer key: "R[8]=?", "= ???", "TBD", "to be computed"
+PLACEHOLDER_RE = re.compile(r"=\s*\?+|\?{2,}|\bTBD\b|\bto be (?:computed|calculated|determined|found)\b",
+                            re.IGNORECASE)
 
 SYSTEM_PROMPT = """\
 You set exam questions for a B.Tech computer science course at an Indian university.
@@ -53,10 +56,14 @@ would mark the same way. Avoid open parts such as "how could X be adapted" or "d
 never copy their content, data, code or wording.
 5. Marks set the depth: a 2-mark question needs a few lines; a 6- or 10-mark question needs \
 working, a trace, code or a derivation.
-6. If the question has parts (a), (b), ..., the parts' marks must add up to the total.
-7. Do not number the question ("Q1.") and do not write marks, CO or Bloom labels inside it; \
+6. The answer outline is the answer key: work every part out to its final answer -- the \
+actual numbers, output, order or plan, never "?", "the value" or "compute it". When the \
+question gives data to work on, choose data where the method matters: the answer must not \
+be obvious without carrying the method out (not a case where doing nothing is already best).
+7. If the question has parts (a), (b), ..., the parts' marks must add up to the total.
+8. Do not number the question ("Q1.") and do not write marks, CO or Bloom labels inside it; \
 they are added when the paper is put together.
-8. Reply with ONE JSON object and nothing else."""
+9. Reply with ONE JSON object and nothing else."""
 
 # GROUNDING=balanced (the default): the question must be built on the sources,
 # but may also use correct, standard facts of the course that they do not state.
@@ -118,7 +125,8 @@ def reply_format(marks, blend):
         'before its sub-parts (include any code or data it needs)",',
         '  "parts": [{"label": "a", "text": "a sub-question", "marks": 2}],',
         f'  "marks": {marks},',
-        '  "answer_outline": ["each step, fact or result a full-marks answer must contain"],',
+        '  "answer_outline": ["each step, fact or result a full-marks answer must contain, '
+        'with the actual values worked out"],',
         '  "sources_used": ["S1", "S2"],',
         blend_line,
         "}",
@@ -196,6 +204,20 @@ def _repeats_parts(question, parts):
         re.search(rf"(?m)^\s*\(?{re.escape(p['label'])}[).]\s", question) for p in parts)
 
 
+def _strip_repeated_parts(question, parts):
+    """The question with the parts it writes out again cut off its end -- when
+    what follows the first "(a)" line is only the parts (as "parts" gives
+    them, with marks). None when there is more there, or no text before it."""
+    first = re.search(rf"(?m)^\s*\(?{re.escape(parts[0]['label'])}[).]\s", question)
+    if not first or not question[:first.start()].strip():
+        return None
+    def words(text):
+        return set(re.findall(r"[a-z0-9]+", text.lower())) - {"marks", "mark"}
+    tail = words(question[first.start():])
+    extra = tail - words(" ".join(f"{p['label']} {p['text']} {p['marks']}" for p in parts))
+    return question[:first.start()].rstrip() if len(extra) <= max(2, len(tail) // 10) else None
+
+
 def _whole_number(value):
     """10, 10.0, "10" and "10 marks" -> 10; anything else -> None."""
     if isinstance(value, bool):
@@ -214,6 +236,18 @@ def _source_label(value):
     """"S1", "[S1]", "s1", "Source 1" -> "S1"; anything else -> None."""
     m = re.fullmatch(r"\s*\[?\s*s(?:ource)?\s*\[?(\d+)\]?\s*\]?\s*", str(value), re.IGNORECASE)
     return f"S{int(m.group(1))}" if m else None
+
+
+def _fold_headings(lines):
+    """A heading line ("DP table computation:") joins the line after it: it
+    states nothing itself, and the checker cannot list a claim for it."""
+    out = []
+    for line in lines:
+        if out and out[-1].endswith(":") and len(out[-1].split()) <= 6:
+            out[-1] = f"{out[-1]} {line}"
+        else:
+            out.append(line)
+    return out
 
 
 def parse_draft(obj, *, marks, sources, blend=None):
@@ -248,6 +282,10 @@ def parse_draft(obj, *, marks, sources, blend=None):
     if parts and sum(p["marks"] for p in parts) != marks:
         raise ValueError(f"the parts add up to {sum(p['marks'] for p in parts)} marks, not {marks}")
     if _repeats_parts(question, parts):
+        stem = _strip_repeated_parts(question, parts)
+        if stem:                    # cut off in code: asking the model again costs a whole request
+            question = stem
+    if _repeats_parts(question, parts):
         labels = ", ".join(f"({p['label']})" for p in parts)
         raise ValueError(f'"question" also writes out the parts {labels}: put only the common text '
                          f'before the parts in "question", and each part only in "parts"')
@@ -257,9 +295,14 @@ def parse_draft(obj, *, marks, sources, blend=None):
 
     outline = obj.get("answer_outline")
     outline = [outline] if isinstance(outline, str) else outline if isinstance(outline, list) else []
-    outline = [_text(step) for step in outline if _text(step)]
+    outline = _fold_headings([_text(step) for step in outline if _text(step)])
     if not outline:
         raise ValueError('"answer_outline" is empty: list what a full-marks answer must contain')
+    for n, step in enumerate(outline, start=1):
+        m = PLACEHOLDER_RE.search(step)
+        if m:
+            raise ValueError(f'answer_outline line {n} leaves its result open ("{m.group().strip()}"): '
+                             f'work it out and write the actual value')
 
     cited = obj.get("sources_used") or []
     cited = re.split(r"[,;]", cited) if isinstance(cited, str) else cited if isinstance(cited, list) else []

@@ -10,6 +10,16 @@ course_outcomes:
   CO4: "Use various C programming constructs to implement iteration and recursion"
   CO5: "Apply and implement arrays, pointers, Structures and file handling for solving real world problems"
 
+# Bloom level the college gives each CO. Source: the Test-2 2023 paper's CO table.
+# Not loaded into Neo4j; pipeline/nodes/classify.py shows it next to the level
+# it reads from the question itself (the papers label a question by its CO's level).
+co_levels:
+  CO1: Understand
+  CO2: Understand
+  CO3: Understand
+  CO4: Apply
+  CO5: Apply
+
 topics:
   - id: SDF1_01
     name: Introduction to SDLC & Problem Solving

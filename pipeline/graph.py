@@ -1,13 +1,14 @@
 """
 The pipeline graph:
 
-    START -> graph_lookup -> retrieve -> draft -> quality_check -> END
+    START -> graph_lookup -> retrieve -> draft -> quality_check -- pass --> classify -> END
                                            ^            |
                                            +-- fail ----+   (at most MAX_DRAFTS drafts)
 
 draft and quality_check (the language model) are added when the Resources
 carry an llm; without one (--no-llm, or the tests that only check
-retrieval) the graph ends after retrieve. --no-check stops after draft.
+retrieval) the graph ends after retrieve. --no-check classifies the first
+draft unchecked; --no-classify ends at the check.
 
 quality_check sends a failed draft back to draft with revision_feedback --
 this loop is the reason the project uses LangGraph instead of a plain chain.
@@ -15,21 +16,28 @@ The question is ACCEPTED when a draft passes, and REJECTED when MAX_DRAFTS
 drafts have failed, or when nothing could be drafted or checked (a later
 paper planner then picks another topic for that slot).
 
-Later phases add steps after quality_check (classify -> dedup -> constraint check).
+classify labels an accepted question with its CO and Bloom level
+(pipeline/nodes/classify.py); pipeline/eval_classify.py measures how often it
+agrees with the labels printed on the real papers.
+
+Later phases add steps after classify (dedup -> constraint check).
 
 Try it (from the repo root; Neo4j + Chroma must be running):
     python3 -m pipeline.graph ALGO_06 hard 10            # writes one question
     python3 -m pipeline.graph DS_03 medium 5 --show-prompt
     python3 -m pipeline.graph DS_03 easy 5 --no-llm --show-prompt   # no API call
     python3 -m pipeline.graph SDF1_01 easy 2             # no grounding text: not drafted
-    python3 -m pipeline.graph DS_03 medium 5 --no-check  # draft only, one request
+    python3 -m pipeline.graph DS_03 medium 5 --no-check  # draft, then classify it unchecked
+    python3 -m pipeline.graph DS_03 medium 5 --no-classify   # stop after the check
 The model is set in .env (LLM_BASE_URL / LLM_MODEL / LLM_API_KEY, and
-LLM_CHECK_MODEL for a different checking model; see settings.py).
+LLM_CHECK_MODEL for a different model to check and classify -- on another
+service too, with LLM_CHECK_BASE_URL / LLM_CHECK_API_KEY; see settings.py).
 """
 import argparse
 
 from langgraph.graph import END, START, StateGraph
 
+from pipeline.nodes.classify import make_classify_node
 from pipeline.nodes.draft import build_messages, make_draft_node
 from pipeline.nodes.graph_lookup import make_graph_lookup_node
 from pipeline.nodes.quality_check import GROUNDING_MODES, make_quality_check_node
@@ -41,18 +49,23 @@ from pipeline.state import GraphState
 MAX_DRAFTS = 3      # first draft + 2 rewrites with the checker's feedback
 
 
-def after_draft(state):
-    """Check a draft; with no draft (no grounding text, the model gave up) stop."""
-    return "quality_check" if state.get("draft") else END
+def make_after_draft(next_step):
+    def after_draft(state):
+        """Go on with a draft; with no draft (no grounding text, the model gave up) stop."""
+        return next_step if state.get("draft") else END
+    return after_draft
 
 
-def make_after_check(max_drafts):
+after_draft = make_after_draft("quality_check")
+
+
+def make_after_check(max_drafts, when_passed=END):
     def after_check(state):
-        """Passed -> done. Failed -> draft again with the feedback, unless
-        max_drafts drafts were made, or the CHECKER failed (asking the
-        writer again would not help)."""
+        """Passed -> classify (or done). Failed -> draft again with the
+        feedback, unless max_drafts drafts were made, or the CHECKER failed
+        (asking the writer again would not help)."""
         if state.get("quality_passed"):
-            return END
+            return when_passed
         if "error" in (state.get("quality") or {}):
             return END
         if state.get("draft_attempts", 0) >= max_drafts:
@@ -61,7 +74,10 @@ def make_after_check(max_drafts):
     return after_check
 
 
-def build_graph(res: Resources, check=True, max_drafts=MAX_DRAFTS, grounding="balanced"):
+def build_graph(res: Resources, check=True, max_drafts=MAX_DRAFTS, grounding="balanced",
+                classify=True, subjects=None):
+    """subjects: the subject YAMLs (pipeline.curriculum.load_subjects), read
+    from disk when not given; only classify uses them."""
     builder = StateGraph(GraphState)
     builder.add_node("graph_lookup", make_graph_lookup_node(res.driver))
     builder.add_node("retrieve", make_retrieve_node(
@@ -74,13 +90,21 @@ def build_graph(res: Resources, check=True, max_drafts=MAX_DRAFTS, grounding="ba
 
     builder.add_node("draft", make_draft_node(res.llm, grounding=grounding))
     builder.add_edge("retrieve", "draft")
+    if classify:
+        builder.add_node("classify", make_classify_node(res.checker or res.llm, subjects))
+        builder.add_edge("classify", END)
     if not check:
-        builder.add_edge("draft", END)
+        if classify:
+            builder.add_conditional_edges("draft", make_after_draft("classify"), ["classify", END])
+        else:
+            builder.add_edge("draft", END)
         return builder.compile()
 
     builder.add_node("quality_check", make_quality_check_node(res.checker or res.llm, grounding))
     builder.add_conditional_edges("draft", after_draft, ["quality_check", END])
-    builder.add_conditional_edges("quality_check", make_after_check(max_drafts), ["draft", END])
+    passed = "classify" if classify else END
+    builder.add_conditional_edges("quality_check", make_after_check(max_drafts, passed),
+                                  ["draft", "classify", END] if classify else ["draft", END])
     return builder.compile()
 
 
@@ -137,6 +161,9 @@ def print_check(n, q):
     if counts:
         print(f"  facts: {counts.get('grounded', 0)} grounded, {counts.get('model knowledge', 0)} model "
               f"knowledge, {counts.get('working', 0)} working steps  ({q.get('mode', '?')} grounding)")
+    sums = q.get("arithmetic") or {}
+    if sums.get("checked"):
+        print(f"  calculations: {sums['checked']} worked out again, {len(sums['wrong'])} wrong")
     for problem in q["problems"]:
         print(f"  ! {problem}")
 
@@ -160,6 +187,32 @@ def print_checks(r):
                   + (" Facts from the model's own knowledge:" if review else ""))
             for claim in review:
                 print(f"  - {claim}")
+
+
+def print_classification(r):
+    c = r.get("classification")
+    if c is None:
+        return
+    if "error" in c:
+        print(f"\nClassification: the model gave no usable labels ({c['error']})")
+        return
+    print(f"\nClassification ({c.get('model')}):")
+    print(f"  CO          {c['co']}  {c['co_text'][:90]}")
+    if c.get("co_source") == "topic":
+        print(f"              (the topic's CO; the classifier picked {c['co_free']})")
+    if c.get("co_reason"):
+        print(f"              why {c.get('co_free', c['co'])}: {c['co_reason']}")
+    if c.get("bloom_source") == "co level":
+        print(f"  Bloom       {c['bloom']}  ({c['co']}'s level, as the papers print it; "
+              f"the question itself reads as {c['bloom_read']})")
+    else:
+        print(f"  Bloom       {c['bloom']}  (read from the question)")
+    if c.get("bloom_reason"):
+        print(f"              why {c['bloom_read']}: {c['bloom_reason']}")
+    if c.get("difficulty"):
+        print(f"  Difficulty  {c['difficulty']}  (as asked)")
+    for note in c.get("notes") or []:
+        print(f"  note: {note}")
 
 
 def print_result(r):
@@ -187,6 +240,7 @@ def print_result(r):
         print(f"\nWARNING: {r['grounding_warning']}")
     print_draft(r)
     print_checks(r)
+    print_classification(r)
 
 
 def grounding_from_settings():
@@ -206,7 +260,9 @@ def main():
     ap.add_argument("--show-prompt", action="store_true",
                     help="print the prompt the model gets (works with --no-llm too)")
     ap.add_argument("--no-check", action="store_true",
-                    help="stop after draft: no quality check, no rewrites")
+                    help="no quality check, no rewrites: the first draft goes straight to classify")
+    ap.add_argument("--no-classify", action="store_true",
+                    help="stop after the check: no CO / Bloom / difficulty labels")
     ap.add_argument("--max-drafts", type=int, default=MAX_DRAFTS,
                     help="drafts to try before the question is rejected")
     ap.add_argument("--grounding", choices=GROUNDING_MODES, default=None,
@@ -216,15 +272,15 @@ def main():
 
     llm = checker = None
     if not args.no_llm:
-        from pipeline.llm import make_llm
-        from settings import LLM_CHECK_MODEL
+        from pipeline.llm import make_checker, make_llm
         llm = make_llm()          # before connect(): a missing key stops the run at once
-        if LLM_CHECK_MODEL and not args.no_check:
-            checker = make_llm(model=LLM_CHECK_MODEL)
+        if not (args.no_check and args.no_classify):
+            checker = make_checker()      # checks and classifies; None = the drafting model does
 
     res = connect(llm=llm, checker=checker)
     try:
-        graph = build_graph(res, check=not args.no_check, max_drafts=args.max_drafts, grounding=grounding)
+        graph = build_graph(res, check=not args.no_check, max_drafts=args.max_drafts, grounding=grounding,
+                            classify=not args.no_classify)
         result = graph.invoke({
             "current_topic_id": args.topic_id,
             "target_difficulty": args.difficulty,
@@ -238,10 +294,8 @@ def main():
                 print("\n(no prompt: this topic has no grounding text, so nothing is sent to the model)")
         print_result(result)
         if llm is not None:
-            sent = f"{llm.requests} request(s) sent to {llm.model}"
-            if checker is not None:
-                sent += f", {checker.requests} to {checker.model}"
-            print(f"\n({sent})")
+            from pipeline.llm import usage_line
+            print(f"\n({usage_line(llm, checker)})")
     finally:
         res.close()
 

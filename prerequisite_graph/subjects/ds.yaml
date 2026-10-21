@@ -10,6 +10,17 @@ course_outcomes:
   CO4: "Demonstrate and implement various operations like search, traverse, insertion, deletion, etc. on different non-linear data structures"
   CO5: "Apply appropriate data structure to design an efficient solution for given and identified problem"
 
+# Bloom level the college gives each CO. Source: the T1 2024 paper's CO table
+# (it prints CO4 as "Apply Level (Level 4)"; its questions carry Apply).
+# Not loaded into Neo4j; pipeline/nodes/classify.py shows it next to the level
+# it reads from the question itself (the papers label a question by its CO's level).
+co_levels:
+  CO1: Understand
+  CO2: Apply
+  CO3: Analyze
+  CO4: Apply
+  CO5: Create
+
 
 topics:
   - id: DS_01

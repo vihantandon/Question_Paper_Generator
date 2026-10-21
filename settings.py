@@ -85,10 +85,18 @@ LLM_MODEL = _setting("LLM_MODEL", "qwen/qwen3.8-27b:free")
 LLM_API_KEY = _setting("LLM_API_KEY", "") or (
     _setting("OPENROUTER_API_KEY", "") if "openrouter.ai" in LLM_BASE_URL else "")
 LLM_TIMEOUT = float(_setting("LLM_TIMEOUT", "180"))     # seconds; free models can be slow
-# The model that checks drafts (pipeline/nodes/quality_check.py). Empty = the
-# drafting model. A different model is better at finding faults in a draft;
-# it uses the same service and key.
+# The model that checks drafts and classifies accepted questions
+# (pipeline/nodes/quality_check.py, classify.py). Empty = the drafting model. A
+# different model is better at finding faults in a draft; it uses the same
+# service and key unless LLM_CHECK_BASE_URL / LLM_CHECK_API_KEY are set.
 LLM_CHECK_MODEL = _setting("LLM_CHECK_MODEL", "")
+# a checking model on ANOTHER service (its own key, its own free daily budget)
+LLM_CHECK_BASE_URL = _setting("LLM_CHECK_BASE_URL", "")
+LLM_CHECK_API_KEY = _setting("LLM_CHECK_API_KEY", "")
+# how much a reasoning model (gpt-oss, Gemini) may think: low | medium | high, or
+# default (not sent: the service decides). Thinking tokens count against the daily limit.
+LLM_REASONING_EFFORT = _setting("LLM_REASONING_EFFORT", "low").strip().lower()
+LLM_REASONING_EFFORT = "" if LLM_REASONING_EFFORT == "default" else LLM_REASONING_EFFORT
 # How strictly a question must stick to the retrieved sources
 # (pipeline/nodes/quality_check.py):
 #   balanced -- the question's facts must be correct (from a source, or standard

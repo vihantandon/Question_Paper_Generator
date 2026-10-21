@@ -9,6 +9,16 @@ course_outcomes:
   CO3: "Apply algorithmic principles for solving a given problem."                          
   CO4: "Identify, formulate and design an efficient solution to a given problem using appropriate data structure and algorithm design technique."
 
+# Bloom level the college gives each CO. Source: the level the 2025 Test-1 / Test-2 questions carry
+# (these papers print no CO table levels).
+# Not loaded into Neo4j; pipeline/nodes/classify.py shows it next to the level
+# it reads from the question itself (the papers label a question by its CO's level).
+co_levels:
+  CO1: Analyze
+  CO2: Apply
+  CO3: Apply
+  CO4: Create
+
 topics:
   - id: ALGO_01
     name: "Introduction: Asymptotic Analysis, Sorting/Searching Review"

@@ -42,3 +42,7 @@ class GraphState(TypedDict, total=False):
                                    # single_reading, marks_fit, blend_needed, problems, passed
     quality_passed: bool           # the current draft passed the check
     quality_reports: list          # every check made for this question, oldest first
+
+    # --- filled by classify ---
+    classification: Optional[dict] # {"co", "co_text", "co_level", "bloom", "difficulty", the reasons,
+                                   #  "notes", "model"}, or {"error"}; None when there was no draft
