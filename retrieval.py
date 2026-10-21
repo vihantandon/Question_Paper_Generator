@@ -184,7 +184,7 @@ def fetch_grounding_chunks(collections, embed_fn: Callable[[str], list],
                            topic: dict, blend_topic: Optional[dict] = None,
                            n_main: int = 5, n_blend: int = 2,
                            min_tutorial: int = 2, min_tutorial_blend: int = 1,
-                           core_only: bool = False):
+                           core_only: bool = False, avoid_texts=()):
     """Grounding text for the main topic, plus (if the graph chose one) the
     blended prerequisite topic. Each result is labelled role='main' or 'blend'
     so the drafting prompt can tell the model which facts belong to which.
@@ -201,6 +201,11 @@ def fetch_grounding_chunks(collections, embed_fn: Callable[[str], list],
     questions. When a topic has NO core book text (or the vectors were
     tagged before this flag existed), all of its text is used after all.
 
+    avoid_texts: main-topic texts earlier questions on this topic were built
+    from (the question bank). Other text is taken first, so the next question
+    is not the same problem again; the avoided texts only fill places that
+    nothing else can.
+
     `collections` is a list from get_grounding_collections() (a single
     collection still works)."""
     def pick(text, topic_id, n, min_tut, exclude=()):
@@ -211,7 +216,10 @@ def fetch_grounding_chunks(collections, embed_fn: Callable[[str], list],
                 return hits
         return _closest_keeping_tutorials(collections, embed_fn, text, topic_id, n, min_tut, exclude)
 
-    out = [dict(c, role="main") for c in pick(topic["name"], topic["id"], n_main, min_tutorial)]
+    main = pick(topic["name"], topic["id"], n_main, min_tutorial, tuple(avoid_texts))
+    if avoid_texts and len(main) < n_main:          # not enough new text: fill up with the old
+        main += pick(topic["name"], topic["id"], n_main - len(main), 0, {c["text"] for c in main})
+    out = [dict(c, role="main") for c in main]
     if blend_topic:
         q = f'{blend_topic["name"]} (used within {topic["name"]})'
         # a chunk tagged with BOTH topics is already in as "main": don't send it twice
@@ -219,6 +227,18 @@ def fetch_grounding_chunks(collections, embed_fn: Callable[[str], list],
         out += [dict(c, role="blend")
                 for c in pick(q, blend_topic["id"], n_blend, min_tutorial_blend, main_texts)]
     return out
+
+
+def blend_fit(collections, embed_fn, topic: dict, candidate: dict, k: int = 3):
+    """How well a prerequisite fits a topic: the average similarity (cosine,
+    0..1) between the topic's name and the k closest texts about the
+    prerequisite. None when the prerequisite has no text at all. "Graphs"
+    text (shortest paths, DAGs) scores higher for "Dynamic Programming" than
+    "Searching and Sorting" text (counting sort) does."""
+    hits = _query_all(collections, embed_fn, topic["name"], candidate["id"], k)
+    if not hits:
+        return None
+    return round(sum(1 - h["distance"] / 2 for h in hits) / len(hits), 4)
 
 
 def _pyq_hits(collection, query_embedding, where, n):

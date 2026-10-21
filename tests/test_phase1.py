@@ -43,6 +43,11 @@ class FakeCollection:
         return {"ids": [[h[1] for h in hits]], "documents": [[h[2] for h in hits]],
                 "metadatas": [[h[3] for h in hits]], "distances": [[h[0] for h in hits]]}
 
+    def get(self, ids=None, where=None, include=None):
+        rows = [r for r in self.rows if (ids is None or r[0] in ids) and (not where or self._match(r[2], where))]
+        return {"ids": [r[0] for r in rows], "documents": [r[1] for r in rows],
+                "metadatas": [r[2] for r in rows], "embeddings": [r[3] for r in rows]}
+
 
 def fake_embed(text):
     """2-D 'embedding': texts mentioning 'tree' point one way, others the other."""

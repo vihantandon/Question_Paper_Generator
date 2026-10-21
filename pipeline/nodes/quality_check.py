@@ -40,6 +40,11 @@ model -- decides:
     work on must make the method matter (two accepted rod-cutting drafts had
     prices where selling the rod uncut was best, so the cuts asked for were
     none).
+  * an answer outline that offers alternatives ("achieved by either ... or",
+    "another optimal", "for simplicity") means a part has more than one correct
+    answer: found in code (ALTERNATIVES_RE), the draft goes back. An accepted
+    rod-cutting draft asked for "the optimal cuts" when no cut, 2+3 and 3+2 all
+    gave the best revenue, and the checker passed it.
   * the question must also be answerable from the sources, have one
     reasonable reading and one answer two examiners would mark alike (an
     open "how could X be adapted?" part fails this), not give its own answer
@@ -85,6 +90,12 @@ GROUNDING_MODES = ("balanced", "strict")
 OK_STATUSES = ("grounded", "model knowledge", "working")
 QUOTE_MIN_WORDS = 2           # a shorter "quote" proves nothing
 QUOTE_MAX_WORDS = 40
+# the answer key admits another correct answer
+ALTERNATIVES_RE = re.compile(
+    r"achieved (?:either )?by either|\banother (?:optimal|correct|valid)\b|\b(?:also|equally) (?:optimal|correct|valid)\b"
+    r"|\balternative(?:ly)?\b(?: (?:optimal|answer|solution|plan|order))?|\bfor simplicity\b"
+    r"|\bone (?:optimal|possible|valid) (?:set|solution|answer|plan|order|sequence)\b|\bany of (?:these|them)\b",
+    re.IGNORECASE)          # not "ties": "ties keep their input order" explains a stable sort
 
 SYSTEM_PROMPT = """\
 You check exam questions written by someone else against the source texts \
@@ -161,7 +172,9 @@ def build_messages(state, grounding="balanced"):
         "4. single_reading: does every part have exactly one reasonable reading AND one answer that "
         "two examiners would mark the same way? An open part ('how could X be adapted', 'suggest "
         "a way', 'discuss') with many acceptable answers is false. A design part ('propose a data "
-        "structure for ...') is fine only when the sources make one answer clearly the best.",
+        "structure for ...') is fine only when the sources make one answer clearly the best. A part "
+        "that asks for a plan, order, list or choice is false when the best value is reached in more "
+        "than one way (a tie), or when sorting keys tie.",
         "5. gives_away: does the question text already state what a part asks the student to "
         "explain, derive or find? (e.g. the stem says 'deletion takes O(n)' and part (a) asks "
         "why deletion takes O(n))",
@@ -173,7 +186,12 @@ def build_messages(state, grounding="balanced"):
         "'compute the maximum', 'the value')?",
         "9. data_matters: when the question gives data to work on, does the data make the method "
         "matter -- is the answer NOT obvious without carrying it out? (false e.g. when doing nothing "
-        "is already the best plan, or every value is the same; null when the question gives no data)",
+        "is already the best plan, every value is the same, or one option is so much better than the "
+        "rest that the answer is clear at a glance; null when the question gives no data)",
+        "10. consistent: does the question make sense as a whole -- no statement contradicting "
+        "another (e.g. 'p[i] is the price of length i' and 'the list is out of order by length'), "
+        "and no method demanded that cannot work on the data given (e.g. counting sort on "
+        "non-integer keys)?",
         "",
         "Reply with ONLY this JSON object:",
         "{",
@@ -186,6 +204,7 @@ def build_messages(state, grounding="balanced"):
         '  "blend_needed": true, "blend_reason": "",',
         '  "complete_answer": true, "complete_reason": "",',
         '  "data_matters": true, "data_reason": "",',
+        '  "consistent": true, "consistent_reason": "",',
         '  "feedback": "if anything is wrong: what the writer should change"',
         "}"]
     return [{"role": "system", "content": BALANCED_SYSTEM_PROMPT if balanced else SYSTEM_PROMPT},
@@ -193,6 +212,16 @@ def build_messages(state, grounding="balanced"):
 
 
 # ---------------------------------------------------------------- the sums
+def alternatives_check(draft):
+    """Outline lines that offer another correct answer: [{"where", "words"}]."""
+    found = []
+    for n, line in enumerate(draft.get("answer_outline") or [], start=1):
+        m = ALTERNATIVES_RE.search(line)
+        if m:
+            found.append({"where": f"outline line {n}", "words": m.group()})
+    return found
+
+
 def arithmetic_check(draft):
     """Redo every calculation written out in the draft (pipeline/arithmetic.py).
     Returns {"checked": n, "wrong": [{"where", "text", "note"}]}."""
@@ -324,7 +353,7 @@ def parse_report(obj, *, sources, outline_lines, blend=None, mode="strict"):
                              f"(for pure working, the rule it applies)")
         claims += _claims(entry["claims"], f"outline line {n}", sources, line=n, mode=mode)
 
-    for key in ("answerable", "single_reading", "marks_fit", "gives_away", "complete_answer"):
+    for key in ("answerable", "single_reading", "marks_fit", "gives_away", "complete_answer", "consistent"):
         if not isinstance(_flag(obj, key), bool):
             raise ValueError(f'"{key}" must be true or false')
     data_matters = _flag(obj, "data_matters")        # null: the question gives no data
@@ -353,6 +382,8 @@ def parse_report(obj, *, sources, outline_lines, blend=None, mode="strict"):
         "complete_reason": str(obj.get("complete_reason") or "").strip(),
         "data_matters": data_matters,
         "data_reason": str(obj.get("data_reason") or "").strip(),
+        "consistent": _flag(obj, "consistent"),
+        "consistent_reason": str(obj.get("consistent_reason") or "").strip(),
         "checker_feedback": str(obj.get("feedback") or "").strip(),
     }
 
@@ -397,6 +428,12 @@ def problems(report, blend=None):
             for c in wrong)
         out.append(f"These steps are wrong, or do not follow from the sources: {text}. Fix them, "
                    f"or change the question.")
+    alternatives = report.get("alternatives") or []
+    if alternatives:
+        text = "; ".join(f'{a["where"]} says "{a["words"]}"' for a in alternatives)
+        out.append(f"A part has more than one correct answer: the answer outline offers alternatives "
+                   f"({text}). Change the data or the question so every part has exactly one correct "
+                   f"answer -- e.g. data with a single best plan and no ties, or ask only for the value.")
     sums = (report.get("arithmetic") or {}).get("wrong") or []
     if sums:
         text = "; ".join(f'"{w["text"]}" ({w["where"]}: {w["note"]})' for w in sums)
@@ -418,6 +455,10 @@ def problems(report, blend=None):
     if not report["marks_fit"]:
         out.append("The work asked for does not fit the marks" +
                    (f": {report['marks_reason']}" if report["marks_reason"] else "."))
+    if report.get("consistent") is False:
+        out.append("The question does not make sense as a whole" +
+                   (f": {report['consistent_reason']}" if report["consistent_reason"] else "") +
+                   ". Make every statement agree, and ask only for methods that work on the data given.")
     if report.get("complete_answer") is False:
         out.append("The answer outline does not work every part out to its final answer" +
                    (f": {report['complete_reason']}" if report["complete_reason"] else "") +
@@ -464,6 +505,7 @@ def make_quality_check_node(checker, grounding="balanced"):
                     "quality_reports": (state.get("quality_reports") or []) + [report]}
 
         report["arithmetic"] = arithmetic_check(draft)
+        report["alternatives"] = alternatives_check(draft)
         found = problems(report, blend)
         report["problems"] = found
         report["passed"] = not found

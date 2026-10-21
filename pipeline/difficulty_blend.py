@@ -96,6 +96,35 @@ def select_blend_topic(prereqs, difficulty, current_semester):
     return _pick(cross_semester or deep or direct)
 
 
+def blend_candidates(prereqs, difficulty, current_semester, extra_hops=1):
+    """
+    Every prerequisite that select_blend_topic could reasonably have picked:
+    the same tier (direct for medium; earlier-semester and 2+ hops back for
+    hard, with the same fallbacks), from the nearest hop count to `extra_hops`
+    further. The retrieve step then keeps the one whose study material is
+    closest to the main topic (pipeline/nodes/retrieve.py): hops alone made
+    Dynamic Programming blend "Searching and Sorting" -- 2 hops back, like
+    "Graphs", but with nothing in common with DP -- and every draft had to
+    invent a link (sorting prices by density with counting sort).
+    Ordered like _pick (hard link first, fewest hops, topic id); [] for easy.
+    """
+    if difficulty not in DIFFICULTIES:
+        raise ValueError(f"Unknown difficulty: {difficulty!r} (expected one of: {', '.join(DIFFICULTIES)})")
+    if difficulty == "easy" or not prereqs:
+        return []
+    direct = [p for p in prereqs if p["hops"] == 1]
+    if difficulty == "medium":
+        tier = direct
+    else:
+        deep = [p for p in prereqs if p["hops"] >= 2]
+        tier = [p for p in deep if p["semester"] < current_semester] or deep or direct
+    if not tier:
+        return []
+    nearest = min(p["hops"] for p in tier)
+    tier = [p for p in tier if p["hops"] <= nearest + extra_hops]
+    return sorted(tier, key=lambda p: (p.get("strength") == "soft", p["hops"], p["id"]))
+
+
 def build_question_prompt(topic, blend_topic, difficulty, marks):
     """
     Constructs the instruction block that goes to the LLM drafting node.

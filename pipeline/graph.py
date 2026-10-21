@@ -1,9 +1,9 @@
 """
 The pipeline graph:
 
-    START -> graph_lookup -> retrieve -> draft -> quality_check -- pass --> classify -> END
-                                           ^            |
-                                           +-- fail ----+   (at most MAX_DRAFTS drafts)
+    START -> graph_lookup -> retrieve -> draft -> quality_check -- pass --> dedup -- new --> classify -> END
+                                           ^            |                     |
+                                           +-- fail ----+---- too close ------+   (at most MAX_DRAFTS drafts)
 
 draft and quality_check (the language model) are added when the Resources
 carry an llm; without one (--no-llm, or the tests that only check
@@ -15,6 +15,10 @@ this loop is the reason the project uses LangGraph instead of a plain chain.
 The question is ACCEPTED when a draft passes, and REJECTED when MAX_DRAFTS
 drafts have failed, or when nothing could be drafted or checked (a later
 paper planner then picks another topic for that slot).
+
+dedup (pipeline/dedup.py) sends back a draft too close to a past paper, a
+tutorial question or a question accepted before; an accepted question is saved
+in the question bank (--no-save: not), so later ones are checked against it.
 
 classify labels an accepted question with its CO and Bloom level
 (pipeline/nodes/classify.py); pipeline/eval_classify.py measures how often it
@@ -37,6 +41,7 @@ import argparse
 
 from langgraph.graph import END, START, StateGraph
 
+from pipeline.dedup import make_dedup_node, save_question
 from pipeline.nodes.classify import make_classify_node
 from pipeline.nodes.draft import build_messages, make_draft_node
 from pipeline.nodes.graph_lookup import make_graph_lookup_node
@@ -74,14 +79,27 @@ def make_after_check(max_drafts, when_passed=END):
     return after_check
 
 
+def make_after_dedup(max_drafts, when_passed=END):
+    def after_dedup(state):
+        """New -> classify (or done). Too close -> draft again, unless
+        max_drafts drafts were made."""
+        if state.get("dedup_passed"):
+            return when_passed
+        return "draft" if state.get("draft_attempts", 0) < max_drafts else END
+    return after_dedup
+
+
 def build_graph(res: Resources, check=True, max_drafts=MAX_DRAFTS, grounding="balanced",
-                classify=True, subjects=None):
+                classify=True, subjects=None, dedup=True, similarity_limit=None, overlap_limit=None):
     """subjects: the subject YAMLs (pipeline.curriculum.load_subjects), read
-    from disk when not given; only classify uses them."""
+    from disk when not given; only classify uses them. dedup: check a draft
+    that passed against past papers, tutorials and the question bank (only
+    after the quality check); the limits default to settings.py."""
     builder = StateGraph(GraphState)
     builder.add_node("graph_lookup", make_graph_lookup_node(res.driver))
     builder.add_node("retrieve", make_retrieve_node(
-        res.grounding_collections, res.pyq_collection, res.embed_fn))
+        res.grounding_collections, res.pyq_collection, res.embed_fn,
+        bank_collection=getattr(res, "bank_collection", None) if dedup else None))
     builder.add_edge(START, "graph_lookup")
     builder.add_edge("graph_lookup", "retrieve")
     if res.llm is None:
@@ -103,14 +121,26 @@ def build_graph(res: Resources, check=True, max_drafts=MAX_DRAFTS, grounding="ba
     builder.add_node("quality_check", make_quality_check_node(res.checker or res.llm, grounding))
     builder.add_conditional_edges("draft", after_draft, ["quality_check", END])
     passed = "classify" if classify else END
-    builder.add_conditional_edges("quality_check", make_after_check(max_drafts, passed),
-                                  ["draft", "classify", END] if classify else ["draft", END])
+    ends = ["draft", "classify", END] if classify else ["draft", END]
+    tutorials = getattr(res, "tutorial_collection", None)
+    bank = getattr(res, "bank_collection", None)
+    if dedup and any(c is not None for c in (res.pyq_collection, tutorials, bank)):
+        from settings import DEDUP_OVERLAP, DEDUP_SIMILARITY
+        builder.add_node("dedup", make_dedup_node(
+            res.embed_fn, res.pyq_collection, tutorials, bank,
+            similarity_limit=DEDUP_SIMILARITY if similarity_limit is None else similarity_limit,
+            overlap_limit=DEDUP_OVERLAP if overlap_limit is None else overlap_limit))
+        builder.add_conditional_edges("quality_check", make_after_check(max_drafts, "dedup"), ["draft", "dedup", END])
+        builder.add_conditional_edges("dedup", make_after_dedup(max_drafts, passed), ends)
+    else:
+        builder.add_conditional_edges("quality_check", make_after_check(max_drafts, passed), ends)
     return builder.compile()
 
 
 def accepted(r):
-    """The question came out of the loop with a draft that passed the check."""
-    return bool(r.get("draft")) and bool(r.get("quality_passed"))
+    """The question came out of the loop with a draft that passed the check
+    (and the duplicate check, when it ran)."""
+    return bool(r.get("draft")) and bool(r.get("quality_passed")) and r.get("dedup_passed", True) is not False
 
 
 def print_draft(r):
@@ -168,15 +198,30 @@ def print_check(n, q):
         print(f"  ! {problem}")
 
 
+def print_dedup(d):
+    if d["passed"]:
+        closest = ", ".join(f"{c['place']} {c['id']} {c['similarity']:.2f}" for c in d["closest"])
+        print("  Duplicate check: new" + (f"  (closest: {closest})" if closest else ""))
+        return
+    print("  Duplicate check: TOO CLOSE")
+    for m in d["duplicates"]:
+        print(f"    {m['place']} {m['id']} (same {m['why']}): \"{' '.join(m['text'].split())[:90]}\"")
+
+
 def print_checks(r):
-    """Every rejected draft with the check that rejected it, then the last check."""
+    """Every rejected draft with what rejected it (the check, or the duplicate
+    check), then the last one."""
     reports = r.get("quality_reports") or []
     drafts = r.get("drafts") or []
+    dedups = {d.get("check"): d for d in r.get("dedup_reports") or []}
     for n, q in enumerate(reports, start=1):
-        if n < len(reports) and n <= len(drafts):
+        # a draft is shown here when it is not the one printed at the top
+        if n <= len(drafts) and drafts[n - 1] != r.get("draft"):
             print(f"\n----- draft {n} (rejected) -----")
             print_question(drafts[n - 1])
         print_check(n, q)
+        if n in dedups:
+            print_dedup(dedups[n])
     if reports:
         verdict = "ACCEPTED" if accepted(r) else "REJECTED"
         print(f"\n{verdict} after {r.get('draft_attempts', 0)} draft(s)")
@@ -221,6 +266,9 @@ def print_result(r):
     b = r.get("blend_topic")
     print("Blend : " + (f"{b['id']} {b['name']} (semester {b['semester']}, {b['hops']} hop(s) back)"
                         if b else "none"))
+    if r.get("blend_scores"):
+        print("        best fit of: " + ", ".join(f"{i} {'no text' if s is None else f'{s:.2f}'}"
+                                            for i, s in r["blend_scores"]))
     print("COs   : " + ", ".join(c["co_id"] for c in r["topic_cos"]))
     print(f"\nPrompt instruction:\n  {r['prompt_instruction']}")
 
@@ -235,6 +283,13 @@ def print_result(r):
     for q in r["style_examples"]:
         print(f"  [{q['match']:7}] {q['id']:22} {q['marks']} marks, {q['bloom_level']}, d={q['distance']:.3f}")
         print(f"          {q['text'][:110].replace(chr(10), ' ')}")
+
+    earlier = r.get("earlier_questions") or []
+    if earlier:
+        print(f"\nAlready in the question bank for this topic ({len(earlier)}): the writer is told to write "
+              f"something different, and their sources are avoided")
+        for q in earlier:
+            print(f"  {q['id']}  \"{' '.join(q['text'].split())[:90]}\"")
 
     if r.get("grounding_warning"):
         print(f"\nWARNING: {r['grounding_warning']}")
@@ -265,6 +320,10 @@ def main():
                     help="stop after the check: no CO / Bloom / difficulty labels")
     ap.add_argument("--max-drafts", type=int, default=MAX_DRAFTS,
                     help="drafts to try before the question is rejected")
+    ap.add_argument("--no-dedup", action="store_true",
+                    help="no duplicate check against past papers, tutorials and the question bank")
+    ap.add_argument("--no-save", action="store_true",
+                    help="do not save an accepted question in the question bank")
     ap.add_argument("--grounding", choices=GROUNDING_MODES, default=None,
                     help="override GROUNDING from .env (balanced | strict)")
     args = ap.parse_args()
@@ -280,7 +339,7 @@ def main():
     res = connect(llm=llm, checker=checker)
     try:
         graph = build_graph(res, check=not args.no_check, max_drafts=args.max_drafts, grounding=grounding,
-                            classify=not args.no_classify)
+                            classify=not args.no_classify, dedup=not args.no_dedup)
         result = graph.invoke({
             "current_topic_id": args.topic_id,
             "target_difficulty": args.difficulty,
@@ -293,6 +352,10 @@ def main():
             else:
                 print("\n(no prompt: this topic has no grounding text, so nothing is sent to the model)")
         print_result(result)
+        if accepted(result) and not args.no_save and not args.no_check and res.bank_collection is not None:
+            saved = save_question(res.bank_collection, res.embed_fn, result)
+            print(f"\nSaved in the question bank as {saved}: later questions are checked against it "
+                  f"(python3 -m pipeline.dedup --list / --remove {saved}).")
         if llm is not None:
             from pipeline.llm import usage_line
             print(f"\n({usage_line(llm, checker)})")

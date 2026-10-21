@@ -103,3 +103,9 @@ LLM_REASONING_EFFORT = "" if LLM_REASONING_EFFORT == "default" else LLM_REASONIN
 #               for the course); the answer outline is only checked for mistakes
 #   strict   -- every fact in the question AND its answer quoted from a source
 GROUNDING = _setting("GROUNDING", "balanced").strip().lower()
+# The duplicate check (pipeline/dedup.py): a new question is too close to a past
+# paper, tutorial or earlier generated question when its meaning (embedding
+# cosine similarity) reaches DEDUP_SIMILARITY, or this share of its 3-word
+# phrases is copied. Measure your data first: python3 -m pipeline.dedup --calibrate
+DEDUP_SIMILARITY = float(_setting("DEDUP_SIMILARITY", "0.78"))   # calibrated 21 Oct
+DEDUP_OVERLAP = float(_setting("DEDUP_OVERLAP", "0.5"))

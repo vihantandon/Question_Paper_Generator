@@ -27,6 +27,12 @@ class Resources:
     embed_fn: Callable[[str], list]    # text -> vector
     llm: Optional[Any] = None          # pipeline.llm.LLMClient, or None: stop after retrieve
     checker: Optional[Any] = None      # model for quality_check; None = the same as llm
+    bank_collection: Optional[Any] = None   # generated_questions: accepted questions (pipeline/dedup.py)
+
+    @property
+    def tutorial_collection(self):
+        """tut_content, when it is one of the grounding collections."""
+        return next((c for c in self.grounding_collections if getattr(c, "name", "") == "tut_content"), None)
 
     def close(self):
         if self.driver is not None:
@@ -56,6 +62,7 @@ def connect(embed_fn=None, llm=None, checker=None) -> Resources:
     embedding model is loaded."""
     import chromadb
     from neo4j import GraphDatabase
+    from pipeline.dedup import get_bank
     from retrieval import get_grounding_collections, get_pyq_collection
 
     from neo4j.exceptions import AuthError, ServiceUnavailable
@@ -86,6 +93,7 @@ def connect(embed_fn=None, llm=None, checker=None) -> Resources:
             driver=driver,
             grounding_collections=get_grounding_collections(client),
             pyq_collection=get_pyq_collection(client),
+            bank_collection=get_bank(client),
             embed_fn=embed_fn or make_embed_fn(),
             llm=llm,
             checker=checker,

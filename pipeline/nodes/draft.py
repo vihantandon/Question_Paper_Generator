@@ -166,6 +166,12 @@ def build_messages(state, grounding="balanced"):
             lines += ["", f"({q.get('marks') or '?'} marks, {q.get('bloom_level') or 'Bloom level not given'})",
                       clean_example(q.get("text"))]
 
+    earlier = state.get("earlier_questions") or []
+    if earlier:
+        lines += ["", "QUESTIONS ALREADY SET ON THIS TOPIC -- write a DIFFERENT problem: not the same "
+                      "task or situation, not the same problem with new numbers"]
+        lines += [f"- {_short(q['text'])}" for q in earlier]
+
     feedback = state.get("revision_feedback")
     if feedback:
         lines += ["", "YOUR PREVIOUS DRAFT WAS REJECTED", f"Reason: {feedback}"]
@@ -177,6 +183,11 @@ def build_messages(state, grounding="balanced"):
     lines += ["", reply_format(marks, blend)]
     return [{"role": "system", "content": BALANCED_SYSTEM_PROMPT if grounding == "balanced" else SYSTEM_PROMPT},
             {"role": "user", "content": "\n".join(lines)}]
+
+
+def _short(text, limit=300):
+    text = " ".join((text or "").split())
+    return text if len(text) <= limit else text[:limit].rsplit(" ", 1)[0] + " ..."
 
 
 # ---------------------------------------------------------------- checking the reply
@@ -202,6 +213,19 @@ def _repeats_parts(question, parts):
     inside a sentence does not count.)"""
     return bool(parts) and all(
         re.search(rf"(?m)^\s*\(?{re.escape(p['label'])}[).]\s", question) for p in parts)
+
+
+CITATION_RE = re.compile(r"[(\[]\s*(S\d{1,2}(?:\s*(?:[,;/&]|and)\s*S\d{1,2})*)\s*[)\]]")
+
+
+def _cited_in(texts):
+    """Source labels cited in brackets: "(S6)", "[S2]", "(S4, S1)". A bare
+    "S1" is not counted: it may be a string's name in the question."""
+    out = []
+    for text in texts:
+        for group in CITATION_RE.findall(text or ""):
+            out += [f"S{int(n)}" for n in re.findall(r"S(\d{1,2})", group) if f"S{int(n)}" not in out]
+    return out
 
 
 def _strip_repeated_parts(question, parts):
@@ -289,6 +313,11 @@ def parse_draft(obj, *, marks, sources, blend=None):
         labels = ", ".join(f"({p['label']})" for p in parts)
         raise ValueError(f'"question" also writes out the parts {labels}: put only the common text '
                          f'before the parts in "question", and each part only in "parts"')
+    # task lines ("1. The sorted list ...") -- not numbered code lines ("1. int x = 5;")
+    numbered = re.findall(r"(?m)^\s*\(?[1-9][.)]\s+[A-Z][a-z]+\b[^;{}=<>#\n]*$", question)
+    if not parts and len(numbered) >= 2:
+        raise ValueError('"question" lists numbered tasks (1., 2., ...) with no marks: write them as '
+                         '"parts" (a), (b), ... each with its marks, adding up to the total')
     if len(parts) == 1:
         # one part worth all the marks is not a part: "(a) Perform ... [10]"
         question, parts = f"{question}\n{parts[0]['text']}", []
@@ -309,6 +338,11 @@ def parse_draft(obj, *, marks, sources, blend=None):
     used = []
     for value in cited:
         label = _source_label(value)
+        if label in sources and label not in used:
+            used.append(label)
+    # a source the answer outline or blend_used cites -- "(S6)", "(S4, S1)" -- but
+    # "sources_used" forgot: added here, instead of a whole new request
+    for label in _cited_in(outline + [_text(obj.get("blend_used"))]):
         if label in sources and label not in used:
             used.append(label)
     if not used:

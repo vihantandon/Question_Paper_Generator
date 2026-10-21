@@ -417,6 +417,25 @@ class TestTheAnswerKeyIsWorkedOut(unittest.TestCase):
         self.assertEqual(d["answer_outline"], ["Sort the lengths: 1, 2, 3, 4", "DP table computation: j=1: R[1]=2",
                                                "j=2: R[2]=3", "The output is: 13"])
 
+    def test_sources_cited_in_the_outline_but_forgotten_are_added(self):
+        # 21 Oct: three requests were spent on "must also use a source about the prerequisite"
+        d = check(reply(sources_used=["S1"], answer_outline=["sort the keys with counting sort (S3)",
+                                                             "insert them (S2, S1); strings S9 and S1 stay"],
+                        blend_used="sorting first (S3)"))
+        self.assertEqual(d["sources_used"], ["S1", "S3", "S2"])
+        d = check(reply(sources_used=[], answer_outline=["insert as in [S2]"]), blend=None)
+        self.assertEqual(d["sources_used"], ["S2"])
+        with self.assertRaisesRegex(ValueError, "names none of the given sources"):
+            check(reply(sources_used=[], answer_outline=["strings S1 and S2 are compared"]), blend=None)
+
+    def test_numbered_tasks_without_parts_are_sent_back(self):
+        # 21 Oct: "Provide: 1. the sorted list 2. the recurrence ... 5. one optimal plan", no marks
+        with self.assertRaisesRegex(ValueError, "numbered tasks .* write them as \"parts\""):
+            check(reply(question="Rod of length 7.\nProvide:\n1. The sorted list.\n2. The recurrence.", parts=[]))
+        code = "Find the output:\n1. int x = 5;\n2. printf(x);"                 # numbered code lines
+        self.assertEqual(check(reply(question=code))["question"], code)
+        self.assertIn("1. int x = 5;", check(reply(question=code, parts=[]))["question"])
+
     def test_question_marks_that_are_not_open_results_are_fine(self):
         for step in ("R[j] = max(p_i + R[j-i] - (i<j ? c : 0))", "x == y ? 1 : 0", "Is it stable? Yes."):
             check(reply(answer_outline=[step]))

@@ -36,6 +36,7 @@ def check_reply(lines, question=(), **flags):
          "gives_away": False, "gives_away_reason": "",
          "marks_fit": True, "marks_reason": "", "blend_needed": True, "blend_reason": "",
          "complete_answer": True, "complete_reason": "", "data_matters": None, "data_reason": "",
+         "consistent": True, "consistent_reason": "",
          "feedback": ""}
     r.update(flags)
     return r
@@ -206,6 +207,50 @@ class TestCompleteAnswerAndData(unittest.TestCase):
         self.assertIn("8. complete_answer: does the answer outline work every part out", prompt)
         self.assertIn("9. data_matters:", prompt)
         self.assertIn('"complete_answer": true', prompt)
+
+
+class TestMoreThanOneCorrectAnswer(unittest.TestCase):
+    """21 Oct: an accepted draft asked for "the optimal cut lengths" when no cut,
+    2+3 and 3+2 all gave revenue 10; its outline said so, the checker passed it."""
+
+    def test_an_outline_that_offers_alternatives_fails(self):
+        state = draft_state()
+        state["draft"] = dict(state["draft"], answer_outline=[
+            "R[5]=10 achieved by either (i=5) no cut or (i=2)+(sub-rod 3)",
+            "Choose the non-cut solution for simplicity: one piece of length 5."])
+        client, chat, _ = T.make_client(check_reply([[TWO_CHILDREN], [POINTER]]))
+        out = Q.make_quality_check_node(client)(state)
+        self.assertFalse(out["quality_passed"])
+        self.assertEqual([a["words"] for a in out["quality"]["alternatives"]], ["achieved by either", "for simplicity"])
+        self.assertIn('A part has more than one correct answer: the answer outline offers alternatives (outline '
+                      'line 1 says "achieved by either"; outline line 2 says "for simplicity")', out["revision_feedback"])
+        self.assertIn("a tie", chat.sent[0]["messages"][1]["content"])
+
+    def test_ordinary_outlines_are_not_flagged(self):
+        draft = {"answer_outline": ["Each node has either 0 or 2 children", "Counting sort is stable: ties keep "
+                                    "their input order", "the optimal parenthesization is ((A1A2)A3)"]}
+        self.assertEqual(Q.alternatives_check(draft), [])
+
+
+class TestTheQuestionMakesSense(unittest.TestCase):
+    def test_a_question_that_contradicts_itself_fails(self):
+        report = Q.parse_report(check_reply([[TWO_CHILDREN], [POINTER]], consistent=False,
+                                            consistent_reason="p[i] is the price of length i, yet 'out of order'"),
+                                sources=SOURCES, blend=T.POINTERS, outline_lines=2)
+        self.assertEqual(Q.problems(report, T.POINTERS), [
+            "The question does not make sense as a whole: p[i] is the price of length i, yet 'out of order'. "
+            "Make every statement agree, and ask only for methods that work on the data given."])
+        with self.assertRaisesRegex(ValueError, '"consistent" must be true or false'):
+            Q.parse_report(check_reply([[TWO_CHILDREN], [POINTER]], consistent=None), sources=SOURCES,
+                           blend=T.POINTERS, outline_lines=2)
+
+    def test_the_checker_is_asked(self):
+        client, chat, _ = T.make_client(GOOD)
+        Q.make_quality_check_node(client)(draft_state())
+        prompt = chat.sent[0]["messages"][1]["content"]
+        self.assertIn("10. consistent:", prompt)
+        self.assertIn("counting sort on non-integer keys", prompt)
+        self.assertIn("clear at a glance", prompt)
 
 
 # ---------------------------------------------------------------- the node
@@ -481,6 +526,7 @@ class TestBalancedGrounding(unittest.TestCase):
 # ---------------------------------------------------------------- the loop
 def run(llm, checker=None, **options):
     options.setdefault("classify", False)       # tests/test_classify.py runs the loop with classify
+    options.setdefault("dedup", False)          # tests/test_dedup.py runs it with the duplicate check
     res = Resources(driver=P.FakeDriver(P.GRAPH), grounding_collections=[P.BOOK],
                     pyq_collection=P.PYQS, embed_fn=P.fake_embed, llm=llm, checker=checker)
     return build_graph(res, **options).invoke({"current_topic_id": "DS_03", "target_difficulty": "hard",

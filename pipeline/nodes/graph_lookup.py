@@ -9,10 +9,12 @@ same; two changes:
     retrieve step needs the topic's name to search ChromaDB.
 
 Reads:  current_topic_id, target_difficulty, target_marks
-Writes: current_topic, allowed_prior_topics, blend_topic, topic_cos,
-        prompt_instruction
+Writes: current_topic, allowed_prior_topics, blend_topic, blend_candidates,
+        topic_cos, prompt_instruction
+(retrieve may swap blend_topic for the candidate whose material fits best)
 """
 from pipeline.difficulty_blend import (
+    blend_candidates,
     build_question_prompt,
     get_prerequisites_with_distance,
     select_blend_topic,
@@ -77,6 +79,7 @@ def make_graph_lookup_node(driver):
             "current_topic": {"id": topic_id, **topic},
             "allowed_prior_topics": prereqs,
             "blend_topic": blend,
+            "blend_candidates": blend_candidates(prereqs, difficulty, topic["semester"]),
             "topic_cos": cos,
             "prompt_instruction": prompt,
         }

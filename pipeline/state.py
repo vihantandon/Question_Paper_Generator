@@ -21,6 +21,8 @@ class GraphState(TypedDict, total=False):
     current_topic: dict            # {"id", "name", "semester"}
     allowed_prior_topics: list     # every prerequisite, with its hop distance
     blend_topic: Optional[dict]    # the prerequisite to blend in, or None
+    blend_candidates: list         # the prerequisites it could have been (retrieve picks the best fit)
+    blend_scores: list             # [(topic id, fit)] -- how close each one's material is to the topic
     topic_cos: list                # COs this topic contributes to
     prompt_instruction: str        # instruction text for the LLM drafting step
 
@@ -28,6 +30,7 @@ class GraphState(TypedDict, total=False):
     relevant_chunks: list          # grounding text, each tagged role "main" | "blend"
     style_examples: list           # similar past exam questions (PYQs)
     grounding_warning: Optional[str]   # set when there is nothing to ground in
+    earlier_questions: list        # questions already in the bank for this topic (pipeline/dedup.py)
 
     # --- filled by draft (the language model) ---
     draft: Optional[dict]          # {"question", "parts", "marks", "answer_outline",
@@ -42,6 +45,11 @@ class GraphState(TypedDict, total=False):
                                    # single_reading, marks_fit, blend_needed, problems, passed
     quality_passed: bool           # the current draft passed the check
     quality_reports: list          # every check made for this question, oldest first
+
+    # --- filled by dedup (pipeline/dedup.py) ---
+    dedup: Optional[dict]          # the last duplicate check: passed, duplicates, closest
+    dedup_passed: bool             # the current draft is not too close to an existing question
+    dedup_reports: list            # every duplicate check made for this question
 
     # --- filled by classify ---
     classification: Optional[dict] # {"co", "co_text", "co_level", "bloom", "difficulty", the reasons,

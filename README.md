@@ -144,6 +144,14 @@ python -m pipeline.graph DS_03 medium 5 --show-prompt        # also print what t
 python -m pipeline.graph DS_03 medium 5 --no-llm --show-prompt   # stop before the model: no key, no cost
 python -m pipeline.graph DS_03 medium 5 --no-check           # no quality check: classify the first draft
 python -m pipeline.graph DS_03 medium 5 --no-classify        # stop after the check
+python -m pipeline.graph DS_03 medium 5 --no-save            # do not keep it in the question bank
+
+# duplicate check: an accepted question is saved in the question bank (Chroma
+# generated_questions); a later draft too close to it, to a past paper or to a
+# tutorial question is sent back. The next question on the same topic is shown
+# the earlier ones and gets other source text. Set DEDUP_SIMILARITY in .env from:
+python -m pipeline.dedup --calibrate     # how similar the real PYQs / tutorials already are
+python -m pipeline.dedup --list          # the saved questions (--remove ID, --clear)
 
 # 7. how often does the classifier agree with the labels on the real papers (53 PYQs)?
 #    answers are saved in eval_results/ as they come: a stopped run goes on next time
@@ -220,6 +228,7 @@ Question_Paper_Generator/
 │   ├── llm.py                  the language model client: JSON replies, retries, clear errors
 │   ├── arithmetic.py           works out again every calculation a draft writes down
 │   ├── curriculum.py           the subject YAMLs read from disk: all COs, the level of each CO
+│   ├── dedup.py                duplicate check (past papers, tutorials, question bank) + the bank
 │   ├── difficulty_blend.py     blend rules (easy / medium / hard)
 │   ├── nodes/
 │   │   ├── graph_lookup.py     topic, COs, prerequisite to blend (Neo4j)
@@ -230,7 +239,8 @@ Question_Paper_Generator/
 │   │   └── classify.py         CO (PYQ examples; the topic's CO wins), Bloom level (the CO's level)
 │   │                           of an accepted question (difficulty: the one asked for)
 │   ├── eval_classify.py        scores classify against the CO / Bloom labels of the PYQs
-│   └── graph.py                START -> graph_lookup -> retrieve -> draft <-> quality_check -> classify -> END
+│   └── graph.py                START -> graph_lookup -> retrieve -> draft <-> quality_check -> dedup
+│                               -> classify -> END   (a duplicate goes back to draft)
 │
 ├── eval_results/               classify_<model>.jsonl: the classifier's answer for every PYQ
 ├── tests/                      unit tests with fake Neo4j / Chroma / models (test_*.py)

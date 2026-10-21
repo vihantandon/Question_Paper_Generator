@@ -85,6 +85,9 @@ class FakeChromaClient:
     def list_collections(self):
         return []
 
+    def get_or_create_collection(self, name):        # the question bank (pipeline/dedup.py)
+        return types.SimpleNamespace(name=name)
+
 
 def refuse(*args, **kwargs):
     raise ValueError("Could not connect to a Chroma server. Are you sure it is running?")
@@ -120,6 +123,7 @@ class TestConnect(unittest.TestCase):
         driver, res = self.connect(lambda host, port: FakeChromaClient(), embed_fn=lambda text: [0.0])
         self.assertIs(res.driver, driver)
         self.assertFalse(driver.closed)
+        self.assertEqual(res.bank_collection.name, "generated_questions")
 
 
 # ---------------------------------------------------------------- docker-compose.yml
