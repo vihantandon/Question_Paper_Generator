@@ -704,14 +704,32 @@ class TestTutorialQuestionsBringTheirExplanations(unittest.TestCase):
         self.assertEqual(got, [("heap", "explains t_build2"), ("t_build2", "tutorial"),
                                ("adv2", "explains t_build"), ("t_build", "tutorial")])
 
-    def test_the_prerequisite_gets_one_question_and_its_explanation(self):
+    # the prerequisite is searched with its name AND the main topic's first source
+    BLEND_QUERY = "Pointers (used within Trees): Meldable priority queues: amortized analysis."
+
+    def test_the_prerequisite_text_closest_to_the_main_sources_is_used(self):
+        # 25 Oct: by its name alone, Linear DS gave heaps an STL linked-list exercise and an
+        # XOR linked list; the writer could not use them and DS_03 medium failed three times
         book = collection("book_content", "SDF1_04", ("p_far", "Pointer arithmetic.", [1.0, 0.0, 0.0]),
                           ("p_swap", "Passing addresses lets a function swap two ints.", [0.0, 0.1, 0.9]))
         swap_q = ("q_swap", "Q1. Swap two ints with pointers.", [0.0, 0.2, 0.8])
         tut = collection("tut_content", "SDF1_04", swap_q)
-        with mock.patch.dict(VECTORS, {swap_q[1]: swap_q[2]}):
+        # by the name alone the search would land on "Pointer arithmetic." (p_far)
+        with mock.patch.dict(VECTORS, {self.BLEND_QUERY: [0.0, 0.1, 0.9], "Pointers (used within Trees)": [1.0, 0.0, 0.0]}):
             got = retrieval.fetch_grounding_chunks([HANDBOOK, TUTORIALS, book, tut], embed, TREES,
                                                    blend_topic={"id": "SDF1_04", "name": "Pointers"})
+        self.assertEqual([(c["id"], c["found_by"]) for c in got if c["role"] == "blend"],
+                         [("p_swap", "topic"), ("q_swap", "topic")])
+
+    def test_a_tutorial_question_and_its_explanation_can_still_be_asked_for(self):
+        book = collection("book_content", "SDF1_04", ("p_far", "Pointer arithmetic.", [1.0, 0.0, 0.0]),
+                          ("p_swap", "Passing addresses lets a function swap two ints.", [0.0, 0.1, 0.9]))
+        swap_q = ("q_swap", "Q1. Swap two ints with pointers.", [0.0, 0.2, 0.8])
+        tut = collection("tut_content", "SDF1_04", swap_q)
+        with mock.patch.dict(VECTORS, {swap_q[1]: swap_q[2], self.BLEND_QUERY: [0.0, 0.0, 1.0]}):
+            got = retrieval.fetch_grounding_chunks([HANDBOOK, TUTORIALS, book, tut], embed, TREES,
+                                                   blend_topic={"id": "SDF1_04", "name": "Pointers"},
+                                                   min_tutorial_blend=1)
         self.assertEqual([(c["id"], c["found_by"]) for c in got if c["role"] == "blend"],
                          [("p_swap", "explains q_swap"), ("q_swap", "tutorial")])
 

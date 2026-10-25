@@ -1,0 +1,22 @@
+# An example blueprint: Data Structures, T1. Copy it, or write your own with
+#   python3 -m pipeline.paper new
+# check it (no AI, no tokens):  python3 -m pipeline.paper check papers/example_ds_t1.yaml
+# make the paper:               python3 -m pipeline.paper make papers/example_ds_t1.yaml
+# The CO of each question is not set here: classify decides it once the question is written.
+subject: DS
+exam: T1                 # T1 | T2 | T3 (end semester)
+total_marks: 20
+time: 1 hour
+questions:               # topic ids: prerequisite_graph/subjects/ds.yaml
+  - topic: DS_01         # Linear Data Structures
+    marks: 4
+    difficulty: easy
+  - topic: DS_02         # Searching and Sorting
+    marks: 5
+    difficulty: medium
+  - topic: DS_03         # Trees, Heaps
+    marks: 5
+    difficulty: medium
+  - topic: DS_04         # BST, AVL, RB, B trees
+    marks: 6
+    difficulty: hard

@@ -153,6 +153,14 @@ python -m pipeline.graph DS_03 medium 5 --no-save            # do not keep it in
 python -m pipeline.dedup --calibrate     # how similar the real PYQs / tutorials already are
 python -m pipeline.dedup --list          # the saved questions (--remove ID, --clear)
 
+# 8. a whole paper (Phase 2): the teacher sets exam, time, marks and, per question, topic,
+#    marks and difficulty; classify decides each question's CO (and so its Bloom level)
+python -m pipeline.paper new                                # a form -> papers/ds_t1.yaml (defaults from past papers)
+python -m pipeline.paper check papers/example_ds_t1.yaml    # the plan and its problems: no AI, no tokens
+python -m pipeline.paper make papers/example_ds_t1.yaml     # -> papers/output/*.md; run again to resume
+#    an unused question in the bank that fits a slot is reused (no tokens); others go through
+#    draft -> check -> duplicate check -> classify; marks per CO are shown at the end
+
 # 7. how often does the classifier agree with the labels on the real papers (53 PYQs)?
 #    answers are saved in eval_results/ as they come: a stopped run goes on next time
 python -m pipeline.eval_classify                    # the model (LLM_CHECK_MODEL, else LLM_MODEL)
@@ -229,6 +237,8 @@ Question_Paper_Generator/
 │   ├── arithmetic.py           works out again every calculation a draft writes down
 │   ├── curriculum.py           the subject YAMLs read from disk: all COs, the level of each CO
 │   ├── dedup.py                duplicate check (past papers, tutorials, question bank) + the bank
+│   ├── blueprint.py            the teacher's paper plan: form, defaults from PYQs, checks
+│   ├── paper.py                a whole paper from a blueprint: reuse, generate, resume, write it out
 │   ├── difficulty_blend.py     blend rules (easy / medium / hard)
 │   ├── nodes/
 │   │   ├── graph_lookup.py     topic, COs, prerequisite to blend (Neo4j)
@@ -242,6 +252,7 @@ Question_Paper_Generator/
 │   └── graph.py                START -> graph_lookup -> retrieve -> draft <-> quality_check -> dedup
 │                               -> classify -> END   (a duplicate goes back to draft)
 │
+├── papers/                     blueprints (*.yaml); output/ holds the papers and answer keys
 ├── eval_results/               classify_<model>.jsonl: the classifier's answer for every PYQ
 ├── tests/                      unit tests with fake Neo4j / Chroma / models (test_*.py)
 ├── settings.py                 Chroma / Neo4j address for every script: terminal, else .env, else default

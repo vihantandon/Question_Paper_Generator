@@ -368,9 +368,31 @@ def parse_draft(obj, *, marks, sources, blend=None):
 
 
 # ---------------------------------------------------------------- the node
+# the writer would not use the prerequisite's sources
+BLEND_PROBLEMS = ("must also use a source about the prerequisite", '"blend_used" is empty')
+
+
+def without_blend(state):
+    """The state for a question on the main topic alone: no prerequisite, its
+    sources left out (main sources come first, so S1, S2 ... keep their numbers)."""
+    from pipeline.difficulty_blend import build_question_prompt
+    topic = state["current_topic"]
+    return dict(state, blend_topic=None,
+                relevant_chunks=[c for c in state.get("relevant_chunks") or [] if c.get("role") == "main"],
+                prompt_instruction=build_question_prompt(topic, None, state.get("target_difficulty"),
+                                                         state["target_marks"]))
+
+
 def make_draft_node(llm, temperature=0.7, grounding="balanced"):
     """Build the node. `llm` is a pipeline.llm.LLMClient (or anything with the
-    same complete_json method)."""
+    same complete_json method).
+
+    When the writer will not use the prerequisite's sources in any of its
+    tries, it is asked once more for a question on the main topic alone: a
+    paper with a plain question beats a paper with a gap. The draft then says
+    "blend_dropped", and the check does not demand the prerequisite.
+    A reply that could not be used at all ends this draft (draft_error); the
+    graph then starts a fresh draft, up to MAX_DRAFTS (pipeline/graph.py)."""
 
     def draft_node(state):
         chunks = state.get("relevant_chunks") or []
@@ -385,15 +407,34 @@ def make_draft_node(llm, temperature=0.7, grounding="balanced"):
             return parse_draft(obj, marks=state["target_marks"], sources=sources,
                                blend=state.get("blend_topic"))
 
+        dropped = None
         try:
             draft = llm.complete_json(build_messages(state, grounding), temperature=temperature,
                                       validate=check)
         except LLMFatalError:
             raise                       # wrong settings / no credit: stop, every question would fail
         except LLMError as exc:
-            return {"draft": None, "draft_error": str(exc), "draft_attempts": attempt}
+            blend = state.get("blend_topic")
+            if not (blend and any(p in str(exc) for p in BLEND_PROBLEMS)):
+                return {"draft": None, "draft_error": str(exc), "draft_attempts": attempt,
+                        "revision_feedback": f"Your last reply could not be used ({exc}). Follow the reply "
+                                             f"format and the rules exactly."}
+            plain = without_blend(state)
+            try:
+                draft = llm.complete_json(build_messages(plain, grounding), temperature=temperature,
+                                          validate=lambda obj: parse_draft(obj, marks=state["target_marks"],
+                                                                           sources=number_sources(
+                                                                               plain["relevant_chunks"])))
+            except LLMFatalError:
+                raise
+            except LLMError as again:
+                return {"draft": None, "draft_error": str(again), "draft_attempts": attempt}
+            dropped = (f'no link to "{blend["name"]}": the writer did not use its sources, so this is a '
+                       f'question on the main topic alone')
 
         draft["model"] = getattr(llm, "model", "?")
+        if dropped:
+            draft["blend_dropped"] = dropped
         return {"draft": draft, "draft_error": None, "draft_attempts": attempt,
                 "drafts": (state.get("drafts") or []) + [draft]}
 

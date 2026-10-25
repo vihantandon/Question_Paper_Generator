@@ -487,8 +487,9 @@ def make_quality_check_node(checker, grounding="balanced"):
 
         sources = number_sources(state.get("relevant_chunks") or [])
         blend = state.get("blend_topic")
-        # the prerequisite is only demanded when there was text about it to use
-        if not any(c.get("role") == "blend" for c in sources.values()):
+        # the prerequisite is only demanded when there was text about it to use,
+        # and not when the writer had to drop it (draft.py, blend_dropped)
+        if not any(c.get("role") == "blend" for c in sources.values()) or draft.get("blend_dropped"):
             blend = None
 
         try:

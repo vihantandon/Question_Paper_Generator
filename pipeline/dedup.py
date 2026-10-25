@@ -181,8 +181,9 @@ def make_dedup_node(embed_fn, pyq_collection=None, tutorial_collection=None, ban
 
 
 # ---------------------------------------------------------------- the question bank
-def question_record(result, now=None):
-    """(id, text, metadata) to store an accepted question in the bank."""
+def question_record(result, now=None, used_in=""):
+    """(id, text, metadata) to store an accepted question in the bank.
+    used_in: the paper it was put in ("" = not in a paper yet: free to reuse)."""
     from pipeline.nodes.quality_check import draft_as_text
     draft, topic = result["draft"], result["current_topic"]
     labels = result.get("classification") or {}
@@ -194,13 +195,18 @@ def question_record(result, now=None):
             "source_ids": json.dumps(given),
             "difficulty": result.get("target_difficulty") or "", "co": labels.get("co") or "",
             "bloom": labels.get("bloom") or "", "model": draft.get("model") or "", "created": when,
-            "type": "generated", "answer_key": json.dumps(draft["answer_outline"], ensure_ascii=False)}
+            "type": "generated", "answer_key": json.dumps(draft["answer_outline"], ensure_ascii=False),
+            "parts": json.dumps(draft.get("parts") or [], ensure_ascii=False),
+            "stem": draft["question"], "used_in": used_in}
     return f"{topic['id']}_{when}", draft_as_text(draft), meta
 
 
-def save_question(bank_collection, embed_fn, result, now=None):
+def save_question(bank_collection, embed_fn, result, now=None, used_in=""):
     """Put an accepted question in the bank; later questions are checked against it."""
-    id_, text, meta = question_record(result, now)
+    id_, text, meta = question_record(result, now, used_in)
+    base, n = id_, 2
+    while bank_collection.get(ids=[id_], include=[])["ids"]:      # two in the same second
+        id_, n = f"{base}_{n}", n + 1
     bank_collection.upsert(ids=[id_], documents=[text], metadatas=[meta], embeddings=[embed_fn(text)])
     return id_
 
@@ -216,6 +222,25 @@ def earlier_questions(bank_collection, topic_id, limit=5):
                   key=lambda r: r[2].get("created", ""), reverse=True)
     return [{"id": i, "text": t or "", "source_ids": json.loads(m.get("source_ids") or "[]")}
             for i, t, m in rows[:limit]]
+
+
+def find_unused(bank_collection, topic_id, marks, difficulty, co=None, taken=()):
+    """The oldest question in the bank for this topic, marks and difficulty
+    (and CO, when one is given) that no paper has used yet and that has a CO
+    label (and is not in `taken`): (id, metadata), or None. Questions saved
+    before used_in existed count as unused."""
+    if bank_collection is None or _is_empty(bank_collection):
+        return None
+    got = bank_collection.get(where={"topic_id": topic_id}, include=["documents", "metadatas"])
+    fits = [(i, m) for i, m in zip(got["ids"], got["metadatas"])
+            if i not in taken and not m.get("used_in") and m.get("marks") == marks
+            and m.get("difficulty") == difficulty and m.get("co") and (co is None or m.get("co") == co)]
+    return min(fits, key=lambda im: im[1].get("created", "")) if fits else None
+
+
+def mark_used(bank_collection, id_, meta, paper_id):
+    """This question is now in a paper: it will not be reused for another one."""
+    bank_collection.update(ids=[id_], metadatas=[dict(meta, used_in=paper_id)])
 
 
 def get_bank(client):
@@ -285,8 +310,9 @@ def main(argv=None):
                        include=["documents", "metadatas"])
         rows = sorted(zip(got["ids"], got["documents"], got["metadatas"]), key=lambda r: r[2].get("created", ""))
         for id_, text, meta in rows:
+            used = f"in {meta['used_in']}" if meta.get("used_in") else "unused"
             print(f"{id_:28} {meta.get('marks')} marks  {meta.get('difficulty'):6} {meta.get('co'):4} "
-                  f"{meta.get('bloom'):10} \"{' '.join(text.split())[:70]}\"")
+                  f"{meta.get('bloom'):10} {used:18} \"{' '.join(text.split())[:60]}\"")
         print(f"{len(rows)} question(s) in the bank")
     elif args.remove:
         bank.delete(ids=args.remove)

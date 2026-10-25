@@ -1,0 +1,198 @@
+{
+ "paper_id": "example_ds_t1",
+ "blueprint": {
+  "subject": "DS",
+  "exam": "T1",
+  "total_marks": 20,
+  "time": "1 hour",
+  "questions": [
+   {
+    "topic": "DS_01",
+    "marks": 4,
+    "difficulty": "easy"
+   },
+   {
+    "topic": "DS_02",
+    "marks": 5,
+    "difficulty": "medium"
+   },
+   {
+    "topic": "DS_03",
+    "marks": 5,
+    "difficulty": "medium"
+   },
+   {
+    "topic": "DS_04",
+    "marks": 6,
+    "difficulty": "hard"
+   }
+  ]
+ },
+ "slots": [
+  {
+   "n": 1,
+   "spec": {
+    "topic": "DS_01",
+    "marks": 4,
+    "difficulty": "easy"
+   },
+   "status": "done",
+   "source": "generated",
+   "bank_id": "DS_01_20261025T082931",
+   "question": "Consider an empty stack S implemented using a one‑dimensional array A[1..5] (index 1 is the bottom of the stack). Perform the following sequence of operations and, after each operation, write the contents of the array from index 1 to 5, indicating the top element with a ‘T’ and empty positions with ‘–’. \n\n1. PUSH(3) \n2. PUSH(7) \n3. PUSH(2) \n4. POP() \n5. PUSH(9) \n6. POP()",
+   "parts": [],
+   "answer_outline": [
+    "After PUSH(3): A[1]=3(T), A[2]–, A[3]–, A[4]–, A[5]–\nAfter PUSH(7): A[1]=3, A[2]=7(T), A[3]–, A[4]–, A[5]–\nAfter PUSH(2): A[1]=3, A[2]=7, A[3]=2(T), A[4]–, A[5]–\nAfter POP(): remove 2 → A[1]=3, A[2]=7(T), A[3]–, A[4]–, A[5]–\nAfter PUSH(9): A[1]=3, A[2]=7, A[3]=9(T), A[4]–, A[5]–\nAfter POP(): remove 9 → A[1]=3, A[2]=7(T), A[3]–, A[4]–, A[5]–"
+   ],
+   "marks": 4,
+   "co": "CO2",
+   "bloom": "Apply",
+   "difficulty": "easy",
+   "co_free": "CO2",
+   "notes": [],
+   "topic": "DS_01",
+   "topic_name": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+   "blend": null,
+   "drafts": 1,
+   "model_knowledge": []
+  },
+  {
+   "n": 2,
+   "spec": {
+    "topic": "DS_02",
+    "marks": 5,
+    "difficulty": "medium"
+   },
+   "status": "done",
+   "source": "generated",
+   "bank_id": "DS_02_20261025T083001",
+   "question": "Given the input array A = [3, 0, 2, 5, 4, 1, 2, 3] where each element is a non‑negative integer not larger than k = 5, perform counting sort as described in the textbook (Section 8.2). Assume the algorithm uses arrays A[1..n], B[1..n] for the sorted output and C[0..k] for temporary storage.",
+   "parts": [
+    {
+     "label": "a",
+     "text": "What is the final sorted array B produced by counting sort?",
+     "marks": 2
+    },
+    {
+     "label": "b",
+     "text": "What are the contents of the auxiliary array C after line 8 of the algorithm (i.e., after the loop that counts occurrences of each key) is executed?",
+     "marks": 2
+    },
+    {
+     "label": "c",
+     "text": "Briefly explain why counting sort runs in O(n + k) time for this input.",
+     "marks": 1
+    }
+   ],
+   "answer_outline": [
+    "a) B = [0, 1, 2, 2, 3, 3, 4, 5]\n\nb) After line 8, C holds cumulative counts: C[0]=1, C[1]=2, C[2]=4, C[3]=6, C[4]=7, C[5]=8\n\nc) Counting sort performs a fixed number of passes over the input: one to count frequencies (O(n)), one to compute cumulative counts (O(k)), and one to place elements into B (O(n)). Hence total time is O(n + k)."
+   ],
+   "marks": 5,
+   "co": "CO3",
+   "bloom": "Analyze",
+   "difficulty": "medium",
+   "co_free": "CO3",
+   "notes": [
+    "the paper would print Analyze (CO3's level), but the question itself reads as Apply"
+   ],
+   "topic": "DS_02",
+   "topic_name": "Searching and Sorting",
+   "blend": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+   "drafts": 1,
+   "model_knowledge": [
+    "Counting sort runs in O(n + k) time",
+    "Counting sort performs a fixed number of passes over the input: one to count frequencies (O(n)), one to compute cumulative counts (O(k)), and one to place elements into B (O(n)). Hence total time is O(n + k)."
+   ]
+  },
+  {
+   "n": 3,
+   "spec": {
+    "topic": "DS_03",
+    "marks": 5,
+    "difficulty": "medium"
+   },
+   "status": "done",
+   "source": "generated",
+   "bank_id": "DS_03_20261025T084900",
+   "question": "A max‑priority queue is to be implemented using a binary max‑heap stored in an array. The initial array (1‑based indexing) contains the elements {40, 35, 30, 20, 25, 15, 10}. Assume that the array representation and the heap operations follow the definitions for a max‑heap given in the textbook.",
+   "parts": [
+    {
+     "label": "a",
+     "text": "Show the array after inserting the key 45 using the standard heap‑INSERT operation.",
+     "marks": 2
+    },
+    {
+     "label": "b",
+     "text": "After the insertion, perform a HEAP‑EXTRACT‑MAX and give the resulting array.",
+     "marks": 3
+    }
+   ],
+   "answer_outline": [
+    "Start with the given array representing a valid max‑heap.",
+    "Insert 45 at the next free position (index 8).",
+    "Percolate up: compare with parent at index 4 (value 20), swap; now at index 4.",
+    "Compare with new parent at index 2 (value 35), swap; now at index 2.",
+    "Compare with parent at index 1 (value 40), swap; now at index 1.",
+    "Final array after insertion: <45, 40, 30, 35, 25, 15, 10, 20>.",
+    "For extract‑max, remove root (45) and replace it with last element (20) at index 1.",
+    "Heapify‑down: compare 20 with children at indices 2 (40) and 3 (30); swap with larger child 40.",
+    "Now 20 is at index 2; compare with its children at indices 4 (35) and 5 (25); swap with larger child 35.",
+    "Now 20 is at index 4 with no larger children, heap property restored.",
+    "Final array after extract‑max: <40, 35, 30, 20, 25, 15, 10>."
+   ],
+   "marks": 5,
+   "co": "CO4",
+   "bloom": "Apply",
+   "difficulty": "medium",
+   "co_free": "CO4",
+   "notes": [],
+   "topic": "DS_03",
+   "topic_name": "Non-Linear DS: Multi List, Tree, Priority Queue (Heaps)",
+   "blend": "Linear Data Structures (Array, Linked List, Stack, Queue)",
+   "drafts": 1,
+   "model_knowledge": []
+  },
+  {
+   "n": 4,
+   "spec": {
+    "topic": "DS_04",
+    "marks": 6,
+    "difficulty": "hard"
+   },
+   "status": "done",
+   "source": "generated",
+   "bank_id": "DS_04_20261025T084012",
+   "question": "Consider the sequence of integer keys: 15, 6, 23, 4, 7, 14, 30, 2, 9. Write a C program fragment that reads these keys using scanf in a loop, inserts them one by one into an initially empty AVL tree, and finally prints the height of the AVL tree using printf. You must explicitly show the control‑flow constructs (loops, conditionals) and the use of appropriate data types for the keys and the height variable. Assume the standard AVL node structure is defined as:\n\n```c\ntypedef struct AVLNode {\n    int key;\n    struct AVLNode *left, *right;\n    int height;\n} AVLNode;\n```\n\nYour fragment should include the scanf loop, the insertion calls, any necessary height updates, and the final printf statement. Do not write the full AVL rotation functions; just indicate the function call for insertion (e.g., `root = avlInsert(root, key);`).",
+   "parts": [
+    {
+     "label": "a",
+     "text": "Show the exact sequence of scanf statements, the loop structure, and the calls to the insertion function for the given keys.",
+     "marks": 3
+    },
+    {
+     "label": "b",
+     "text": "State the height of the AVL tree after all insertions and write the corresponding printf statement that would output this height.",
+     "marks": 3
+    }
+   ],
+   "answer_outline": [
+    "Part a: scanf(\"%d\", &key); placed inside a for loop for i = 0 to 8 (9 iterations). Loop header: for(int i=0;i<9;i++) { scanf(\"%d\", &key); root = avlInsert(root, key); }",
+    "Part b: After inserting the keys the AVL tree is balanced with height 4. The printf statement: printf(\"%d\\n\", root->height); (or printf(\"%d\\n\", height); if height stored separately).",
+    "Both parts use int data type for keys and height, the loop uses int i, and the conditional inside avlInsert (not shown) relies on comparisons of int keys."
+   ],
+   "marks": 6,
+   "co": "CO4",
+   "bloom": "Apply",
+   "difficulty": "hard",
+   "co_free": "CO4",
+   "notes": [],
+   "topic": "DS_04",
+   "topic_name": "Non-Linear DS: BST, AVL, RB Tree, B/B+ Tree",
+   "blend": "Data Types, Operators, Control Flow",
+   "drafts": 2,
+   "model_knowledge": [
+    "A for loop is an appropriate control structure to iterate through a fixed sequence of inputs."
+   ]
+  }
+ ]
+}

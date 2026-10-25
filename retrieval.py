@@ -183,7 +183,7 @@ def _closest_keeping_tutorials(collections, embed_fn, text, topic_id, n, min_tut
 def fetch_grounding_chunks(collections, embed_fn: Callable[[str], list],
                            topic: dict, blend_topic: Optional[dict] = None,
                            n_main: int = 5, n_blend: int = 2,
-                           min_tutorial: int = 2, min_tutorial_blend: int = 1,
+                           min_tutorial: int = 2, min_tutorial_blend: int = 0,
                            core_only: bool = False, avoid_texts=()):
     """Grounding text for the main topic, plus (if the graph chose one) the
     blended prerequisite topic. Each result is labelled role='main' or 'blend'
@@ -221,12 +221,20 @@ def fetch_grounding_chunks(collections, embed_fn: Callable[[str], list],
         main += pick(topic["name"], topic["id"], n_main - len(main), 0, {c["text"] for c in main})
     out = [dict(c, role="main") for c in main]
     if blend_topic:
-        q = f'{blend_topic["name"]} (used within {topic["name"]})'
+        # the prerequisite's text closest to what the MAIN sources are about. The
+        # prerequisite's name alone (plus a tutorial question and its explanation)
+        # gave heaps a C++ STL linked-list exercise and an XOR linked list, which
+        # the writer could not use, so DS_03 + Linear DS failed three times.
+        focus = " ".join(out[0]["text"].split())[:BLEND_FOCUS_CHARS] if out else ""
+        q = f'{blend_topic["name"]} (used within {topic["name"]})' + (f": {focus}" if focus else "")
         # a chunk tagged with BOTH topics is already in as "main": don't send it twice
         main_texts = {c["text"] for c in out}
         out += [dict(c, role="blend")
                 for c in pick(q, blend_topic["id"], n_blend, min_tutorial_blend, main_texts)]
     return out
+
+
+BLEND_FOCUS_CHARS = 300     # how much of the main topic's first source steers the prerequisite search
 
 
 def blend_fit(collections, embed_fn, topic: dict, candidate: dict, k: int = 3):

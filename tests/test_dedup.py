@@ -66,6 +66,10 @@ class FakeBank(P.FakeCollection):
     def delete(self, ids):
         self.rows = [r for r in self.rows if r[0] not in ids]
 
+    def update(self, ids, metadatas):
+        new = dict(zip(ids, metadatas))
+        self.rows = [(i, t, new.get(i, m), v) for i, t, m, v in self.rows]
+
 
 # ---------------------------------------------------------------- the measures
 class TestTheLimit(unittest.TestCase):

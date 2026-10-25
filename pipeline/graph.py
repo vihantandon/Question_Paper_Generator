@@ -54,10 +54,17 @@ from pipeline.state import GraphState
 MAX_DRAFTS = 3      # first draft + 2 rewrites with the checker's feedback
 
 
-def make_after_draft(next_step):
+def make_after_draft(next_step, max_drafts=MAX_DRAFTS):
     def after_draft(state):
-        """Go on with a draft; with no draft (no grounding text, the model gave up) stop."""
-        return next_step if state.get("draft") else END
+        """Go on with a draft. No draft: with no grounding text, stop; when the
+        writer's replies could not be used, start a fresh draft -- that counts
+        as one of max_drafts, like a rejected draft."""
+        if state.get("draft"):
+            return next_step
+        error = state.get("draft_error") or ""
+        if error and not error.startswith("not drafted") and state.get("draft_attempts", 0) < max_drafts:
+            return "draft"
+        return END
     return after_draft
 
 
@@ -113,13 +120,15 @@ def build_graph(res: Resources, check=True, max_drafts=MAX_DRAFTS, grounding="ba
         builder.add_edge("classify", END)
     if not check:
         if classify:
-            builder.add_conditional_edges("draft", make_after_draft("classify"), ["classify", END])
+            builder.add_conditional_edges("draft", make_after_draft("classify", max_drafts),
+                                          ["classify", "draft", END])
         else:
             builder.add_edge("draft", END)
         return builder.compile()
 
     builder.add_node("quality_check", make_quality_check_node(res.checker or res.llm, grounding))
-    builder.add_conditional_edges("draft", after_draft, ["quality_check", END])
+    builder.add_conditional_edges("draft", make_after_draft("quality_check", max_drafts),
+                                  ["quality_check", "draft", END])
     passed = "classify" if classify else END
     ends = ["draft", "classify", END] if classify else ["draft", END]
     tutorials = getattr(res, "tutorial_collection", None)
@@ -160,6 +169,8 @@ def print_draft(r):
     print("Sources used: " + ", ".join(f"{label} ({cid})" for label, cid in zip(d["sources_used"], d["source_ids"])))
     if d.get("blend_used"):
         print(f"Blend: {d['blend_used']}")
+    if d.get("blend_dropped"):
+        print(f"Blend: dropped -- {d['blend_dropped']}")
 
 
 def print_question(d, indent="  "):
